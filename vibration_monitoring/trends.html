@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trends & Spectrum - Vibration Monitoring</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg-primary: #0a0e1a; --bg-card: #111827; --bg-card-hover: #1a2235; --border: #1e2a3a;
+      --accent-blue: #3b82f6; --accent-cyan: #06b6d4; --accent-green: #10b981; --accent-orange: #f59e0b; --accent-red: #ef4444;
+      --text-primary: #f1f5f9; --text-secondary: #94a3b8; --text-muted: #475569; --shadow: 0 0 20px rgba(59,130,246,0.08);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-width: 1280px; font-family: Inter, sans-serif; color: var(--text-primary); background: radial-gradient(circle at top, #10203c, var(--bg-primary) 42%); }
+    a { color: inherit; text-decoration: none; }
+    button, select, input { font: inherit; }
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-thumb { background: #243147; border-radius: 999px; }
+    .topbar, .footer {
+      display: grid; align-items: center; padding: 0 20px; background: rgba(10,14,26,0.95); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .topbar { position: sticky; top: 0; z-index: 100; grid-template-columns: 320px 1fr auto; height: 56px; }
+    .footer { height: 32px; border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 0; color: var(--text-muted); place-items: center; font-size: 12px; }
+    .brand, .nav-links, .top-actions, .crumbs { display: flex; align-items: center; gap: 14px; }
+    .brand-mark, .avatar { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan)); }
+    .nav-links { justify-content: center; gap: 22px; }
+    .nav-links a { padding: 17px 0; border-bottom: 2px solid transparent; transition: 0.3s ease; }
+    .nav-links a.active, .nav-links a:hover { border-color: var(--accent-blue); }
+    .crumbs, .top-actions { color: var(--text-secondary); font-size: 13px; }
+    .notif { position: relative; padding: 8px; border-radius: 10px; background: rgba(255,255,255,0.03); }
+    .notif::after { content: "3"; position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-red); color: #fff; font-size: 10px; font-weight: 700; }
+    .clock { min-width: 92px; text-align: right; font-variant-numeric: tabular-nums; }
+    .page { padding: 18px; display: grid; gap: 18px; min-height: calc(100vh - 88px); }
+    .sticky-bar {
+      position: sticky; top: 56px; z-index: 90; display: grid; grid-template-columns: 1.1fr 1fr auto auto auto; gap: 10px; align-items: center;
+      padding: 12px; background: rgba(17,24,39,0.95); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow);
+    }
+    .sticky-bar select, .sticky-bar input {
+      width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); color: var(--text-primary);
+    }
+    .range-buttons { display: flex; gap: 8px; }
+    .range-btn, .view-btn {
+      padding: 10px 12px; border-radius: 999px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); color: var(--text-secondary);
+      cursor: pointer; transition: 0.3s ease;
+    }
+    .range-btn.active, .view-btn.active, .range-btn:hover, .view-btn:hover { color: var(--text-primary); background: rgba(59,130,246,0.12); border-color: rgba(59,130,246,0.35); }
+    .card { background: rgba(17,24,39,0.92); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+    .card-head { padding: 16px 18px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .card-head h2 { margin: 0; font-size: 18px; }
+    .card-head p { margin: 4px 0 0; color: var(--text-secondary); font-size: 12px; }
+    .card-body { padding: 16px 18px 18px; }
+    .spectrum-shell { position: relative; height: 50vh; min-height: 420px; }
+    #waterfall { position: absolute; inset: 0; border-radius: 10px; overflow: hidden; }
+    #waterfallTooltip {
+      position: absolute; display: none; pointer-events: none; padding: 8px 10px; border-radius: 10px;
+      background: rgba(10,14,26,0.92); border: 1px solid rgba(59,130,246,0.25); font-size: 12px; color: var(--text-primary);
+    }
+    .overlay-controls {
+      position: absolute; top: 14px; left: 14px; right: 14px; display: flex; justify-content: space-between; gap: 14px; pointer-events: none;
+    }
+    .view-group, .marker-group, .legend-box {
+      pointer-events: auto; background: rgba(10,14,26,0.82); border: 1px solid var(--border); border-radius: 12px; padding: 10px; box-shadow: var(--shadow);
+    }
+    .view-group, .marker-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .marker-legend {
+      position: absolute; left: 14px; bottom: 14px; width: 360px; display: grid; gap: 8px; padding: 12px;
+      background: rgba(10,14,26,0.88); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow);
+    }
+    .marker-legend h3 { margin: 0 0 4px; font-size: 13px; }
+    .marker-legend p { margin: 0; color: var(--text-secondary); font-size: 11px; line-height: 1.45; }
+    .marker-legend-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; }
+    .marker-legend-item { display: flex; gap: 8px; align-items: flex-start; }
+    .marker-chip { width: 12px; height: 12px; border-radius: 999px; margin-top: 2px; flex: 0 0 auto; }
+    .marker-copy strong { display: block; font-size: 12px; }
+    .marker-copy span { color: var(--text-secondary); font-size: 11px; }
+    .legend-box { position: absolute; top: 74px; right: 14px; width: 54px; text-align: center; }
+    .legend-bar { height: 320px; border-radius: 1000px; background: linear-gradient(180deg, #ef4444, #f59e0b, #10b981, #3b82f6); padding: 10px; margin: 6px 0; }
+    .legend-box small { display: block; color: var(--text-secondary); font-size: 11px; }
+    .trend-stack { display: grid; gap: 12px; max-height: 960px; overflow: auto; }
+    .trend-card { padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); }
+    .trend-card h3 { margin: 0 0 2px; font-size: 15px; }
+    .trend-card p { margin: 0 0 10px; color: var(--text-secondary); font-size: 12px; }
+    .trend-canvas { height: 180px; }
+    .snapshot-grid { display: grid; grid-template-columns: 1.3fr 0.7fr; gap: 18px; align-items: start; }
+    .snapshot-chart { height: 260px; }
+    .snapshot-note {
+      border: 1px solid var(--border); border-radius: 12px; background: rgba(255,255,255,0.03); padding: 14px;
+    }
+    .snapshot-note h3 { margin: 0 0 8px; font-size: 15px; }
+    .snapshot-note p { margin: 0 0 12px; color: var(--text-secondary); font-size: 12px; line-height: 1.6; }
+    .snapshot-toolbar { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+    .snapshot-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .snapshot-btn {
+      padding: 9px 12px; border-radius: 999px; border: 1px solid var(--border); background: rgba(255,255,255,0.03);
+      color: var(--text-secondary); cursor: pointer; transition: 0.3s ease;
+    }
+    .snapshot-btn:hover:not(:disabled), .snapshot-btn.primary { color: var(--text-primary); border-color: rgba(59,130,246,0.35); background: rgba(59,130,246,0.12); }
+    .snapshot-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .baseline-pill {
+      margin-bottom: 12px; padding: 9px 12px; border-radius: 10px; border: 1px solid rgba(59,130,246,0.2);
+      background: rgba(59,130,246,0.08); color: var(--text-secondary); font-size: 12px; line-height: 1.45;
+    }
+    .kv { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 8px; font-size: 12px; color: var(--text-secondary); }
+    .back-link { color: var(--accent-cyan); font-size: 12px; display: inline-flex; align-items: center; gap: 8px; }
+    @media print {
+      html, body { min-width: auto; background: #fff; color: #111; }
+      .topbar, .footer, .sticky-bar, .card, .view-group, .marker-group, .legend-box, .marker-legend { background: #fff !important; box-shadow: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">SE</div>
+      <div>
+        <div style="font-weight:700; font-size:14px;">Vibration Monitoring &amp; Diagnostic System</div>
+        <div style="color:var(--text-secondary); font-size:12px;">Sanggul Emas Sdn Bhd</div>
+      </div>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html">Dashboard</a>
+      <a href="asset-detail.html">Asset Detail</a>
+      <a href="diagnostics.html">Diagnostics</a>
+      <a class="active" href="trends.html">Trends</a>
+    </nav>
+    <div class="top-actions">
+      <div class="crumbs">Dashboard &gt; SEEPEX BN 10-6L - Pump #1 &gt; Trend &amp; Spectrum</div>
+      <div class="notif">🔔</div>
+      <div class="clock" id="clock"></div>
+      <div class="avatar">TH</div>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="sticky-bar">
+      <select id="assetSelect">
+        <option>SEEPEX BN 10-6L - Pump #1</option>
+        <option>SEEPEX BN 17-6L - Pump #2</option>
+        <option>Howden Diaphragm 12</option>
+      </select>
+      <select id="sensorSelect">
+        <option>Monitran MTN/2285ITC - Radial</option>
+        <option>Temperature RTD - Motor NDE</option>
+      </select>
+      <div class="range-buttons">
+        <button class="range-btn" data-range="1H">1H</button>
+        <button class="range-btn" data-range="6H">6H</button>
+        <button class="range-btn" data-range="24H">24H</button>
+        <button class="range-btn active" data-range="7D">7D</button>
+        <button class="range-btn" data-range="30D">30D</button>
+        <button class="range-btn" data-range="Custom">Custom</button>
+      </div>
+      <input id="startDate" type="date" />
+      <input id="endDate" type="date" />
+      <select id="refreshRate">
+        <option value="5000">Auto-refresh: 5s</option>
+        <option value="15000">Auto-refresh: 15s</option>
+        <option value="30000">Auto-refresh: 30s</option>
+        <option value="0">Auto-refresh: Off</option>
+      </select>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <a class="back-link" href="index.html">← Back to Dashboard</a>
+          <h2>3D Spectrum Surface</h2>
+          <p>24-48 stacked FFT spectra with a growing 1x component and auxiliary bearing-frequency markers.</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="spectrum-shell">
+          <div id="waterfall"></div>
+          <div class="overlay-controls">
+            <div class="view-group">
+              <button class="view-btn" data-view="top">Top View</button>
+              <button class="view-btn" data-view="side">Side View</button>
+              <button class="view-btn" data-view="front">Front View</button>
+              <button class="view-btn active" data-view="reset">Reset</button>
+            </div>
+            <div class="marker-group">
+              <button class="view-btn active" id="markerToggle">Hide Frequency Markers</button>
+            </div>
+          </div>
+          <div class="legend-box">
+            <small>High</small>
+            <div class="legend-bar"></div>
+            <small>Low</small>
+          </div>
+          <div class="marker-legend" id="markerLegend"></div>
+          <div id="waterfallTooltip"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <h2>2D Trend Charts</h2>
+          <p>Synchronized trend plots linked to the 3D spectrum. Hover aligns the vertical cursor across all traces.</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="trend-stack" id="trendStack"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <h2>Spectrum Snapshot</h2>
+          <p>Click any trend point to compare the selected FFT against commissioning baseline.</p>
+        </div>
+      </div>
+      <div class="card-body snapshot-grid">
+        <div class="snapshot-chart"><canvas id="snapshotChart"></canvas></div>
+        <div class="snapshot-note">
+          <h3 id="snapshotTitle">Selected Timestamp</h3>
+          <div class="snapshot-toolbar">
+            <div class="snapshot-actions">
+              <button class="snapshot-btn" id="prevSnapshotBtn">← Previous</button>
+              <button class="snapshot-btn" id="nextSnapshotBtn">Next →</button>
+            </div>
+            <button class="snapshot-btn primary" id="saveBaselineBtn">Save as Baseline</button>
+          </div>
+          <div class="baseline-pill" id="baselineInfo">Baseline: commissioning reference for this asset.</div>
+          <p id="snapshotText">Click a point on any trend chart to inspect the corresponding spectrum and compare it against the baseline commissioning signature.</p>
+          <div class="kv"><span>1x</span><strong id="kv1x">5.0 Hz / 0.00 mm/s</strong></div>
+          <div class="kv"><span>2x</span><strong id="kv2x">10.0 Hz / 0.00 mm/s</strong></div>
+          <div class="kv"><span>BPFO</span><strong id="kvBpfo">89.4 Hz / 0.00 mm/s</strong></div>
+          <div class="kv"><span>BPFI</span><strong id="kvBpfi">130.6 Hz / 0.00 mm/s</strong></div>
+          <div class="kv"><span>Largest Delta</span><strong id="kvDelta">-</strong></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">CodeX Studio - Custom IoT Solutions | codexstudio.com.my</footer>
+
+  <script src="spectrum-generator.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.module.js"
+      }
+    }
+  </script>
+  <script type="module">
+    import * as THREE from "three";
+    import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/controls/OrbitControls.js";
+
+    const generator = window.SpectrumGenerator.create({
+      machineProfile: "progressive_cavity_pump",
+      ratedRPM: 300,
+      lineFrequency: 50,
+      bearingModel: "6310",
+      frequencyRange: [0, 1000],
+      resolution: 512
+    });
+    const thresholds = generator.getIndicatorThresholds();
+    const bearingFreqs = generator.getBearingFrequencies();
+    const shaftFrequency = 300 / 60;
+    const keyFreqs = [
+      { freq: shaftFrequency, label: "1x", alias: "Running Speed", color: "#3b82f6" },
+      { freq: shaftFrequency * 2, label: "2x", alias: "2nd Harmonic", color: "#06b6d4" },
+      { freq: shaftFrequency * 3, label: "3x", alias: "3rd Harmonic", color: "#10b981" },
+      { freq: 50, label: "LF", alias: "Line Frequency", color: "#84cc16" },
+      { freq: bearingFreqs.bpfo, label: "BPFO", alias: "Outer Race", color: "#f59e0b" },
+      { freq: 100, label: "2LF", alias: "Power Harmonic", color: "#f97316" },
+      { freq: bearingFreqs.bpfi, label: "BPFI", alias: "Inner Race", color: "#ef4444" }
+    ];
+
+    const waterfallEl = document.getElementById("waterfall");
+    const tooltip = document.getElementById("waterfallTooltip");
+    const trendStack = document.getElementById("trendStack");
+    const markerLegend = document.getElementById("markerLegend");
+    const assetSelect = document.getElementById("assetSelect");
+    const prevSnapshotBtn = document.getElementById("prevSnapshotBtn");
+    const nextSnapshotBtn = document.getElementById("nextSnapshotBtn");
+    const saveBaselineBtn = document.getElementById("saveBaselineBtn");
+    const baselineInfo = document.getElementById("baselineInfo");
+
+    const trendMeta = [
+      ["oneX", "1x Amplitude (mm/s)", "Developing imbalance fault signature with sustained upward drift.", "#3b82f6"],
+      ["twoX", "2x Amplitude (mm/s)", "Stable second harmonic indicating watch-level misalignment only.", "#06b6d4"],
+      ["threeX", "3x Amplitude (mm/s)", "Third harmonic remains low and structurally quiet.", "#10b981"],
+      ["subX", "SubX Amplitude (mm/s)", "Sub-synchronous content with occasional minor process-driven spikes.", "#22c55e"],
+      ["multiX", "MultiX Amplitude (mm/s)", "Multiple harmonics remain compact with no looseness cascade.", "#84cc16"],
+      ["iso", "ISO 10816 Overall RMS (mm/s)", "Overall severity drifting from Zone B toward Zone C.", "#f59e0b"],
+      ["temp", "Temperature Trend (C)", "Motor NDE bearing temperature slowly rises with vibration.", "#ef4444"]
+    ];
+
+    let activeRange = "7D";
+    let trendPointCount = 7 * 24 * 4;
+    let trendDetails = [];
+    let waterfallRows = [];
+    let baselineSpectrum = null;
+    let liveProgress = 0.84;
+    let liveSeed = 9000;
+    let trendState = null;
+    let spectra = [];
+    let activeSpectrumIndex = spectra.length - 1;
+    let hoverTrendIndex = null;
+    let charts = [];
+    let refreshHandle = null;
+    let snapshotChart = null;
+    let activeTrendIndex = 0;
+    let savedBaselineSpectrum = null;
+
+    function nearestAmplitude(spectrum, targetFreq) {
+      const ratio = targetFreq / spectrum.frequencyBins[spectrum.frequencyBins.length - 1];
+      const index = Math.max(0, Math.min(spectrum.amplitudes.length - 1, Math.round(ratio * (spectrum.amplitudes.length - 1))));
+      return spectrum.amplitudes[index];
+    }
+
+    function currentAssetSeed() {
+      return assetSelect.value.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    }
+
+    function baselineStorageKey() {
+      return `vibration-baseline:${currentAssetSeed()}`;
+    }
+
+    function cloneSpectrum(spectrum) {
+      return {
+        timestamp: new Date(spectrum.timestamp),
+        frequencyBins: new Float64Array(spectrum.frequencyBins),
+        amplitudes: new Float64Array(spectrum.amplitudes),
+        indicators: { ...spectrum.indicators },
+        iso10816Zone: spectrum.iso10816Zone,
+        aiFlag: spectrum.aiFlag,
+        aiNote: spectrum.aiNote
+      };
+    }
+
+    function serializeSpectrum(spectrum) {
+      return JSON.stringify({
+        timestamp: spectrum.timestamp.toISOString(),
+        frequencyBins: Array.from(spectrum.frequencyBins),
+        amplitudes: Array.from(spectrum.amplitudes),
+        indicators: spectrum.indicators,
+        iso10816Zone: spectrum.iso10816Zone,
+        aiFlag: spectrum.aiFlag,
+        aiNote: spectrum.aiNote
+      });
+    }
+
+    function deserializeSpectrum(raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        timestamp: new Date(parsed.timestamp),
+        frequencyBins: new Float64Array(parsed.frequencyBins),
+        amplitudes: new Float64Array(parsed.amplitudes),
+        indicators: parsed.indicators,
+        iso10816Zone: parsed.iso10816Zone,
+        aiFlag: parsed.aiFlag,
+        aiNote: parsed.aiNote
+      };
+    }
+
+    function getActiveBaseline() {
+      return savedBaselineSpectrum || baselineSpectrum;
+    }
+
+    function updateSnapshotNav() {
+      prevSnapshotBtn.disabled = activeTrendIndex <= 0;
+      nextSnapshotBtn.disabled = activeTrendIndex >= trendState.labels.length - 1;
+    }
+
+    function updateBaselineInfo() {
+      const baseline = getActiveBaseline();
+      baselineInfo.textContent = savedBaselineSpectrum
+        ? `Baseline: saved from ${baseline.timestamp.toLocaleString("en-GB")} for ${assetSelect.value}.`
+        : `Baseline: commissioning reference for ${assetSelect.value}.`;
+    }
+
+    function loadSavedBaseline() {
+      const raw = localStorage.getItem(baselineStorageKey());
+      savedBaselineSpectrum = raw ? deserializeSpectrum(raw) : null;
+      updateBaselineInfo();
+    }
+
+    function makeDataBundle(points, seedSuffix) {
+      const endTime = new Date();
+      const startTime = new Date(endTime.getTime() - (points - 1) * 15 * 60 * 1000);
+      const trendResult = generator.generateSpectraRange({
+        startTime,
+        endTime,
+        interval: 900,
+        pattern: "degrading",
+        faultType: "imbalance",
+        seed: `trend-${seedSuffix}`
+      });
+      const waterfallResult = generator.generateSpectraRange({
+        startTime,
+        endTime,
+        interval: Math.max(60, Math.round((endTime.getTime() - startTime.getTime()) / 1000 / 47)),
+        pattern: "degrading",
+        faultType: "imbalance",
+        seed: `waterfall-${seedSuffix}`
+      });
+      const details = trendResult.spectra;
+      const trendData = {
+        labels: details.map((item) => item.timestamp),
+        data: {
+          oneX: details.map((item) => item.indicators["1x"]),
+          twoX: details.map((item) => item.indicators["2x"]),
+          threeX: details.map((item) => item.indicators["3x"]),
+          subX: details.map((item) => item.indicators.subx),
+          multiX: details.map((item) => item.indicators.multix),
+          iso: details.map((item) => item.indicators.iso_rms),
+          temp: details.map((item) => item.indicators.temperature)
+        }
+      };
+      return {
+        trendData,
+        trendDetails: details,
+        waterfallRows: waterfallResult.spectra,
+        spectra: waterfallResult.spectra.map((item) => Array.from(item.amplitudes)),
+        baselineSpectrum: generator.generateSingleSpectrum({
+          timestamp: startTime,
+          pattern: "normal",
+          faultType: "imbalance",
+          progressFraction: 0,
+          seed: `baseline-${seedSuffix}`
+        })
+      };
+    }
+
+    function rebuildDataBundle(points, seedSuffix) {
+      const bundle = makeDataBundle(points, seedSuffix);
+      trendState = bundle.trendData;
+      trendDetails = bundle.trendDetails;
+      waterfallRows = bundle.waterfallRows;
+      spectra = bundle.spectra;
+      baselineSpectrum = bundle.baselineSpectrum;
+      activeSpectrumIndex = spectra.length - 1;
+      liveProgress = 0.84;
+      activeTrendIndex = trendState.labels.length - 1;
+      loadSavedBaseline();
+      updateSnapshotNav();
+    }
+
+    rebuildDataBundle(trendPointCount, `${currentAssetSeed()}-${activeRange}`);
+
+    const crosshairPlugin = {
+      id: "syncCrosshair",
+      afterDatasetsDraw(chart) {
+        if (hoverTrendIndex == null) return;
+        const xScale = chart.scales.x;
+        if (!xScale || hoverTrendIndex >= chart.data.labels.length) return;
+        const x = xScale.getPixelForValue(hoverTrendIndex);
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.strokeStyle = "rgba(255,255,255,0.35)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x, chart.chartArea.top);
+        ctx.lineTo(x, chart.chartArea.bottom);
+        ctx.stroke();
+        ctx.restore();
+      }
+    };
+
+    const markerPlugin = {
+      id: "fftMarkers",
+      afterDraw(chart) {
+        if (!chart.canvas.dataset.markers) return;
+        const xScale = chart.scales.x;
+        const yScale = chart.scales.y;
+        const ctx = chart.ctx;
+        keyFreqs.filter((item) => ["1x", "2x", "3x", "BPFO", "BPFI"].includes(item.label)).forEach((item, idx) => {
+          const x = xScale.getPixelForValue(item.freq);
+          ctx.save();
+          ctx.strokeStyle = item.color;
+          ctx.setLineDash([5, 4]);
+          ctx.beginPath();
+          ctx.moveTo(x, yScale.top);
+          ctx.lineTo(x, yScale.bottom);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle = "#cbd5e1";
+          ctx.font = "11px Inter";
+          ctx.fillText(item.label, x + 4, yScale.top + 12);
+          ctx.restore();
+        });
+      }
+    };
+    Chart.register(crosshairPlugin, markerPlugin);
+
+    function updateClock() {
+      document.getElementById("clock").textContent = new Date().toLocaleTimeString("en-GB", { hour12: false });
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    function rangeToCount(range) {
+      return range === "1H" ? 4 : range === "6H" ? 24 : range === "24H" ? 96 : range === "30D" ? 30 * 24 * 4 : 7 * 24 * 4;
+    }
+
+    function resetCharts() {
+      charts.forEach((chart) => chart.destroy());
+      charts = [];
+      trendStack.innerHTML = trendMeta.map(([key, title, desc]) => `
+        <div class="trend-card">
+          <h3>${title}</h3>
+          <p>${desc}</p>
+          <div class="trend-canvas"><canvas id="chart-${key}"></canvas></div>
+        </div>
+      `).join("");
+
+      trendMeta.forEach(([key, title, desc, color]) => {
+        const canvas = document.getElementById(`chart-${key}`);
+        const warning = key === "oneX" ? thresholds["1x"][0] : key === "twoX" ? thresholds["2x"][0] : key === "iso" ? thresholds.iso_rms[0] : key === "temp" ? thresholds.temperature[0] : null;
+        const alarm = key === "oneX" ? thresholds["1x"][1] : key === "twoX" ? thresholds["2x"][1] : key === "iso" ? thresholds.iso_rms[1] : key === "temp" ? thresholds.temperature[1] : null;
+        const chart = new Chart(canvas, {
+          type: "line",
+          data: {
+            labels: trendState.labels.map((d) => d.toLocaleString("en-GB", { month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit" })),
+            datasets: [
+              { data: trendState.data[key], borderColor: color, borderWidth: 2.2, pointRadius: 0, tension: 0.25, fill: false },
+              ...(warning ? [{ data: trendState.labels.map(() => warning), borderColor: "#f59e0b", borderDash: [6, 4], pointRadius: 0, borderWidth: 1.3 }] : []),
+              ...(alarm ? [{ data: trendState.labels.map(() => alarm), borderColor: "#ef4444", borderDash: [6, 4], pointRadius: 0, borderWidth: 1.3 }] : [])
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: "index", intersect: false },
+            onHover: (_, active) => {
+              if (active.length) {
+                hoverTrendIndex = active[0].index;
+                syncSpectrumHighlight(Math.round((hoverTrendIndex / (trendState.labels.length - 1)) * (spectra.length - 1)));
+                charts.forEach((item) => item.draw());
+              }
+            },
+            onClick: (_, active) => {
+              if (active.length) updateSnapshot(active[0].index);
+            },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: "#0f172a",
+                titleColor: "#f1f5f9",
+                bodyColor: "#cbd5e1",
+                borderColor: "#1e2a3a",
+                borderWidth: 1,
+                cornerRadius: 8
+              }
+            },
+            scales: {
+              x: { grid: { color: "rgba(255,255,255,0.04)" }, ticks: { color: "#64748b", maxTicksLimit: 8 } },
+              y: { grid: { color: "rgba(255,255,255,0.04)" }, ticks: { color: "#64748b" }, beginAtZero: key !== "temp" }
+            }
+          }
+        });
+        charts.push(chart);
+      });
+    }
+
+    function updateTrendRange(range) {
+      activeRange = range;
+      trendPointCount = rangeToCount(range);
+      rebuildDataBundle(trendPointCount, `${currentAssetSeed()}-${range}`);
+      resetCharts();
+      updateSnapshot(trendState.labels.length - 1);
+    }
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x09111d);
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+    camera.position.set(0, 13, 17);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    waterfallEl.appendChild(renderer.domElement);
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.target.set(0, 1.5, 0);
+
+    scene.add(new THREE.AmbientLight(0xa3c9ff, 0.7));
+    const light = new THREE.DirectionalLight(0xffffff, 1.2);
+    light.position.set(8, 12, 6);
+    scene.add(light);
+
+    const axisGroup = new THREE.Group();
+    const markerGroup = new THREE.Group();
+    const surfaceGroup = new THREE.Group();
+    scene.add(axisGroup, markerGroup, surfaceGroup);
+
+    const planeWidth = 18;
+    const planeDepth = 11;
+    const geometry = new THREE.PlaneGeometry(planeWidth, planeDepth, 511, spectra.length - 1);
+    const colors = new Float32Array(geometry.attributes.position.count * 3);
+    geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+    const material = new THREE.MeshStandardMaterial({ side: THREE.DoubleSide, vertexColors: true, metalness: 0.15, roughness: 0.55, wireframe: false });
+    const surface = new THREE.Mesh(geometry, material);
+    surface.rotation.x = -Math.PI / 2.2;
+    surface.position.set(0, 0.25, 0);
+    surfaceGroup.add(surface);
+
+    const selectedRow = new THREE.Mesh(
+      new THREE.PlaneGeometry(planeWidth, planeDepth / spectra.length),
+      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.12, side: THREE.DoubleSide })
+    );
+    selectedRow.rotation.x = -Math.PI / 2.2;
+    selectedRow.position.y = 0.26;
+    surfaceGroup.add(selectedRow);
+
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+
+    function createTextSprite(lines, options = {}) {
+      const textLines = Array.isArray(lines) ? lines : [lines];
+      const canvas = document.createElement("canvas");
+      canvas.width = 320;
+      canvas.height = 96;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = options.background || "rgba(10, 14, 26, 0.84)";
+      ctx.strokeStyle = options.border || "rgba(96, 165, 250, 0.55)";
+      ctx.lineWidth = 3;
+      ctx.fillRect(4, 4, canvas.width - 8, canvas.height - 8);
+      ctx.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
+      ctx.textAlign = "center";
+      ctx.fillStyle = options.primary || "#f8fafc";
+      ctx.font = "700 28px Inter, sans-serif";
+      ctx.fillText(textLines[0], canvas.width / 2, 38);
+      if (textLines[1]) {
+        ctx.fillStyle = options.secondary || "#cbd5e1";
+        ctx.font = "500 20px Inter, sans-serif";
+        ctx.fillText(textLines[1], canvas.width / 2, 70);
+      }
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.needsUpdate = true;
+      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false }));
+      sprite.scale.set(options.scaleX || 2.6, options.scaleY || 0.8, 1);
+      sprite.renderOrder = 10;
+      return sprite;
+    }
+
+    function createAxisTube(start, end, color, radius = 0.06) {
+      const direction = new THREE.Vector3().subVectors(end, start);
+      const length = direction.length();
+      const axis = new THREE.Mesh(
+        new THREE.CylinderGeometry(radius, radius, length, 16),
+        new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.18, metalness: 0.15, roughness: 0.45 })
+      );
+      axis.position.copy(start).add(end).multiplyScalar(0.5);
+      axis.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.clone().normalize());
+      return axis;
+    }
+
+    function ampColor(value) {
+      const c = new THREE.Color();
+      if (value < 0.45) c.set("#3b82f6");
+      else if (value < 0.95) c.set("#10b981");
+      else if (value < 1.5) c.set("#f59e0b");
+      else c.set("#ef4444");
+      return c;
+    }
+
+    function buildSurface() {
+      const pos = geometry.attributes.position;
+      const colorAttr = geometry.attributes.color;
+      for (let row = 0; row < spectra.length; row += 1) {
+        for (let col = 0; col < 512; col += 1) {
+          const idx = row * 512 + col;
+          const amp = spectra[row][col];
+          pos.setZ(idx, amp * 2.4);
+          const tint = ampColor(amp);
+          const highlightBoost = row === activeSpectrumIndex ? 0.18 : 0;
+          colorAttr.setXYZ(idx, Math.min(1, tint.r + highlightBoost), Math.min(1, tint.g + highlightBoost), Math.min(1, tint.b + highlightBoost));
+        }
+      }
+      pos.needsUpdate = true;
+      colorAttr.needsUpdate = true;
+      geometry.computeVertexNormals();
+      const rowHeight = planeDepth / (spectra.length - 1);
+      selectedRow.position.z = -planeDepth / 2 + activeSpectrumIndex * rowHeight;
+    }
+
+    function addAxes() {
+      const xStart = new THREE.Vector3(-planeWidth / 2, 0.01, planeDepth / 2 + 0.25);
+      const xEnd = new THREE.Vector3(planeWidth / 2, 0.01, planeDepth / 2 + 0.25);
+      const zStart = new THREE.Vector3(-planeWidth / 2 - 0.25, 0.01, planeDepth / 2);
+      const zEnd = new THREE.Vector3(-planeWidth / 2 - 0.25, 0.01, -planeDepth / 2);
+      const yStart = new THREE.Vector3(-planeWidth / 2 - 0.25, 0.01, planeDepth / 2 + 0.25);
+      const yEnd = new THREE.Vector3(-planeWidth / 2 - 0.25, 4.4, planeDepth / 2 + 0.25);
+
+      axisGroup.add(
+        createAxisTube(xStart, xEnd, 0x60a5fa, 0.07),
+        createAxisTube(zStart, zEnd, 0x22c55e, 0.07),
+        createAxisTube(yStart, yEnd, 0xf59e0b, 0.07)
+      );
+
+      const xLabel = createTextSprite(["X Axis", "Frequency (Hz)"], { border: "rgba(96, 165, 250, 0.7)" });
+      xLabel.position.set(planeWidth / 2 + 1.25, 0.5, planeDepth / 2 + 0.45);
+      const zLabel = createTextSprite(["Z Axis", "History / Time"], { border: "rgba(34, 197, 94, 0.7)" });
+      zLabel.position.set(-planeWidth / 2 - 1.55, 0.55, -planeDepth / 2 - 0.2);
+      const yLabel = createTextSprite(["Y Axis", "Amplitude (mm/s)"], { border: "rgba(245, 158, 11, 0.7)" });
+      yLabel.position.set(-planeWidth / 2 - 1.65, 4.85, planeDepth / 2 + 0.35);
+      axisGroup.add(xLabel, zLabel, yLabel);
+    }
+    addAxes();
+
+    function createMarkerLine(freq, label, alias, color) {
+      const x = -planeWidth / 2 + (freq / 1000) * planeWidth;
+      const line = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.2, planeDepth),
+        new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.62, side: THREE.DoubleSide })
+      );
+      line.rotation.x = Math.PI / 2;
+      line.position.set(x, 2.15, 0);
+      line.userData.label = label;
+      markerGroup.add(line);
+    }
+    keyFreqs.forEach((item) => createMarkerLine(item.freq, item.label, item.alias, item.color));
+
+    function renderMarkerLegend() {
+      markerLegend.innerHTML = `
+        <div>
+          <h3>Frequency Markers</h3>
+          <p>Colored bands highlight the main diagnostic frequencies drawn on the 3D waterfall.</p>
+        </div>
+        <div class="marker-legend-grid">
+          ${keyFreqs.map((item) => `
+            <div class="marker-legend-item">
+              <span class="marker-chip" style="background:${item.color};"></span>
+              <div class="marker-copy">
+                <strong>${item.label} - ${item.freq.toFixed(1)} Hz</strong>
+                <span>${item.alias}</span>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+    renderMarkerLegend();
+
+    function resizeScene() {
+      const w = waterfallEl.clientWidth;
+      const h = waterfallEl.clientHeight;
+      renderer.setSize(w, h);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    resizeScene();
+    window.addEventListener("resize", resizeScene);
+
+    function syncSpectrumHighlight(index) {
+      activeSpectrumIndex = Math.max(0, Math.min(spectra.length - 1, index));
+      buildSurface();
+    }
+
+    function updateSnapshot(trendIndex) {
+      activeTrendIndex = trendIndex;
+      hoverTrendIndex = trendIndex;
+      const spectrumIndex = Math.round((trendIndex / (trendState.labels.length - 1)) * (spectra.length - 1));
+      syncSpectrumHighlight(spectrumIndex);
+      const current = trendDetails[trendIndex];
+      const baseline = getActiveBaseline();
+      const maxFreq = current.frequencyBins[current.frequencyBins.length - 1];
+      const sampleFreqs = Array.from({ length: 128 }, (_, i) => +(i * (maxFreq / 127)).toFixed(1));
+      const currentSeries = sampleFreqs.map((freq) => +nearestAmplitude(current, freq).toFixed(3));
+      const baseSeries = sampleFreqs.map((freq) => +nearestAmplitude(baseline, freq).toFixed(3));
+
+      if (snapshotChart) snapshotChart.destroy();
+      const ctx = document.getElementById("snapshotChart");
+      ctx.dataset.markers = "1";
+      snapshotChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: sampleFreqs,
+          datasets: [
+            { label: "Baseline", data: baseSeries, borderColor: "#94a3b8", pointRadius: 0, borderWidth: 2, tension: 0.15 },
+            { label: "Current", data: currentSeries, borderColor: "#3b82f6", pointRadius: 0, borderWidth: 2, tension: 0.15 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: "#cbd5e1" } },
+            tooltip: { backgroundColor: "#0f172a", titleColor: "#f1f5f9", bodyColor: "#cbd5e1", borderColor: "#1e2a3a", borderWidth: 1, cornerRadius: 8 }
+          },
+          scales: {
+            x: { title: { display: true, text: "Frequency (Hz)", color: "#94a3b8" }, grid: { color: "rgba(255,255,255,0.04)" }, ticks: { color: "#64748b", maxTicksLimit: 12 } },
+            y: { title: { display: true, text: "Amplitude (mm/s)", color: "#94a3b8" }, grid: { color: "rgba(255,255,255,0.04)" }, ticks: { color: "#64748b" }, beginAtZero: true }
+          }
+        }
+      });
+
+      const ts = trendState.labels[trendIndex];
+      document.getElementById("snapshotTitle").textContent = ts.toLocaleString("en-GB");
+      document.getElementById("snapshotText").textContent = current.aiNote;
+      const peakAt = (freq) => nearestAmplitude(current, freq);
+      const baselineAt = (freq) => nearestAmplitude(baseline, freq);
+      const delta = ((peakAt(shaftFrequency) - baselineAt(shaftFrequency)) / Math.max(0.001, baselineAt(shaftFrequency))) * 100;
+      document.getElementById("kv1x").textContent = `${shaftFrequency.toFixed(1)} Hz / ${current.indicators["1x"].toFixed(2)} mm/s`;
+      document.getElementById("kv2x").textContent = `${(shaftFrequency * 2).toFixed(1)} Hz / ${current.indicators["2x"].toFixed(2)} mm/s`;
+      document.getElementById("kvBpfo").textContent = `${bearingFreqs.bpfo.toFixed(1)} Hz / ${current.indicators.bpfo.toFixed(2)} mm/s`;
+      document.getElementById("kvBpfi").textContent = `${bearingFreqs.bpfi.toFixed(1)} Hz / ${current.indicators.bpfi.toFixed(2)} mm/s`;
+      document.getElementById("kvDelta").textContent = `1x peak ${delta.toFixed(0)}% above baseline`;
+      updateSnapshotNav();
+      updateBaselineInfo();
+      charts.forEach((chart) => chart.draw());
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    renderer.domElement.addEventListener("mousemove", (event) => {
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+      const hit = raycaster.intersectObject(surface)[0];
+      if (!hit) {
+        tooltip.style.display = "none";
+        return;
+      }
+      const uv = hit.uv;
+      const freq = uv.x * 1000;
+      const row = Math.max(0, Math.min(spectra.length - 1, Math.round((1 - uv.y) * (spectra.length - 1))));
+      const amp = spectra[row][Math.round(uv.x * 511)];
+      const rowTime = waterfallRows[row].timestamp;
+      tooltip.style.display = "block";
+      tooltip.style.left = `${event.offsetX + 16}px`;
+      tooltip.style.top = `${event.offsetY + 16}px`;
+      tooltip.innerHTML = `Frequency: ${freq.toFixed(1)} Hz<br />Timestamp: ${rowTime.toLocaleString("en-GB")}<br />Amplitude: ${amp.toFixed(2)} mm/s`;
+    });
+
+    document.querySelectorAll(".view-btn[data-view]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".view-btn[data-view]").forEach((item) => item.classList.remove("active"));
+        btn.classList.add("active");
+        const view = btn.dataset.view;
+        if (view === "top") {
+          camera.position.set(0, 21, 0.1);
+          controls.target.set(0, 0, 0);
+        } else if (view === "side") {
+          camera.position.set(-15, 5, 0);
+          controls.target.set(0, 1.4, 0);
+        } else if (view === "front") {
+          camera.position.set(0, 4.5, 18);
+          controls.target.set(0, 1.4, 0);
+        } else {
+          camera.position.set(0, 13, 17);
+          controls.target.set(0, 1.5, 0);
+        }
+      });
+    });
+
+    let showMarkers = true;
+    document.getElementById("markerToggle").addEventListener("click", (event) => {
+      showMarkers = !showMarkers;
+      markerGroup.visible = showMarkers;
+      markerLegend.style.display = showMarkers ? "grid" : "none";
+      event.currentTarget.classList.toggle("active", showMarkers);
+      event.currentTarget.textContent = showMarkers ? "Hide Frequency Markers" : "Show Frequency Markers";
+    });
+
+    document.querySelectorAll(".range-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".range-btn").forEach((item) => item.classList.remove("active"));
+        btn.classList.add("active");
+        updateTrendRange(btn.dataset.range);
+      });
+    });
+
+    assetSelect.addEventListener("change", () => {
+      rebuildDataBundle(trendPointCount, `${currentAssetSeed()}-${activeRange}`);
+      resetCharts();
+      updateSnapshot(trendState.labels.length - 1);
+    });
+
+    prevSnapshotBtn.addEventListener("click", () => {
+      if (activeTrendIndex > 0) updateSnapshot(activeTrendIndex - 1);
+    });
+
+    nextSnapshotBtn.addEventListener("click", () => {
+      if (activeTrendIndex < trendState.labels.length - 1) updateSnapshot(activeTrendIndex + 1);
+    });
+
+    saveBaselineBtn.addEventListener("click", () => {
+      savedBaselineSpectrum = cloneSpectrum(trendDetails[activeTrendIndex]);
+      localStorage.setItem(baselineStorageKey(), serializeSpectrum(savedBaselineSpectrum));
+      updateSnapshot(activeTrendIndex);
+    });
+
+    function tickLiveData() {
+      Object.keys(trendState.data).forEach((key) => trendState.data[key].shift());
+      trendState.labels.shift();
+      trendDetails.shift();
+      const nextTime = new Date(trendState.labels[trendState.labels.length - 1].getTime() + 15 * 60 * 1000);
+      liveProgress = Math.min(1, liveProgress + 0.015);
+      const nextSpectrum = generator.generateSingleSpectrum({
+        timestamp: nextTime,
+        pattern: "degrading",
+        faultType: "imbalance",
+        progressFraction: liveProgress,
+        seed: `live-${liveSeed++}`
+      });
+
+      trendState.labels.push(nextTime);
+      trendDetails.push(nextSpectrum);
+      trendState.data.oneX.push(nextSpectrum.indicators["1x"]);
+      trendState.data.twoX.push(nextSpectrum.indicators["2x"]);
+      trendState.data.threeX.push(nextSpectrum.indicators["3x"]);
+      trendState.data.subX.push(nextSpectrum.indicators.subx);
+      trendState.data.multiX.push(nextSpectrum.indicators.multix);
+      trendState.data.iso.push(nextSpectrum.indicators.iso_rms);
+      trendState.data.temp.push(nextSpectrum.indicators.temperature);
+
+      spectra.shift();
+      waterfallRows.shift();
+      spectra.push(Array.from(nextSpectrum.amplitudes));
+      waterfallRows.push(nextSpectrum);
+      buildSurface();
+
+      charts.forEach((chart, index) => {
+        const key = trendMeta[index][0];
+        chart.data.labels = trendState.labels.map((d) => d.toLocaleString("en-GB", { month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit" }));
+        chart.data.datasets[0].data = trendState.data[key];
+        chart.update("none");
+      });
+      updateSnapshot(trendState.labels.length - 1);
+    }
+
+    function setRefresh(interval) {
+      if (refreshHandle) clearInterval(refreshHandle);
+      refreshHandle = interval > 0 ? setInterval(tickLiveData, interval) : null;
+    }
+    document.getElementById("refreshRate").addEventListener("change", (event) => setRefresh(Number(event.target.value)));
+
+    buildSurface();
+    resetCharts();
+    updateSnapshot(trendState.labels.length - 1);
+    setRefresh(5000);
+    animate();
+  </script>
+</body>
+</html>

@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diagnostics - Vibration Monitoring</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg-primary: #0a0e1a; --bg-card: #111827; --bg-card-hover: #1a2235; --border: #1e2a3a;
+      --accent-blue: #3b82f6; --accent-cyan: #06b6d4; --accent-green: #10b981; --accent-orange: #f59e0b; --accent-red: #ef4444;
+      --text-primary: #f1f5f9; --text-secondary: #94a3b8; --text-muted: #475569; --shadow: 0 0 20px rgba(59,130,246,0.08);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-width: 1280px; font-family: Inter, sans-serif; background: radial-gradient(circle at top, #0f1b33, var(--bg-primary) 42%); color: var(--text-primary); }
+    a { color: inherit; text-decoration: none; }
+    button, input, select { font: inherit; }
+    ::-webkit-scrollbar { width: 10px; }
+    ::-webkit-scrollbar-thumb { background: #243147; border-radius: 999px; }
+    .topbar, .footer {
+      display: grid; align-items: center; padding: 0 20px; background: rgba(10,14,26,0.95); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .topbar { position: sticky; top: 0; z-index: 50; grid-template-columns: 320px 1fr auto; height: 56px; }
+    .footer { height: 32px; border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 0; color: var(--text-muted); place-items: center; font-size: 12px; }
+    .brand, .nav-links, .top-actions, .crumbs { display: flex; align-items: center; gap: 14px; }
+    .brand-mark, .avatar { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan)); }
+    .nav-links { justify-content: center; gap: 22px; }
+    .nav-links a { padding: 17px 0; border-bottom: 2px solid transparent; transition: 0.3s ease; }
+    .nav-links a.active, .nav-links a:hover { border-color: var(--accent-blue); }
+    .crumbs, .top-actions { color: var(--text-secondary); font-size: 13px; }
+    .notif { position: relative; padding: 8px; border-radius: 10px; background: rgba(255,255,255,0.03); }
+    .notif::after { content: "3"; position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-red); color: #fff; font-size: 10px; font-weight: 700; }
+    .clock { min-width: 92px; text-align: right; font-variant-numeric: tabular-nums; }
+    .page { padding: 18px; min-height: calc(100vh - 88px); display: grid; grid-template-columns: 1.55fr 1fr; gap: 18px; }
+    .panel { background: rgba(17,24,39,0.92); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+    .panel-head { padding: 16px 18px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .panel-head h1, .panel-head h2 { margin: 0; font-size: 18px; }
+    .panel-head p { margin: 4px 0 0; color: var(--text-secondary); font-size: 12px; }
+    .panel-body { padding: 16px 18px 18px; }
+    .back-link { display: inline-flex; align-items: center; gap: 8px; color: var(--accent-cyan); font-size: 12px; margin-bottom: 12px; }
+    .tabs { display: flex; gap: 10px; margin-bottom: 18px; }
+    .tab-btn {
+      padding: 10px 14px; border-radius: 999px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); color: var(--text-secondary);
+      cursor: pointer; transition: 0.3s ease;
+    }
+    .tab-btn.active, .tab-btn:hover { color: var(--text-primary); background: rgba(59,130,246,0.12); border-color: rgba(59,130,246,0.35); }
+    .tab-view { display: none; }
+    .tab-view.active { display: block; }
+    .indicator-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .indicator-card {
+      border: 1px solid var(--border); border-radius: 12px; background: rgba(255,255,255,0.03); padding: 14px;
+    }
+    .indicator-card h3 { margin: 0 0 4px; font-size: 15px; }
+    .indicator-card p { margin: 0 0 10px; color: var(--text-secondary); font-size: 12px; line-height: 1.5; }
+    .indicator-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    .big-value { font-size: 28px; font-weight: 800; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px; padding: 5px 9px; border-radius: 999px; font-size: 11px; font-weight: 700;
+      border: 1px solid transparent;
+    }
+    .normal { color: #d1fae5; background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.25); }
+    .warning { color: #fde68a; background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.25); }
+    .alarm { color: #fecaca; background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.25); }
+    .mini-chart { height: 100px; margin: 8px 0 12px; }
+    .meta-row { display: flex; justify-content: space-between; gap: 12px; color: var(--text-secondary); font-size: 12px; margin-bottom: 6px; }
+    .ai-note { padding: 10px; border-radius: 10px; background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2); color: var(--text-secondary); font-size: 12px; line-height: 1.45; }
+    .bearing-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .bearing-card, .formula-card, .iso-card, .zone-table { border: 1px solid var(--border); border-radius: 12px; background: rgba(255,255,255,0.03); padding: 14px; }
+    .bearing-card h3, .formula-card h3, .iso-card h3 { margin: 0 0 6px; font-size: 15px; }
+    .bearing-card p, .formula-card p, .iso-card p { margin: 0 0 10px; color: var(--text-secondary); font-size: 12px; }
+    .formula-body { display: none; margin-top: 10px; color: var(--text-secondary); font-size: 12px; line-height: 1.6; }
+    .formula-card.open .formula-body { display: block; }
+    .toggle-formula { padding: 10px 12px; border-radius: 999px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; }
+    .iso-bar {
+      position: relative; height: 22px; border-radius: 999px; overflow: hidden; display: grid; grid-template-columns: 1.4fr 1.4fr 4.3fr 2fr;
+      margin: 14px 0 18px;
+    }
+    .iso-zone { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.9); }
+    .iso-marker {
+      position: absolute; top: -4px; width: 14px; height: 30px; border-radius: 999px; background: #fff; box-shadow: 0 0 18px rgba(255,255,255,0.45);
+      transform: translateX(-50%); animation: markerBob 1.8s infinite ease-in-out;
+    }
+    @keyframes markerBob { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-2px); } }
+    .iso-trend { height: 160px; }
+    .zone-table table, .log-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .zone-table th, .zone-table td, .log-table th, .log-table td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left; vertical-align: top; }
+    .zone-table th, .log-table th { color: var(--text-secondary); font-weight: 600; }
+    .filters { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .filters select, .filters input {
+      width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); color: var(--text-primary);
+    }
+    .log-shell { max-height: calc(100vh - 240px); overflow: auto; }
+    .log-row { cursor: pointer; transition: 0.3s ease; }
+    .log-row:hover { background: rgba(59,130,246,0.08); }
+    .log-details { display: none; background: rgba(255,255,255,0.02); }
+    .log-details.open { display: table-row; }
+    .expanded { padding: 14px 10px !important; }
+    .detail-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 14px; }
+    .detail-note { color: var(--text-secondary); font-size: 12px; line-height: 1.55; }
+    .detail-chart { height: 120px; }
+    @media print {
+      html, body { min-width: auto; background: #fff; color: #111; }
+      .panel, .topbar, .footer { background: #fff !important; box-shadow: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">SE</div>
+      <div>
+        <div style="font-weight:700; font-size:14px;">Vibration Monitoring &amp; Diagnostic System</div>
+        <div style="color:var(--text-secondary); font-size:12px;">Sanggul Emas Sdn Bhd</div>
+      </div>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html">Dashboard</a>
+      <a href="asset-detail.html">Asset Detail</a>
+      <a class="active" href="diagnostics.html">Diagnostics</a>
+      <a href="trends.html">Trends</a>
+    </nav>
+    <div class="top-actions">
+      <div class="crumbs">Dashboard &gt; SEEPEX BN 10-6L - Pump #1 &gt; Diagnostics</div>
+      <div class="notif">🔔</div>
+      <div class="clock" id="clock"></div>
+      <div class="avatar">TH</div>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="panel">
+      <div class="panel-head">
+        <a class="back-link" href="index.html">← Back to Dashboard</a>
+        <h1>Indicator Deep Dive</h1>
+        <p>Vibration pattern interpretation, calculated frequencies, and severity positioning for SEEPEX BN 10-6L - Pump #1.</p>
+      </div>
+      <div class="panel-body">
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="all">All Indicators</button>
+          <button class="tab-btn" data-tab="bearing">Bearing Frequencies</button>
+          <button class="tab-btn" data-tab="iso">ISO 10816</button>
+        </div>
+
+        <div class="tab-view active" id="tab-all">
+          <div class="indicator-grid" id="indicatorGrid"></div>
+        </div>
+
+        <div class="tab-view" id="tab-bearing">
+          <div class="bearing-grid" id="bearingGrid"></div>
+          <div class="formula-card" id="formulaCard" style="margin-top:14px;">
+            <h3>Bearing Frequency Calculation</h3>
+            <p>Rolling element defect frequencies derived for a 6310 bearing at 300 RPM using standard kinematic relationships.</p>
+            <button class="toggle-formula" id="toggleFormula">Show Formula</button>
+            <div class="formula-body">
+              BPFO = (n/2) × fr × (1 - (Bd/Pd) cos φ)<br />
+              BPFI = (n/2) × fr × (1 + (Bd/Pd) cos φ)<br />
+              BSF = (Pd/2Bd) × fr × (1 - ((Bd/Pd) cos φ)^2)<br />
+              FTF = (fr/2) × (1 - (Bd/Pd) cos φ)<br /><br />
+              Assumed geometry: n = 8 rolling elements, shaft speed fr = 5 Hz, contact angle φ ≈ 0°, and bearing geometry ratio chosen to match 6310-series typical values.
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-view" id="tab-iso">
+          <div class="iso-card">
+            <h3>ISO 10816 Severity Position</h3>
+            <p id="isoSummaryText">Current overall RMS is 3.1 mm/s, positioned near the B/C transition for Class I machines.</p>
+            <div class="iso-bar">
+              <div class="iso-zone" style="background:#10b981;">Zone A</div>
+              <div class="iso-zone" style="background:#84cc16;">Zone B</div>
+              <div class="iso-zone" style="background:#f59e0b;">Zone C</div>
+              <div class="iso-zone" style="background:#ef4444;">Zone D</div>
+              <div class="iso-marker" id="isoMarker" style="left:43.6%;"></div>
+            </div>
+            <div class="iso-trend"><canvas id="isoTrend"></canvas></div>
+          </div>
+          <div class="zone-table" style="margin-top:14px;">
+            <table>
+              <thead><tr><th>Zone</th><th>Range</th><th>Interpretation</th><th>Recommended Action</th></tr></thead>
+              <tbody>
+                <tr><td>A</td><td>0-1.4 mm/s</td><td>New or very smooth machine</td><td>Routine monitoring only</td></tr>
+                <tr><td>B</td><td>1.4-2.8 mm/s</td><td>Acceptable for long-term operation</td><td>Monitor trend and process changes</td></tr>
+                <tr><td>C</td><td>2.8-7.1 mm/s</td><td>Unsatisfactory for continuous duty</td><td>Plan corrective maintenance</td></tr>
+                <tr><td>D</td><td>&gt;7.1 mm/s</td><td>Severe vibration risk</td><td>Investigate immediately / controlled shutdown</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>AI Detection Log</h2>
+        <p>Full event history with filterable detection context and action traceability.</p>
+      </div>
+      <div class="panel-body">
+        <div class="filters">
+          <select id="severityFilter">
+            <option value="all">Severity: All</option>
+            <option value="critical">Critical</option>
+            <option value="warning">Warning</option>
+            <option value="info">Info</option>
+          </select>
+          <select id="dateFilter">
+            <option value="30">Last 30 days</option>
+            <option value="14">Last 14 days</option>
+            <option value="7">Last 7 days</option>
+          </select>
+          <select id="indicatorFilter">
+            <option value="all">Indicator: All</option>
+            <option value="1x">1x</option>
+            <option value="2x">2x</option>
+            <option value="iso">ISO</option>
+            <option value="bearing">Bearing</option>
+            <option value="temp">Temperature</option>
+          </select>
+          <select id="sortFilter">
+            <option value="date-desc">Sort: Latest First</option>
+            <option value="date-asc">Sort: Oldest First</option>
+            <option value="severity">Sort: Severity</option>
+          </select>
+        </div>
+        <div class="log-shell">
+          <table class="log-table">
+            <thead>
+              <tr>
+                <th>Date/Time</th>
+                <th>Severity</th>
+                <th>Indicator</th>
+                <th>Value</th>
+                <th>Threshold</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Action Taken</th>
+              </tr>
+            </thead>
+            <tbody id="logTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">CodeX Studio - Custom IoT Solutions | codexstudio.com.my</footer>
+
+  <script src="spectrum-generator.js"></script>
+  <script>
+    const generator = window.SpectrumGenerator.create({
+      machineProfile: "progressive_cavity_pump",
+      ratedRPM: 300,
+      lineFrequency: 50,
+      bearingModel: "6310",
+      frequencyRange: [0, 1000],
+      resolution: 512
+    });
+    const thresholds = generator.getIndicatorThresholds();
+    const bearingFrequencies = generator.getBearingFrequencies();
+    const diagnosticsHistory = generator.generateSpectraRange({
+      startTime: new Date(Date.now() - 29.5 * 24 * 60 * 60 * 1000),
+      endTime: new Date(),
+      interval: 12 * 60 * 60,
+      pattern: "degrading",
+      faultType: "imbalance",
+      seed: "diagnostics"
+    }).spectra;
+    const currentSpectrum = diagnosticsHistory[diagnosticsHistory.length - 1];
+
+    const indicatorGrid = document.getElementById("indicatorGrid");
+    const bearingGrid = document.getElementById("bearingGrid");
+    const logTableBody = document.getElementById("logTableBody");
+    const severityFilter = document.getElementById("severityFilter");
+    const dateFilter = document.getElementById("dateFilter");
+    const indicatorFilter = document.getElementById("indicatorFilter");
+    const sortFilter = document.getElementById("sortFilter");
+
+    function updateClock() {
+      document.getElementById("clock").textContent = new Date().toLocaleTimeString("en-GB", { hour12: false });
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    function statusFromValue(value, warning, alarm) {
+      if (value >= alarm) return "alarm";
+      if (value >= warning) return "warning";
+      return "normal";
+    }
+
+    function recentSeries(indicatorKey, count = 24) {
+      return diagnosticsHistory.slice(-count).map((entry) => entry.indicators[indicatorKey]);
+    }
+
+    function severityText(level) {
+      return level === "critical" ? "🔴 Critical" : level === "warning" ? "⚠️ Warning" : "✅ Info";
+    }
+
+    const indicatorDefinitions = [
+      {
+        key: "1x",
+        name: "1x (Fundamental)",
+        value: currentSpectrum.indicators["1x"],
+        warning: thresholds["1x"][0],
+        alarm: thresholds["1x"][1],
+        desc: "Dominant shaft-rate energy used to track imbalance severity and rotor response.",
+        meaning: currentSpectrum.indicators["1x"] >= thresholds["1x"][0] ? "1x energy is elevated and consistent with a developing imbalance signature." : "1x remains within the expected healthy band.",
+        ai: currentSpectrum.aiNote,
+        status: statusFromValue(currentSpectrum.indicators["1x"], thresholds["1x"][0], thresholds["1x"][1]),
+        series: recentSeries("1x")
+      },
+      {
+        key: "2x",
+        name: "2x (Second Harmonic)",
+        value: currentSpectrum.indicators["2x"],
+        warning: thresholds["2x"][0],
+        alarm: thresholds["2x"][1],
+        desc: "Second harmonic energy screens for coupling misalignment or sympathetic harmonic growth.",
+        meaning: currentSpectrum.indicators["2x"] >= thresholds["2x"][0] ? "2x is elevated enough to keep misalignment under watch." : "2x remains secondary to the main shaft-rate response.",
+        ai: `Current 2x amplitude is ${currentSpectrum.indicators["2x"].toFixed(2)} mm/s with no dominant 2x fault takeover.`,
+        status: statusFromValue(currentSpectrum.indicators["2x"], thresholds["2x"][0], thresholds["2x"][1]),
+        series: recentSeries("2x")
+      },
+      {
+        key: "3x",
+        name: "3x (Third Harmonic)",
+        value: currentSpectrum.indicators["3x"],
+        warning: thresholds["3x"][0],
+        alarm: thresholds["3x"][1],
+        desc: "Higher-order harmonic content highlights looseness or coupling deterioration when it begins to fan out.",
+        meaning: currentSpectrum.indicators["3x"] >= thresholds["3x"][0] ? "3x is rising and suggests the fault family is broadening." : "3x is still subdued relative to 1x.",
+        ai: `3x sits at ${currentSpectrum.indicators["3x"].toFixed(2)} mm/s and remains a secondary indicator.`,
+        status: statusFromValue(currentSpectrum.indicators["3x"], thresholds["3x"][0], thresholds["3x"][1]),
+        series: recentSeries("3x")
+      },
+      {
+        key: "subx",
+        name: "SubX",
+        value: currentSpectrum.indicators.subx,
+        warning: thresholds.subx[0],
+        alarm: thresholds.subx[1],
+        desc: "Sub-synchronous energy is screened for looseness, rubs, and fluid-induced instability.",
+        meaning: currentSpectrum.indicators.subx >= thresholds.subx[0] ? "SubX activity is visible and worth tracking." : "SubX activity remains minor.",
+        ai: `SubX currently measures ${currentSpectrum.indicators.subx.toFixed(2)} mm/s.`,
+        status: statusFromValue(currentSpectrum.indicators.subx, thresholds.subx[0], thresholds.subx[1]),
+        series: recentSeries("subx")
+      },
+      {
+        key: "multix",
+        name: "MultiX",
+        value: currentSpectrum.indicators.multix,
+        warning: thresholds.multix[0],
+        alarm: thresholds.multix[1],
+        desc: "Aggregate high-order harmonic energy shows whether the spectrum is widening into looseness behaviour.",
+        meaning: currentSpectrum.indicators.multix >= thresholds.multix[0] ? "MultiX is elevated and suggests widening harmonic content." : "MultiX remains compact.",
+        ai: `Summed 4x-8x energy is ${currentSpectrum.indicators.multix.toFixed(2)} mm/s.`,
+        status: statusFromValue(currentSpectrum.indicators.multix, thresholds.multix[0], thresholds.multix[1]),
+        series: recentSeries("multix")
+      },
+      {
+        key: "2lf",
+        name: "2LF",
+        value: currentSpectrum.indicators["2lf"],
+        warning: thresholds["2lf"][0],
+        alarm: thresholds["2lf"][1],
+        desc: "Twice line-frequency energy helps separate electrical forcing from mechanical faults.",
+        meaning: currentSpectrum.indicators["2lf"] >= thresholds["2lf"][0] ? "Electrical forcing is present enough to monitor." : "Electrical forcing remains low.",
+        ai: `2LF remains at ${currentSpectrum.indicators["2lf"].toFixed(2)} mm/s, below the dominant mechanical response.`,
+        status: statusFromValue(currentSpectrum.indicators["2lf"], thresholds["2lf"][0], thresholds["2lf"][1]),
+        series: recentSeries("2lf")
+      },
+      {
+        key: "iso_rms",
+        name: "ISO 10816 Overall",
+        value: currentSpectrum.indicators.iso_rms,
+        warning: thresholds.iso_rms[0],
+        alarm: thresholds.iso_rms[1],
+        desc: "Overall RMS velocity severity indicator benchmarked against ISO 10816 screening zones.",
+        meaning: `Current overall severity is in Zone ${currentSpectrum.iso10816Zone}.`,
+        ai: currentSpectrum.aiNote,
+        status: statusFromValue(currentSpectrum.indicators.iso_rms, thresholds.iso_rms[0], thresholds.iso_rms[1]),
+        series: recentSeries("iso_rms")
+      }
+    ];
+
+    const bearingDefinitions = [
+      { name: "BPFO", hz: bearingFrequencies.bpfo, amplitude: currentSpectrum.indicators.bpfo, threshold: thresholds.bpfo[0], note: "Outer race activity tracks the bearing defect family in the generated spectra.", series: recentSeries("bpfo") },
+      { name: "BPFI", hz: bearingFrequencies.bpfi, amplitude: currentSpectrum.indicators.bpfi, threshold: thresholds.bpfi[0], note: "Inner race activity remains visible but secondary to the dominant shaft-rate fault.", series: recentSeries("bpfi") },
+      { name: "BSF", hz: bearingFrequencies.bsf, amplitude: currentSpectrum.indicators.bsf, threshold: thresholds.bsf[0], note: "Ball spin energy stays near the noise floor in this degradation pattern.", series: recentSeries("bsf") },
+      { name: "FTF", hz: bearingFrequencies.ftf, amplitude: currentSpectrum.indicators.ftf, threshold: thresholds.ftf[0], note: "Cage frequency sidebands remain minor and useful as a bearing health cross-check.", series: recentSeries("ftf") }
+    ];
+
+    function classifyIndicator(entry) {
+      if (entry.indicators.iso_rms >= thresholds.iso_rms[0]) return "iso";
+      if (entry.indicators.temperature >= thresholds.temperature[0]) return "temp";
+      if (entry.indicators.bpfi >= thresholds.bpfi[0] || entry.indicators.bpfo >= thresholds.bpfo[0]) return "bearing";
+      if (entry.indicators["2x"] >= thresholds["2x"][0]) return "2x";
+      return "1x";
+    }
+
+    function rowValue(entry, indicator) {
+      if (indicator === "iso") return `${entry.indicators.iso_rms.toFixed(2)} mm/s`;
+      if (indicator === "temp") return `${entry.indicators.temperature.toFixed(1)} C`;
+      if (indicator === "bearing") return `${Math.max(entry.indicators.bpfi, entry.indicators.bpfo).toFixed(2)} mm/s`;
+      if (indicator === "2x") return `${entry.indicators["2x"].toFixed(2)} mm/s`;
+      return `${entry.indicators["1x"].toFixed(2)} mm/s`;
+    }
+
+    function rowThreshold(indicator) {
+      if (indicator === "iso") return `${thresholds.iso_rms[0]} / ${thresholds.iso_rms[1]}`;
+      if (indicator === "temp") return `${thresholds.temperature[0]} / ${thresholds.temperature[1]}`;
+      if (indicator === "bearing") return `${thresholds.bpfi[0]} / ${thresholds.bpfi[1]}`;
+      if (indicator === "2x") return `${thresholds["2x"][0]} / ${thresholds["2x"][1]}`;
+      return `${thresholds["1x"][0]} / ${thresholds["1x"][1]}`;
+    }
+
+    const logRows = diagnosticsHistory.slice(-24).map((entry, index) => {
+      const severity = generator.buildLogSeverity(entry.aiFlag);
+      const indicator = classifyIndicator(entry);
+      const sparkKey = indicator === "iso" ? "iso_rms" : indicator === "temp" ? "temperature" : indicator === "bearing" ? "bpfi" : indicator;
+      return {
+        id: `log-${index}`,
+        date: entry.timestamp,
+        severity,
+        indicator,
+        value: rowValue(entry, indicator),
+        threshold: rowThreshold(indicator),
+        description: entry.aiNote,
+        status: severity === "critical" ? "Acknowledged" : severity === "warning" ? "Active" : "Resolved",
+        action: severity === "critical" ? "Inspection raised, planner notified" : severity === "warning" ? "Continue route monitoring" : "Recorded in health journal",
+        analysis: `AI classified this event as ${severity.toUpperCase()} because ${entry.aiNote.toLowerCase()}`,
+        outcome: severity === "critical" ? "Recommend dynamic balancing and alignment survey within 72 hours." : severity === "warning" ? "No immediate shutdown required; trend watch continues." : "Event closed with no corrective action needed.",
+        spark: diagnosticsHistory.slice(Math.max(0, index), Math.min(diagnosticsHistory.length, index + 12)).map((item) => item.indicators[sparkKey])
+      };
+    }).reverse();
+
+    function renderIndicators() {
+      indicatorGrid.innerHTML = indicatorDefinitions.map((item) => `
+        <div class="indicator-card">
+          <div class="indicator-top">
+            <div>
+              <h3>${item.name}</h3>
+              <p>${item.desc}</p>
+            </div>
+            <span class="badge ${item.status}">${item.status === "warning" ? "Warning" : item.status === "alarm" ? "Alarm" : "Normal"}</span>
+          </div>
+          <div class="big-value">${item.value.toFixed(1)} mm/s</div>
+          <div class="mini-chart"><canvas id="chart-${item.key}"></canvas></div>
+          <div class="meta-row"><span>Thresholds</span><span>Warning ${item.warning} / Alarm ${item.alarm} mm/s</span></div>
+          <div class="meta-row"><span>What it means</span><span>${item.meaning}</span></div>
+          <div class="ai-note">${item.ai}</div>
+        </div>
+      `).join("");
+
+      indicatorDefinitions.forEach((item) => {
+        const labels = item.series.map((_, index) => `${index}h`);
+        new Chart(document.getElementById(`chart-${item.key}`), {
+          type: "line",
+          data: {
+            labels,
+            datasets: [
+              { data: item.series, borderColor: item.status === "warning" ? "#f59e0b" : item.status === "alarm" ? "#ef4444" : "#10b981", pointRadius: 0, borderWidth: 2, fill: false, tension: 0.35 },
+              { data: labels.map(() => item.warning), borderColor: "#f59e0b", borderDash: [6, 4], pointRadius: 0, borderWidth: 1.5 },
+              { data: labels.map(() => item.alarm), borderColor: "#ef4444", borderDash: [6, 4], pointRadius: 0, borderWidth: 1.5 }
+            ]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: { backgroundColor: "#0f172a", titleColor: "#f1f5f9", bodyColor: "#cbd5e1", borderColor: "#1e2a3a", borderWidth: 1, cornerRadius: 8 }
+            },
+            scales: { x: { display: false }, y: { display: false, beginAtZero: true } }
+          }
+        });
+      });
+    }
+
+    function renderBearing() {
+      bearingGrid.innerHTML = bearingDefinitions.map((item) => `
+        <div class="bearing-card">
+          <h3>${item.name} - ${item.hz.toFixed(1)} Hz</h3>
+          <p>${item.note}</p>
+          <div style="font-size:28px; font-weight:800; margin-bottom:8px;">${item.amplitude.toFixed(2)} mm/s</div>
+          <div class="meta-row"><span>Threshold</span><span>${item.threshold.toFixed(2)} mm/s</span></div>
+          <div class="mini-chart"><canvas id="bearing-${item.name}"></canvas></div>
+        </div>
+      `).join("");
+
+      bearingDefinitions.forEach((item) => {
+        new Chart(document.getElementById(`bearing-${item.name}`), {
+          type: "line",
+          data: {
+            labels: item.series.map((_, index) => index),
+            datasets: [
+              { data: item.series, borderColor: "#06b6d4", pointRadius: 0, borderWidth: 2, tension: 0.35 },
+              { data: item.series.map(() => item.threshold), borderColor: "#f59e0b", borderDash: [6, 4], pointRadius: 0, borderWidth: 1.4 }
+            ]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { backgroundColor: "#0f172a", titleColor: "#f1f5f9", bodyColor: "#cbd5e1", borderColor: "#1e2a3a", borderWidth: 1, cornerRadius: 8 } },
+            scales: { x: { display: false }, y: { display: false, beginAtZero: true } }
+          }
+        });
+      });
+    }
+
+    function renderIso() {
+      const points = diagnosticsHistory.filter((_, index) => index % 2 === 0).map((entry) => entry.indicators.iso_rms);
+      const labels = points.map((_, index) => `D-${points.length - 1 - index}`);
+      document.getElementById("isoSummaryText").textContent = `Current overall RMS is ${currentSpectrum.indicators.iso_rms.toFixed(2)} mm/s, positioned in Zone ${currentSpectrum.iso10816Zone} for this machine class.`;
+      document.getElementById("isoMarker").style.left = `${Math.min(95, Math.max(5, (currentSpectrum.indicators.iso_rms / 8.5) * 100))}%`;
+      new Chart(document.getElementById("isoTrend"), {
+        type: "line",
+        data: {
+          labels,
+          datasets: [{
+            data: points,
+            borderColor: "#3b82f6",
+            pointRadius: 0,
+            borderWidth: 2.2,
+            tension: 0.35,
+            fill: { target: "origin", above: "rgba(59,130,246,0.08)" }
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: { backgroundColor: "#0f172a", titleColor: "#f1f5f9", bodyColor: "#cbd5e1", borderColor: "#1e2a3a", borderWidth: 1, cornerRadius: 8 } },
+          scales: {
+            x: { grid: { color: "rgba(255,255,255,0.05)" }, ticks: { color: "#64748b", maxTicksLimit: 8 } },
+            y: { grid: { color: "rgba(255,255,255,0.05)" }, ticks: { color: "#64748b" }, suggestedMin: 0, suggestedMax: 8 }
+          }
+        }
+      });
+    }
+
+    function sparkConfig(canvasId, row) {
+      new Chart(document.getElementById(canvasId), {
+        type: "line",
+        data: { labels: row.spark.map((_, index) => index), datasets: [{ data: row.spark, borderColor: row.severity === "critical" ? "#ef4444" : row.severity === "warning" ? "#f59e0b" : "#10b981", pointRadius: 0, borderWidth: 2, tension: 0.35 }] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: { enabled: false } },
+          scales: { x: { display: false }, y: { display: false } }
+        }
+      });
+    }
+
+    function renderLogs() {
+      const sev = severityFilter.value;
+      const days = Number(dateFilter.value);
+      const indicator = indicatorFilter.value;
+      const sort = sortFilter.value;
+      const cutoff = Date.now() - days * 86400000;
+      const rows = logRows
+        .filter((row) => (sev === "all" || row.severity === sev) && row.date.getTime() >= cutoff && (indicator === "all" || row.indicator === indicator))
+        .sort((a, b) => {
+          if (sort === "date-asc") return a.date - b.date;
+          if (sort === "severity") {
+            const rank = { critical: 0, warning: 1, info: 2 };
+            return rank[a.severity] - rank[b.severity] || b.date - a.date;
+          }
+          return b.date - a.date;
+        });
+
+      logTableBody.innerHTML = rows.map((row) => `
+        <tr class="log-row" data-target="${row.id}">
+          <td>${row.date.toISOString().slice(0, 19).replace("T", " ")}</td>
+          <td class="${row.severity === "critical" ? "alarm" : row.severity === "warning" ? "warning" : "normal"}">${severityText(row.severity)}</td>
+          <td>${row.indicator.toUpperCase()}</td>
+          <td>${row.value}</td>
+          <td>${row.threshold}</td>
+          <td>${row.description}</td>
+          <td>${row.status}</td>
+          <td>${row.action}</td>
+        </tr>
+        <tr class="log-details" id="${row.id}">
+          <td colspan="8" class="expanded">
+            <div class="detail-grid">
+              <div>
+                <div style="font-weight:700; margin-bottom:8px;">Full AI Analysis</div>
+                <div class="detail-note">${row.analysis}</div>
+                <div style="font-weight:700; margin:12px 0 8px;">Recommended Action</div>
+                <div class="detail-note">${row.action}. ${row.outcome}</div>
+                <div style="font-weight:700; margin:12px 0 8px;">Outcome</div>
+                <div class="detail-note">${row.outcome}</div>
+              </div>
+              <div>
+                <div style="font-weight:700; margin-bottom:8px;">Mini Trend at Detection</div>
+                <div class="detail-chart"><canvas id="detail-${row.id}"></canvas></div>
+              </div>
+            </div>
+          </td>
+        </tr>
+      `).join("");
+
+      document.querySelectorAll(".log-row").forEach((rowElement) => {
+        rowElement.addEventListener("click", () => {
+          const detail = document.getElementById(rowElement.dataset.target);
+          const willOpen = !detail.classList.contains("open");
+          document.querySelectorAll(".log-details.open").forEach((item) => item.classList.remove("open"));
+          if (willOpen) {
+            detail.classList.add("open");
+            const row = rows.find((item) => item.id === rowElement.dataset.target);
+            const canvasId = `detail-${rowElement.dataset.target}`;
+            setTimeout(() => {
+              if (!document.getElementById(canvasId).dataset.rendered) {
+                document.getElementById(canvasId).dataset.rendered = "1";
+                sparkConfig(canvasId, row);
+              }
+            }, 0);
+          }
+        });
+      });
+    }
+
+    document.querySelectorAll(".tab-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach((item) => item.classList.remove("active"));
+        document.querySelectorAll(".tab-view").forEach((view) => view.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById(`tab-${btn.dataset.tab}`).classList.add("active");
+      });
+    });
+
+    document.getElementById("toggleFormula").addEventListener("click", () => {
+      document.getElementById("formulaCard").classList.toggle("open");
+    });
+    [severityFilter, dateFilter, indicatorFilter, sortFilter].forEach((el) => el.addEventListener("change", renderLogs));
+
+    renderIndicators();
+    renderBearing();
+    renderIso();
+    renderLogs();
+  </script>
+</body>
+</html>

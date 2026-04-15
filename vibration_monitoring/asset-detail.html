@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Asset Detail - Vibration Monitoring</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg-primary: #0a0e1a; --bg-card: #111827; --bg-card-hover: #1a2235; --border: #1e2a3a;
+      --accent-blue: #3b82f6; --accent-cyan: #06b6d4; --accent-green: #10b981; --accent-orange: #f59e0b; --accent-red: #ef4444;
+      --text-primary: #f1f5f9; --text-secondary: #94a3b8; --text-muted: #475569; --shadow: 0 0 20px rgba(59,130,246,0.08);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-width: 1280px; font-family: Inter, sans-serif; color: var(--text-primary); background: radial-gradient(circle at top, #13213d, var(--bg-primary) 40%); }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-thumb { background: #243147; border-radius: 999px; }
+    .topbar, .footer {
+      display: grid; align-items: center; padding: 0 20px; background: rgba(10,14,26,0.95); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .topbar { position: sticky; top: 0; z-index: 100; grid-template-columns: 320px 1fr auto; height: 56px; }
+    .footer { height: 32px; border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 0; color: var(--text-muted); place-items: center; font-size: 12px; }
+    .brand, .nav-links, .top-actions, .crumbs { display: flex; align-items: center; gap: 14px; }
+    .brand-mark, .avatar { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan)); }
+    .nav-links { justify-content: center; gap: 22px; }
+    .nav-links a { padding: 17px 0; border-bottom: 2px solid transparent; transition: 0.3s ease; }
+    .nav-links a.active, .nav-links a:hover { border-color: var(--accent-blue); }
+    .crumbs, .top-actions { color: var(--text-secondary); font-size: 13px; }
+    .notif { position: relative; padding: 8px; border-radius: 10px; background: rgba(255,255,255,0.03); }
+    .notif::after { content: "3"; position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; display: grid; place-items: center; border-radius: 50%; background: var(--accent-red); color: #fff; font-size: 10px; font-weight: 700; }
+    .clock { min-width: 92px; text-align: right; font-variant-numeric: tabular-nums; }
+    .page { padding: 18px; min-height: calc(100vh - 88px); display: grid; gap: 18px; }
+    .hero {
+      position: relative; min-height: 60vh; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background:
+      linear-gradient(180deg, rgba(14,24,41,0.92), rgba(9,17,29,0.96)); box-shadow: var(--shadow);
+    }
+    #detailScene { position: absolute; inset: 0; }
+    #detailScene canvas { display: block; }
+    .hero-overlay {
+      position: absolute; inset: 0; pointer-events: none; padding: 18px; display: flex; justify-content: space-between; align-items: flex-end;
+    }
+    .back-pill, .control-panel, .tach-panel, .floating-title {
+      pointer-events: auto; background: rgba(10,14,26,0.82); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow);
+    }
+    .floating-title { position: absolute; top: 18px; left: 18px; padding: 12px 14px; display: flex; gap: 14px; align-items: center; }
+    .back-pill { display: inline-flex; align-items: center; gap: 10px; padding: 10px 12px; margin-bottom: 14px; color: var(--text-secondary); }
+    .hero-copy h1 { margin: 0 0 4px; font-size: 26px; }
+    .hero-copy p { margin: 0; color: var(--text-secondary); font-size: 13px; }
+    .tach-panel { padding: 16px; width: 180px; }
+    .tach-ring {
+      width: 112px; height: 112px; margin-bottom: 12px; border-radius: 50%; display: grid; place-items: center;
+      background: conic-gradient(var(--accent-cyan) 250deg, rgba(148,163,184,0.14) 0deg); position: relative;
+      animation: ringSpin 2.6s linear infinite;
+    }
+    .tach-ring::before { content: ""; position: absolute; inset: 10px; border-radius: 50%; background: rgba(10,14,26,0.95); }
+    .tach-ring span { position: relative; z-index: 1; font-weight: 800; font-size: 20px; }
+    @keyframes ringSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .tach-sub { color: var(--text-secondary); font-size: 12px; }
+    .control-panel { display: flex; gap: 10px; padding: 12px; flex-wrap: wrap; max-width: 520px; }
+    .chip {
+      padding: 10px 12px; border-radius: 999px; background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+      color: var(--text-secondary); cursor: pointer; transition: 0.3s ease;
+    }
+    .chip.active, .chip:hover { color: var(--text-primary); background: rgba(59,130,246,0.12); border-color: rgba(59,130,246,0.35); }
+    .hotspot {
+      position: relative; color: var(--text-primary); font-size: 12px; white-space: nowrap; cursor: pointer; transform: translateY(-12px); pointer-events: auto;
+    }
+    .hotspot-dot {
+      width: 12px; height: 12px; border-radius: 50%; background: var(--accent-cyan); border: 2px solid rgba(255,255,255,0.85); margin-right: 8px;
+      box-shadow: 0 0 0 rgba(6,182,212,0.65); display: inline-block; animation: pulse 1.8s infinite;
+    }
+    .hotspot-label { display: inline-flex; align-items: center; background: rgba(10,14,26,0.88); padding: 8px 10px; border-radius: 999px; border: 1px solid var(--border); }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(6,182,212,0.55); }
+      70% { box-shadow: 0 0 0 14px rgba(6,182,212,0); }
+      100% { box-shadow: 0 0 0 0 rgba(6,182,212,0); }
+    }
+    .tooltip-card {
+      position: absolute; min-width: 220px; padding: 12px; border-radius: 10px; background: rgba(10,14,26,0.95);
+      border: 1px solid rgba(59,130,246,0.25); box-shadow: var(--shadow); display: none; z-index: 10;
+    }
+    .tooltip-card h4 { margin: 0 0 6px; font-size: 13px; }
+    .tooltip-card p { margin: 0; color: var(--text-secondary); font-size: 12px; line-height: 1.5; }
+    .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; max-height: 40vh; overflow: auto; }
+    .panel { background: rgba(17,24,39,0.92); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+    .panel-head { padding: 16px 18px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .panel-head h2 { margin: 0; font-size: 16px; }
+    .panel-head p { margin: 4px 0 0; color: var(--text-secondary); font-size: 12px; }
+    .panel-body { padding: 16px 18px 18px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    td { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    td:first-child { color: var(--text-secondary); width: 42%; }
+    .timeline { position: relative; margin: 8px 0 24px 6px; padding-left: 24px; }
+    .timeline::before { content: ""; position: absolute; left: 6px; top: 0; bottom: 0; width: 2px; background: rgba(59,130,246,0.28); }
+    .timeline-item { position: relative; padding-bottom: 18px; }
+    .timeline-item::before { content: ""; position: absolute; left: -22px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent-blue); box-shadow: 0 0 12px rgba(59,130,246,0.6); }
+    .timeline-item strong { display: block; margin-bottom: 4px; }
+    .timeline-item p { margin: 0; color: var(--text-secondary); font-size: 12px; }
+    .sensor-card {
+      padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); margin-bottom: 10px;
+    }
+    .sensor-card h3 { margin: 0 0 8px; font-size: 14px; }
+    .sensor-card p { margin: 0; color: var(--text-secondary); font-size: 12px; line-height: 1.55; }
+    @media print {
+      html, body { min-width: auto; background: #fff; color: #111; }
+      .hero, .panel, .topbar, .footer, .floating-title, .tach-panel, .control-panel { background: #fff !important; box-shadow: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">SE</div>
+      <div>
+        <div style="font-weight:700; font-size:14px;">Vibration Monitoring &amp; Diagnostic System</div>
+        <div style="color:var(--text-secondary); font-size:12px;">Sanggul Emas Sdn Bhd</div>
+      </div>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html">Dashboard</a>
+      <a class="active" href="asset-detail.html">Asset Detail</a>
+      <a href="diagnostics.html">Diagnostics</a>
+      <a href="trends.html">Trends</a>
+    </nav>
+    <div class="top-actions">
+      <div class="crumbs">Dashboard &gt; SEEPEX BN 10-6L - Pump #1 &gt; Asset Detail</div>
+      <div class="notif">🔔</div>
+      <div class="clock" id="clock"></div>
+      <div class="avatar">TH</div>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <div id="detailScene"></div>
+      <div class="floating-title">
+        <div>
+          <a class="back-pill" href="index.html">← Back to Dashboard</a>
+          <div class="hero-copy">
+            <h1>SEEPEX BN 10-6L - Pump #1</h1>
+            <p>Digital twin view with annotation-aware inspection context and rotating equipment telemetry.</p>
+          </div>
+        </div>
+      </div>
+      <div id="tooltip" class="tooltip-card"></div>
+      <div class="hero-overlay">
+        <div class="tach-panel">
+          <div class="tach-ring"><span id="rpmValue">465</span></div>
+          <div id="rpmReadout" style="font-weight:700; margin-bottom:4px;">465.0 RPM</div>
+          <div class="tach-sub">Live rotational speed readout</div>
+        </div>
+        <div class="control-panel">
+          <button class="chip active" id="autoRotateBtn">Auto Rotate</button>
+          <button class="chip" id="wireframeBtn">Show Wireframe</button>
+          <button class="chip active" id="annotationBtn">Show Annotations</button>
+          <button class="chip" id="resetBtn">Reset View</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="bottom-grid">
+      <article class="panel">
+        <div class="panel-head">
+          <h2>Specifications</h2>
+          <p>Mechanical, electrical, and gearbox design data</p>
+        </div>
+        <div class="panel-body">
+          <table>
+            <tbody>
+              <tr><td>Pump Model</td><td>SEEPEX BN 10-6L</td></tr>
+              <tr><td>Serial No.</td><td>SN-2024-08851</td></tr>
+              <tr><td>Rated Flow</td><td>12 m3/h</td></tr>
+              <tr><td>Max Pressure</td><td>6 bar(g)</td></tr>
+              <tr><td>Material</td><td>Stainless 316</td></tr>
+              <tr><td>Stator Material</td><td>NBR</td></tr>
+              <tr><td>Connection Size</td><td>DN50</td></tr>
+              <tr><td>Weight</td><td>412 kg</td></tr>
+              <tr><td>ATEX Cert No.</td><td>SEP-ATX-1-2024-771</td></tr>
+              <tr><td>Motor</td><td>WEG W22 132S - 5.5 kW</td></tr>
+              <tr><td>Voltage</td><td>415V 3φ</td></tr>
+              <tr><td>Current</td><td>11.2 A</td></tr>
+              <tr><td>Insulation Class</td><td>Class F</td></tr>
+              <tr><td>Enclosure</td><td>Ex d IIB T4</td></tr>
+              <tr><td>Gearbox Ratio</td><td>5.2 : 1</td></tr>
+              <tr><td>Lubrication</td><td>Splash lubricated</td></tr>
+              <tr><td>Oil Grade</td><td>ISO VG 220</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-head">
+          <h2>Maintenance History &amp; Sensors</h2>
+          <p>Recent interventions and sensor configuration</p>
+        </div>
+        <div class="panel-body">
+          <div class="timeline">
+            <div class="timeline-item"><strong>2026-03-01</strong><p>Routine inspection - OK</p></div>
+            <div class="timeline-item"><strong>2025-11-20</strong><p>Stator replacement (planned)</p></div>
+            <div class="timeline-item"><strong>2025-08-10</strong><p>Universal joint replacement (unplanned - detected by vibration alert)</p></div>
+            <div class="timeline-item"><strong>2025-05-15</strong><p>Annual service</p></div>
+            <div class="timeline-item"><strong>2024-08-15</strong><p>Commissioning</p></div>
+          </div>
+
+          <div class="sensor-card">
+            <h3>Sensor 1: Monitran MTN/2285ITC</h3>
+            <p>Location: Pump Bearing Housing<br />Output: 4-20 mA (0-25 mm/s RMS)<br />Orientation: Radial Horizontal</p>
+          </div>
+          <div class="sensor-card">
+            <h3>Sensor 2: Temperature RTD</h3>
+            <p>Location: Motor NDE Bearing<br />Output: Pt100<br />Current reading: 62.0 C</p>
+          </div>
+          <div class="sensor-card">
+            <h3>Sensor 3: Axial Vibration Sensor</h3>
+            <p>Reserved placeholder for future deployment.<br />Provisioned channel available on gateway node.</p>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer class="footer">CodeX Studio - Custom IoT Solutions | codexstudio.com.my</footer>
+
+  <script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.module.js";
+    import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/controls/OrbitControls.js";
+    import { CSS2DRenderer, CSS2DObject } from "https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/renderers/CSS2DRenderer.js";
+
+    const sceneWrap = document.getElementById("detailScene");
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.shadowMap.enabled = true;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    sceneWrap.appendChild(renderer.domElement);
+
+    const labelRenderer = new CSS2DRenderer();
+    labelRenderer.domElement.style.position = "absolute";
+    labelRenderer.domElement.style.inset = "0";
+    labelRenderer.domElement.style.pointerEvents = "auto";
+    sceneWrap.appendChild(labelRenderer.domElement);
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.Fog(0x09111d, 12, 26);
+    const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+    camera.position.set(8, 4.5, 7.5);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.target.set(0.8, 0.2, 0);
+    controls.minDistance = 4;
+    controls.maxDistance = 18;
+    controls.enablePan = true;
+
+    const ambient = new THREE.AmbientLight(0x8fb7ff, 0.55);
+    const key = new THREE.DirectionalLight(0xffffff, 1.6);
+    key.position.set(8, 8, 5);
+    key.castShadow = true;
+    const fill = new THREE.DirectionalLight(0x60a5fa, 0.7);
+    fill.position.set(-8, 4, 6);
+    const rim = new THREE.DirectionalLight(0x06b6d4, 0.65);
+    rim.position.set(5, 3, -7);
+    scene.add(ambient, key, fill, rim);
+
+    const floor = new THREE.Mesh(
+      new THREE.PlaneGeometry(34, 34),
+      new THREE.MeshStandardMaterial({ color: 0x08111d, roughness: 0.95, metalness: 0.08 })
+    );
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.y = -1.25;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    const grid = new THREE.GridHelper(24, 24, 0x1e40af, 0x1e293b);
+    grid.position.y = -1.22;
+    scene.add(grid);
+
+    const group = new THREE.Group();
+    scene.add(group);
+
+    const metalDark = new THREE.MeshStandardMaterial({ color: 0x2f3646, metalness: 0.5, roughness: 0.32 });
+    const metalMid = new THREE.MeshStandardMaterial({ color: 0x9ca3af, metalness: 0.45, roughness: 0.3 });
+    const pumpMat = new THREE.MeshStandardMaterial({ color: 0x2563eb, metalness: 0.45, roughness: 0.28, emissive: 0x220000 });
+    const baseMat = new THREE.MeshStandardMaterial({ color: 0x1f2937, metalness: 0.16, roughness: 0.75 });
+    const footMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.2, roughness: 0.62 });
+    const wireMat = new THREE.MeshBasicMaterial({ color: 0x7dd3fc, wireframe: true, transparent: true, opacity: 0.5 });
+
+    const base = new THREE.Mesh(new THREE.BoxGeometry(8.2, 0.45, 3.1), baseMat);
+    base.position.y = -0.95;
+    base.receiveShadow = true;
+    group.add(base);
+
+    const motor = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 3, 40), metalDark);
+    motor.rotation.z = Math.PI / 2;
+    motor.position.set(-2.3, 0.15, 0);
+    motor.castShadow = true;
+    group.add(motor);
+
+    for (let i = -1.2; i <= 1.2; i += 0.24) {
+      const fin = new THREE.Mesh(new THREE.BoxGeometry(0.05, 1.75, 1.95), new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.25, roughness: 0.55 }));
+      fin.position.set(-2.3 + i, 0.15, 0);
+      fin.castShadow = true;
+      group.add(fin);
+    }
+
+    const motorCap = new THREE.Mesh(new THREE.CylinderGeometry(1.02, 1.02, 0.2, 30), metalMid);
+    motorCap.rotation.z = Math.PI / 2;
+    motorCap.position.set(-3.9, 0.15, 0);
+    group.add(motorCap);
+
+    const coupling = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 1.05, 30), metalMid);
+    coupling.rotation.z = Math.PI / 2;
+    coupling.position.set(-0.35, 0.18, 0);
+    coupling.castShadow = true;
+    group.add(coupling);
+
+    const couplingGuard = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 1.38, 24, 1, true), wireMat);
+    couplingGuard.rotation.z = Math.PI / 2;
+    couplingGuard.position.set(-0.35, 0.18, 0);
+    group.add(couplingGuard);
+
+    const pumpBody = new THREE.Mesh(new THREE.CylinderGeometry(0.68, 0.68, 3, 40), pumpMat);
+    pumpBody.rotation.z = Math.PI / 2;
+    pumpBody.position.set(2.1, 0.18, 0);
+    pumpBody.castShadow = true;
+    group.add(pumpBody);
+
+    const discharge = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 1.3, 26), pumpMat);
+    discharge.position.set(3.55, 0.95, 0);
+    discharge.castShadow = true;
+    group.add(discharge);
+
+    const suction = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 1.2, 26), metalMid);
+    suction.rotation.x = Math.PI / 2;
+    suction.position.set(1.15, 0.05, -1.08);
+    suction.castShadow = true;
+    group.add(suction);
+
+    const flangeLeft = new THREE.Mesh(new THREE.TorusGeometry(0.72, 0.08, 18, 54), metalMid);
+    flangeLeft.rotation.y = Math.PI / 2;
+    flangeLeft.position.set(0.7, 0.18, 0);
+    group.add(flangeLeft);
+
+    const flangeRight = flangeLeft.clone();
+    flangeRight.position.x = 3.5;
+    group.add(flangeRight);
+
+    [-3.3, -1.5, 1.2, 3.2].forEach((x, idx) => {
+      const foot = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.32, 0.68), footMat);
+      foot.position.set(x, -0.62, idx % 2 === 0 ? -0.98 : 0.98);
+      foot.castShadow = true;
+      group.add(foot);
+    });
+
+    const boltGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.18, 12);
+    [[0.7, 0.58, 0.58], [0.7, 0.58, -0.58], [3.5, 0.58, 0.58], [3.5, 0.58, -0.58]].forEach(([x, y, z]) => {
+      const bolt = new THREE.Mesh(boltGeo, new THREE.MeshStandardMaterial({ color: 0xcbd5e1, metalness: 0.7, roughness: 0.2 }));
+      bolt.position.set(x, y, z);
+      group.add(bolt);
+    });
+
+    const tooltip = document.getElementById("tooltip");
+    const hotspots = [
+      { title: "Bearing NDE - Temp: 62C", text: "Temperature trend has risen from 55C to 62C over the recent fault-development window. Grease condition and load alignment should be checked.", position: [-3.15, 1.45, 0.2] },
+      { title: "Stator - Installed: 2025-11-20", text: "Current stator has 4,340 operating hours since installation. No abnormal slip or differential pressure excursions have been recorded.", position: [2.3, 1.28, 0.1] },
+      { title: "Universal Joint - Last Inspected: 2026-03-01", text: "Joint lubrication and backlash were acceptable during the last route-based inspection. Elevated 2x remains stable.", position: [-0.25, 1.15, 0.95] },
+      { title: "Foundation - Bolt Torque OK", text: "Mounting bolts remain within torque verification range. No soft-foot condition was reported during the last maintenance intervention.", position: [0.8, -0.15, 1.45] }
+    ];
+
+    function createHotspot(item) {
+      const el = document.createElement("div");
+      el.className = "hotspot";
+      el.innerHTML = `<div class="hotspot-label"><span class="hotspot-dot"></span>${item.title}</div>`;
+      el.addEventListener("mouseenter", () => { tooltip.style.display = "block"; tooltip.innerHTML = `<h4>${item.title}</h4><p>${item.text}</p>`; });
+      el.addEventListener("mouseleave", () => { tooltip.style.display = "none"; });
+      el.addEventListener("click", (event) => {
+        tooltip.style.display = "block";
+        tooltip.style.left = `${event.clientX - 120}px`;
+        tooltip.style.top = `${event.clientY - 120}px`;
+        tooltip.innerHTML = `<h4>${item.title}</h4><p>${item.text}</p>`;
+      });
+      const label = new CSS2DObject(el);
+      label.position.set(...item.position);
+      group.add(label);
+      return label;
+    }
+    const labels = hotspots.map(createHotspot);
+
+    function resize() {
+      const w = sceneWrap.clientWidth;
+      const h = sceneWrap.clientHeight;
+      renderer.setSize(w, h);
+      labelRenderer.setSize(w, h);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    let autoRotate = true;
+    let wireframe = false;
+    let showAnnotations = true;
+
+    const materials = [metalDark, metalMid, pumpMat, baseMat, footMat];
+    const autoRotateBtn = document.getElementById("autoRotateBtn");
+    const wireframeBtn = document.getElementById("wireframeBtn");
+    const annotationBtn = document.getElementById("annotationBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    autoRotateBtn.addEventListener("click", () => {
+      autoRotate = !autoRotate;
+      autoRotateBtn.classList.toggle("active", autoRotate);
+    });
+    wireframeBtn.addEventListener("click", () => {
+      wireframe = !wireframe;
+      wireframeBtn.classList.toggle("active", wireframe);
+      materials.forEach((mat) => { mat.wireframe = wireframe; });
+    });
+    annotationBtn.addEventListener("click", () => {
+      showAnnotations = !showAnnotations;
+      annotationBtn.classList.toggle("active", showAnnotations);
+      labels.forEach((label) => { label.element.style.display = showAnnotations ? "block" : "none"; });
+      if (!showAnnotations) tooltip.style.display = "none";
+    });
+    resetBtn.addEventListener("click", () => {
+      camera.position.set(8, 4.5, 7.5);
+      controls.target.set(0.8, 0.2, 0);
+      controls.update();
+    });
+
+    function updateClock() {
+      document.getElementById("clock").textContent = new Date().toLocaleTimeString("en-GB", { hour12: false });
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    let rpm = 465;
+    function animate() {
+      requestAnimationFrame(animate);
+      if (autoRotate) group.rotation.y += 0.003;
+      pumpMat.emissiveIntensity = 0.45 + Math.sin(performance.now() * 0.004) * 0.1;
+      controls.update();
+      renderer.render(scene, camera);
+      labelRenderer.render(scene, camera);
+    }
+    animate();
+
+    setInterval(() => {
+      rpm = 462 + Math.sin(Date.now() / 2500) * 4 + Math.random() * 2;
+      document.getElementById("rpmValue").textContent = rpm.toFixed(0);
+      document.getElementById("rpmReadout").textContent = `${rpm.toFixed(1)} RPM`;
+    }, 1000);
+
+    document.addEventListener("mousemove", (event) => {
+      if (tooltip.style.display === "block") {
+        tooltip.style.left = `${Math.min(window.innerWidth - 240, event.clientX + 16)}px`;
+        tooltip.style.top = `${Math.max(80, event.clientY - 80)}px`;
+      }
+    });
+  </script>
+</body>
+</html>

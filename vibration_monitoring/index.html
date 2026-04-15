@@ -225,7 +225,6 @@
       <div class="brand-mark">SE</div>
       <div class="brand-title">
         <strong>Vibration Monitoring &amp; Diagnostic System</strong>
-        <span>Sanggul Emas Sdn Bhd</span>
       </div>
     </div>
     <nav class="nav-links">
@@ -404,29 +403,45 @@
     import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/controls/OrbitControls.js";
 
     const assets = [
-      { icon: "🛢️", name: "SEEPEX BN 10-6L - Pump #1", type: "Progressive Cavity Pump", model: "BN 10-6L", serial: "SN-2024-08851", ratedSpeed: "300 RPM", ratedPower: "5.5 kW", installDate: "2023-08-15", status: "Running", prediction: "Watch", updated: "2 min ago", risk: "warning", gateway: "-67 dBm", site: "PPTSB Refinery, Pasir Gudang" },
-      { icon: "⚙️", name: "Howden Diaphragm 12", type: "Compressor", model: "HD-12", serial: "HD-2023-01721", ratedSpeed: "1480 RPM", ratedPower: "18.5 kW", installDate: "2022-03-11", status: "Running", prediction: "Normal", updated: "5 min ago", risk: "normal", gateway: "-72 dBm", site: "PPTSB Refinery, Pasir Gudang" },
-      { icon: "🔩", name: "WEG Motor - Cooling Tower #3", type: "Induction Motor", model: "W22 200L", serial: "WEG-2019-00418", ratedSpeed: "1485 RPM", ratedPower: "30 kW", installDate: "2021-09-20", status: "Running", prediction: "Normal", updated: "1 min ago", risk: "normal", gateway: "-63 dBm", site: "North Utility Block" },
-      { icon: "🌀", name: "SEEPEX BN 17-6L - Pump #2", type: "Progressive Cavity Pump", model: "BN 17-6L", serial: "SN-2022-03214", ratedSpeed: "270 RPM", ratedPower: "7.5 kW", installDate: "2022-05-02", status: "Warning", prediction: "Watch", updated: "9 min ago", risk: "warning", gateway: "-71 dBm", site: "Slop Oil Transfer Area" },
-      { icon: "⚡", name: "ABB Motor - Tank Farm #1", type: "Motor", model: "M3BP 225", serial: "ABB-2020-22319", ratedSpeed: "1490 RPM", ratedPower: "45 kW", installDate: "2020-06-14", status: "Offline", prediction: "Normal", updated: "1 hr ago", risk: "offline", gateway: "-80 dBm", site: "Tank Farm" },
-      { icon: "🧰", name: "Sulzer AHLSTAR A45", type: "Centrifugal Pump", model: "A45", serial: "SU-2021-82101", ratedSpeed: "2950 RPM", ratedPower: "55 kW", installDate: "2021-01-30", status: "Running", prediction: "Normal", updated: "4 min ago", risk: "normal", gateway: "-66 dBm", site: "Chemical Injection Skid" },
-      { icon: "🏭", name: "SEEPEX Metering Skid #4", type: "Dosing Pump", model: "MDP-05", serial: "MDP-2024-00211", ratedSpeed: "125 RPM", ratedPower: "2.2 kW", installDate: "2024-01-19", status: "Running", prediction: "Normal", updated: "3 min ago", risk: "normal", gateway: "-61 dBm", site: "Polymer Make-up Unit" },
-      { icon: "🛠️", name: "Flowserve Pump - Firewater #2", type: "Firewater Pump", model: "FWP-220", serial: "FS-2018-54287", ratedSpeed: "1780 RPM", ratedPower: "90 kW", installDate: "2018-07-09", status: "Tripped", prediction: "Anomaly Detected", updated: "12 min ago", risk: "alarm", gateway: "-74 dBm", site: "Firewater Building" },
-      { icon: "🔄", name: "KSB Booster Set #1", type: "Booster Pump", model: "KSB-BS1", serial: "KSB-2021-12091", ratedSpeed: "1450 RPM", ratedPower: "22 kW", installDate: "2021-11-28", status: "Running", prediction: "Watch", updated: "7 min ago", risk: "warning", gateway: "-68 dBm", site: "Booster Station" }
+      { icon: "🛢️", assetTag: "P-101A", name: "Crude Transfer Pump A", manufacturer: "Sulzer", type: "Centrifugal Pump", model: "AHLSTAR A32-200", serial: "SU-P101A-2022-1845", ratedSpeed: "2960 RPM", ratedPower: "75 kW", installDate: "2022-06-14", maintenanceContract: "Quarterly PdM route", zoneClassification: "Zone 2", status: "Running", prediction: "Normal", risk: "normal", machineProfile: "centrifugal_pump", faultType: "imbalance", pattern: "normal", gateway: "-64 dBm", site: "Crude Distillation Unit", area: "Pump Alley 1", train: "Train A", lastSeenOffsetMinutes: 1, lat: 1.4838, lng: 103.8988, recommendedAction: "Keep the unit on standard route inspection and confirm seal flush pressure remains stable." },
+      { icon: "🧰", assetTag: "P-101B", name: "Crude Transfer Pump B", manufacturer: "Sulzer", type: "Centrifugal Pump", model: "AHLSTAR A32-200", serial: "SU-P101B-2022-1846", ratedSpeed: "2960 RPM", ratedPower: "75 kW", installDate: "2022-06-16", maintenanceContract: "Quarterly PdM route", zoneClassification: "Zone 2", status: "Running", prediction: "Watch", risk: "warning", machineProfile: "centrifugal_pump", faultType: "imbalance", pattern: "degrading", gateway: "-66 dBm", site: "Crude Distillation Unit", area: "Pump Alley 1", train: "Train B", lastSeenOffsetMinutes: 2, lat: 1.4841, lng: 103.8992, recommendedAction: "Plan a balancing check during the next maintenance window and confirm suction recirculation remains within design." },
+      { icon: "🌀", assetTag: "PCP-221", name: "Polymer Dosing Pump 1", manufacturer: "SEEPEX", type: "Progressive Cavity Pump", model: "BN 10-6L", serial: "SP-PCP221-2024-0081", ratedSpeed: "300 RPM", ratedPower: "5.5 kW", installDate: "2024-01-22", maintenanceContract: "Monthly lubrication and condition review", zoneClassification: "Zone 1", status: "Running", prediction: "Watch", risk: "warning", machineProfile: "progressive_cavity_pump", faultType: "universal_joint", pattern: "degrading", gateway: "-62 dBm", site: "Polymer Make-up Unit", area: "Chemical Injection Skid", train: "Dosing Train 1", lastSeenOffsetMinutes: 1, lat: 1.4866, lng: 103.9024, recommendedAction: "Inspect rotor-stator wear and verify the universal joint grease condition before the next batch run." },
+      { icon: "🏭", assetTag: "PCP-222", name: "Polymer Dosing Pump 2", manufacturer: "SEEPEX", type: "Progressive Cavity Pump", model: "BN 17-6L", serial: "SP-PCP222-2023-0147", ratedSpeed: "270 RPM", ratedPower: "7.5 kW", installDate: "2023-03-08", maintenanceContract: "Monthly lubrication and condition review", zoneClassification: "Zone 1", status: "Running", prediction: "Normal", risk: "normal", machineProfile: "progressive_cavity_pump", faultType: "universal_joint", pattern: "normal", gateway: "-61 dBm", site: "Polymer Make-up Unit", area: "Chemical Injection Skid", train: "Dosing Train 2", lastSeenOffsetMinutes: 1, lat: 1.4864, lng: 103.9021, recommendedAction: "Maintain the current route-based inspection and keep spare stator inventory available." },
+      { icon: "⚙️", assetTag: "C-301", name: "Instrument Air Compressor 1", manufacturer: "Howden", type: "Reciprocating Compressor", model: "HD-12", serial: "HD-C301-2023-0172", ratedSpeed: "1480 RPM", ratedPower: "18.5 kW", installDate: "2022-03-11", maintenanceContract: "OEM service every 4000 hours", zoneClassification: "Safe Area", status: "Running", prediction: "Normal", risk: "normal", machineProfile: "compressor", faultType: "misalignment", pattern: "normal", gateway: "-72 dBm", site: "Utility Air House", area: "Compressor Bay A", train: "IA Header A", lastSeenOffsetMinutes: 3, lat: 1.4819, lng: 103.8967, recommendedAction: "Continue routine monitoring and verify intercooler drain performance during operator rounds." },
+      { icon: "🔄", assetTag: "C-302", name: "Instrument Air Compressor 2", manufacturer: "Howden", type: "Reciprocating Compressor", model: "HD-12", serial: "HD-C302-2023-0173", ratedSpeed: "1480 RPM", ratedPower: "18.5 kW", installDate: "2022-03-12", maintenanceContract: "OEM service every 4000 hours", zoneClassification: "Safe Area", status: "Running", prediction: "Watch", risk: "warning", machineProfile: "compressor", faultType: "misalignment", pattern: "degrading", gateway: "-69 dBm", site: "Utility Air House", area: "Compressor Bay B", train: "IA Header B", lastSeenOffsetMinutes: 2, lat: 1.4821, lng: 103.8969, recommendedAction: "Check coupling alignment, hold-down bolt torque, and pulsation bottle supports at the next outage." },
+      { icon: "🔩", assetTag: "M-411", name: "Cooling Tower Fan Motor 3", manufacturer: "WEG", type: "Induction Motor", model: "W22 200L", serial: "WEG-M411-2019-0418", ratedSpeed: "1485 RPM", ratedPower: "30 kW", installDate: "2021-09-20", maintenanceContract: "Semi-annual motor testing", zoneClassification: "Safe Area", status: "Running", prediction: "Normal", risk: "normal", machineProfile: "electric_motor", faultType: "electrical", pattern: "normal", gateway: "-63 dBm", site: "North Utility Block", area: "Cooling Tower Cell 3", train: "CTF-3", lastSeenOffsetMinutes: 1, lat: 1.4888, lng: 103.9042, recommendedAction: "No corrective action required; continue standard route vibration and MCC thermal scan." },
+      { icon: "⚡", assetTag: "M-412", name: "Cooling Tower Fan Motor 4", manufacturer: "ABB", type: "Induction Motor", model: "M3BP 225", serial: "ABB-M412-2020-2231", ratedSpeed: "1490 RPM", ratedPower: "45 kW", installDate: "2020-06-14", maintenanceContract: "Semi-annual motor testing", zoneClassification: "Safe Area", status: "Offline", prediction: "Offline", risk: "offline", machineProfile: "electric_motor", faultType: "electrical", pattern: "normal", gateway: "-80 dBm", site: "North Utility Block", area: "Cooling Tower Cell 4", train: "CTF-4", lastSeenOffsetMinutes: 67, lat: 1.4891, lng: 103.9045, recommendedAction: "Telemetry is unavailable. Check power isolation status and restore the wireless node before diagnosis." },
+      { icon: "🛠️", assetTag: "FWP-502", name: "Firewater Pump 2", manufacturer: "Flowserve", type: "Firewater Pump", model: "FWP-220", serial: "FS-FWP502-2018-5428", ratedSpeed: "1780 RPM", ratedPower: "90 kW", installDate: "2018-07-09", maintenanceContract: "Monthly standby run and PdM review", zoneClassification: "Safe Area", status: "Tripped", prediction: "Anomaly Detected", risk: "alarm", machineProfile: "centrifugal_pump", faultType: "imbalance", pattern: "critical", gateway: "-74 dBm", site: "Firewater Building", area: "Pump House 2", train: "Emergency Service", lastSeenOffsetMinutes: 11, lat: 1.4798, lng: 103.8941, recommendedAction: "Inspect coupling, bearing housing, and pump rotor balance immediately before returning the standby train to service." },
+      { icon: "🌀", assetTag: "VP-110A", name: "Vacuum Pump Skid A", manufacturer: "Busch", type: "Vacuum Pump", model: "R5 RA 1000", serial: "BUS-VP110A-2021-3011", ratedSpeed: "1750 RPM", ratedPower: "55 kW", installDate: "2021-11-02", maintenanceContract: "Quarterly oil analysis and vibration route", zoneClassification: "Safe Area", status: "Running", prediction: "Watch", risk: "warning", machineProfile: "compressor", faultType: "misalignment", pattern: "degrading", gateway: "-70 dBm", site: "Vacuum Package Area", area: "Skid A", train: "Vacuum Header A", lastSeenOffsetMinutes: 4, lat: 1.4809, lng: 103.9072, recommendedAction: "Inspect the flexible coupling and confirm baseplate soft foot after the next production campaign." },
+      { icon: "🛢️", assetTag: "BFP-801", name: "Boiler Feed Pump 1", manufacturer: "KSB", type: "Boiler Feed Pump", model: "HGC 4/8", serial: "KSB-BFP801-2021-1209", ratedSpeed: "2980 RPM", ratedPower: "110 kW", installDate: "2021-11-28", maintenanceContract: "Critical rotating equipment program", zoneClassification: "Safe Area", status: "Running", prediction: "Watch", risk: "warning", machineProfile: "centrifugal_pump", faultType: "bearing_inner_race", pattern: "degrading", gateway: "-68 dBm", site: "Boiler House", area: "Feedwater Bay", train: "BFP Train 1", lastSeenOffsetMinutes: 2, lat: 1.4776, lng: 103.9016, recommendedAction: "Review bearing lubrication quality and prepare an inspection scope for the DE bearing during the next controlled stop." },
+      { icon: "⚙️", assetTag: "GM-610", name: "Granulation Conveyor Gear Motor", manufacturer: "SEW-Eurodrive", type: "Gear Motor", model: "KA97 DRN180", serial: "SEW-GM610-2023-0944", ratedSpeed: "1470 RPM", ratedPower: "22 kW", installDate: "2023-05-19", maintenanceContract: "Monthly route with gearbox oil sampling", zoneClassification: "Safe Area", status: "Running", prediction: "Normal", risk: "normal", machineProfile: "electric_motor", faultType: "electrical", pattern: "normal", gateway: "-65 dBm", site: "Bagging and Loading", area: "Granulation Line 2", train: "Conveyor CV-610", lastSeenOffsetMinutes: 1, lat: 1.4903, lng: 103.9094, recommendedAction: "Maintain the current inspection interval and keep gearbox oil sampling on schedule." }
     ];
 
     const detailFields = [
-      ["Asset Name", "name"],
-      ["Model Number", "model"],
-      ["Serial Number", "serial"],
-      ["Manufacturer", null, "SEEPEX GmbH"],
-      ["Type", "type"],
-      ["Rated Speed", "ratedSpeed"],
-      ["Rated Power", "ratedPower"],
-      ["Installation Date", "installDate"],
-      ["Maintenance Contract", null, "Active (Sanggul Emas)"],
-      ["Zone Classification", null, "ATEX Zone 1"]
+      { label: "Asset Tag", getValue: (asset) => asset.assetTag },
+      { label: "Asset Name", getValue: (asset) => asset.name },
+      { label: "Train / Service", getValue: (asset) => asset.train },
+      { label: "Manufacturer", getValue: (asset) => asset.manufacturer },
+      { label: "Equipment Type", getValue: (asset) => asset.type },
+      { label: "Model Number", getValue: (asset) => asset.model },
+      { label: "Serial Number", getValue: (asset) => asset.serial },
+      { label: "Rated Speed", getValue: (asset) => asset.ratedSpeed },
+      { label: "Rated Power", getValue: (asset) => asset.ratedPower },
+      { label: "Installation Date", getValue: (asset) => asset.installDate },
+      { label: "Maintenance Strategy", getValue: (asset) => asset.maintenanceContract },
+      { label: "Zone Classification", getValue: (asset) => asset.zoneClassification }
     ];
+
+    const faultIndicatorMap = {
+      imbalance: "1x",
+      misalignment: "2x",
+      mechanical_looseness: "multix",
+      bearing_outer_race: "bpfo",
+      bearing_inner_race: "bpfi",
+      electrical: "2lf",
+      pump_cavitation: "iso_rms",
+      universal_joint: "1x"
+    };
 
     function ratedRpmFromText(value) {
       const match = String(value).match(/(\d+(?:\.\d+)?)/);
@@ -434,6 +449,7 @@
     }
 
     function machineProfileForAsset(asset) {
+      if (asset.machineProfile) return asset.machineProfile;
       if (asset.type.toLowerCase().includes("compressor")) return "compressor";
       if (asset.type.toLowerCase().includes("motor")) return "electric_motor";
       if (asset.type.toLowerCase().includes("centrifugal")) return "centrifugal_pump";
@@ -441,6 +457,7 @@
     }
 
     function faultTypeForAsset(asset, profile) {
+      if (asset.faultType) return asset.faultType;
       if (profile === "electric_motor") return "electrical";
       if (asset.name.toLowerCase().includes("seepex")) return "universal_joint";
       if (profile === "compressor") return "misalignment";
@@ -448,6 +465,7 @@
     }
 
     function patternForAsset(asset) {
+      if (asset.pattern) return asset.pattern;
       if (asset.risk === "alarm") return "critical";
       if (asset.risk === "warning") return "degrading";
       return "normal";
@@ -462,7 +480,7 @@
         resolution: 512,
         frequencyRange: [0, 1000]
       });
-      const endTime = new Date();
+      const endTime = new Date(Date.now() - (asset.lastSeenOffsetMinutes || 0) * 60 * 1000);
       const startTime = new Date(endTime.getTime() - (28 - 1) * 6 * 60 * 60 * 1000);
       const history = generator.generateSpectraRange({
         startTime,
@@ -483,6 +501,7 @@
 
     assets.forEach((asset) => {
       asset.telemetry = buildAssetTelemetry(asset);
+      asset.updated = formatRelativeTime(asset.telemetry.current.timestamp);
     });
 
     const sparkState = {};
@@ -508,14 +527,91 @@
 
     function badgeClass(text) {
       const v = text.toLowerCase();
-      return v.includes("running") ? "running" : v.includes("warning") ? "warning" : v.includes("tripped") ? "tripped" : v.includes("offline") ? "offline" : v.includes("watch") ? "watch" : v.includes("anomaly") ? "anomaly" : "normal";
+      return v.includes("running") ? "running" : v.includes("warning") ? "warning" : v.includes("tripped") ? "tripped" : v.includes("offline") || v.includes("lost") ? "offline" : v.includes("watch") ? "watch" : v.includes("anomaly") ? "anomaly" : "normal";
     }
+
+    function formatRelativeTime(timestamp, now = new Date()) {
+      const deltaSeconds = Math.max(0, Math.round((now.getTime() - new Date(timestamp).getTime()) / 1000));
+      if (deltaSeconds < 45) return "Just now";
+      if (deltaSeconds < 3600) return `${Math.round(deltaSeconds / 60)} min ago`;
+      if (deltaSeconds < 86400) return `${Math.round(deltaSeconds / 3600)} hr ago`;
+      return `${Math.round(deltaSeconds / 86400)} day ago`;
+    }
+
+    function searchHaystack(asset) {
+      return [asset.assetTag, asset.name, asset.manufacturer, asset.type, asset.site, asset.area, asset.train].join(" ").toLowerCase();
+    }
+
+    function formatCoordinate(value, positiveLabel, negativeLabel) {
+      const suffix = value >= 0 ? positiveLabel : negativeLabel;
+      return `${Math.abs(value).toFixed(4)}° ${suffix}`;
+    }
+
+    function recommendedActionForAsset(asset, current) {
+      if (asset.status === "Offline") return asset.recommendedAction;
+      if (current.aiFlag === "critical") return `Immediate action required. ${asset.recommendedAction}`;
+      if (current.aiFlag === "warning" || current.aiFlag === "watch") return `Plan intervention at the next safe window. ${asset.recommendedAction}`;
+      return asset.recommendedAction;
+    }
+
+    function syncAssetStateFromTelemetry(asset) {
+      if (asset.status === "Offline") {
+        asset.prediction = "Offline";
+        return;
+      }
+      const { current } = asset.telemetry;
+      asset.prediction = current.aiFlag === "critical" ? "Anomaly Detected" : current.aiFlag ? "Watch" : "Normal";
+      if (current.aiFlag === "critical") asset.risk = "alarm";
+      else if (current.aiFlag) asset.risk = "warning";
+      else asset.risk = "normal";
+      asset.updated = formatRelativeTime(current.timestamp);
+    }
+
+    function nudgeValue(currentValue, drift, min, max, digits = 2) {
+      const next = Math.max(min, Math.min(max, currentValue + drift));
+      return +next.toFixed(digits);
+    }
+
+    function updateAssetTelemetry(asset) {
+      if (asset.status === "Offline") {
+        asset.updated = formatRelativeTime(asset.telemetry.current.timestamp);
+        return;
+      }
+      const telemetry = asset.telemetry;
+      const current = telemetry.current;
+      const thresholds = telemetry.thresholds;
+      const primaryIndicator = faultIndicatorMap[telemetry.faultType] || "1x";
+      const baseDrift = asset.risk === "alarm" ? 0.08 : asset.risk === "warning" ? 0.05 : 0.02;
+
+      ["1x", "2x", "3x", "subx", "multix", "2lf", "bpfi", "iso_rms"].forEach((key) => {
+        const limit = (thresholds[key] || [current.indicators[key], current.indicators[key] * 1.2])[1];
+        const dominance = key === primaryIndicator ? 1.8 : 1;
+        const swing = (Math.random() - 0.38) * baseDrift * dominance;
+        const cap = limit * (asset.risk === "alarm" ? 1.2 : asset.risk === "warning" ? 1.05 : 0.92);
+        current.indicators[key] = nudgeValue(current.indicators[key], swing, 0.03, cap);
+      });
+      current.indicators.temperature = nudgeValue(
+        current.indicators.temperature,
+        (Math.random() - 0.35) * (asset.risk === "alarm" ? 1.3 : asset.risk === "warning" ? 0.7 : 0.3),
+        48,
+        asset.risk === "alarm" ? 84 : 72,
+        1
+      );
+      current.timestamp = new Date(Date.now() - (asset.lastSeenOffsetMinutes || 0) * 60 * 1000);
+      current.iso10816Zone = current.indicators.iso_rms > thresholds.iso_rms[1] ? "D" : current.indicators.iso_rms > thresholds.iso_rms[0] ? "C" : current.indicators.iso_rms > 1.4 ? "B" : "A";
+      telemetry.history[telemetry.history.length - 1] = current;
+      syncAssetStateFromTelemetry(asset);
+    }
+
+    assets.forEach(syncAssetStateFromTelemetry);
 
     function renderAssetList(filter = "") {
       const query = filter.trim().toLowerCase();
       assetList.innerHTML = "";
+      let matches = 0;
       assets.forEach((asset, index) => {
-        if (query && !asset.name.toLowerCase().includes(query)) return;
+        if (query && !searchHaystack(asset).includes(query)) return;
+        matches += 1;
         const item = document.createElement("div");
         item.className = `asset-item ${index === selectedAssetIndex ? "active" : ""}`;
         item.innerHTML = `
@@ -523,6 +619,7 @@
             <div style="font-size:22px;">${asset.icon}</div>
             <div>
               <h3>${asset.name}</h3>
+              <div style="color:var(--text-secondary); font-size:12px; margin-bottom:8px;">${asset.assetTag} · ${asset.type} · ${asset.area}</div>
               <div class="asset-meta">
                 <span class="badge ${badgeClass(asset.status)}">${asset.status}</span>
                 <span class="badge ${badgeClass(asset.prediction)}">${asset.prediction}</span>
@@ -538,6 +635,9 @@
         });
         assetList.appendChild(item);
       });
+      if (!matches) {
+        assetList.innerHTML = `<div class="asset-item"><h3>No assets found</h3><div class="asset-time">Try searching by asset tag, equipment type, manufacturer, or process area.</div></div>`;
+      }
     }
     assetSearch.addEventListener("input", (event) => renderAssetList(event.target.value));
 
@@ -558,20 +658,16 @@
       const recentFlags = telemetry.history.filter((item) => item.aiFlag).slice(-8).reverse();
       const logs = recentFlags.length ? recentFlags : telemetry.history.filter((_, index) => index % 4 === 0).slice(-8).reverse();
 
-      assetDetailGrid.innerHTML = detailFields.map(([label, key, fallback]) => `
+      assetDetailGrid.innerHTML = detailFields.map(({ label, getValue }) => `
         <div class="detail-row">
           <small>${label}</small>
-          <strong>${key ? asset[key] : fallback}</strong>
+          <strong>${getValue(asset)}</strong>
         </div>
       `).join("");
-      document.getElementById("siteLabel").textContent = asset.site;
+      document.getElementById("siteLabel").textContent = `${asset.site} - ${asset.area}`;
       document.getElementById("gatewayLabel").textContent = `4G LoRaWAN - Signal: ${asset.gateway}`;
       document.getElementById("primaryConcern").textContent = current.aiNote;
-      document.getElementById("recommendedAction").textContent = current.aiFlag === "critical"
-        ? "Immediate inspection and controlled shutdown planning are recommended. Validate rotor balance, coupling condition, and bearing health."
-        : current.aiFlag === "warning" || current.aiFlag === "watch"
-          ? "Schedule a vibration survey and balancing check within the next maintenance window."
-          : "Maintain routine surveillance. No immediate intervention is required beyond normal route-based inspection.";
+      document.getElementById("recommendedAction").textContent = recommendedActionForAsset(asset, current);
       document.getElementById("secondaryWatch").textContent = `2x: ${current.indicators["2x"].toFixed(2)} mm/s, BPFI: ${current.indicators.bpfi.toFixed(2)} mm/s, Temperature: ${current.indicators.temperature.toFixed(1)} C.`;
       document.getElementById("analysisUpdated").textContent = `Analysis updated: ${current.timestamp.toISOString().slice(0, 19).replace("T", " ")}`;
       document.getElementById("confidenceValue").textContent = current.aiFlag === "critical" ? "92%" : current.aiFlag ? "87%" : "95%";
@@ -613,7 +709,9 @@
       }).join("");
 
       if (marker) {
-        marker.bindPopup(`<strong>${asset.name}</strong><br/>PPTSB Refinery<br/>1.4833° N, 103.9000° E`);
+        marker.setLatLng([asset.lat, asset.lng]);
+        marker.bindPopup(`<strong>${asset.assetTag} - ${asset.name}</strong><br/>${asset.site}<br/>${asset.area}<br/>${formatCoordinate(asset.lat, "N", "S")}, ${formatCoordinate(asset.lng, "E", "W")}`);
+        map.flyTo([asset.lat, asset.lng], 14, { duration: 0.8 });
       }
       pumpHead.material.emissiveIntensity = asset.risk === "alarm" ? 1.6 : asset.risk === "warning" ? 0.5 : 0.08;
       renderSparklines(telemetry, indicatorCards);
@@ -787,8 +885,8 @@
     initMap();
 
     setInterval(() => {
-      indicators[0].value = +(Math.min(3.9, indicators[0].value + 0.02 + Math.random() * 0.05).toFixed(2));
-      indicators[6].value = +(Math.min(4.2, indicators[6].value + 0.015 + Math.random() * 0.03).toFixed(2));
+      assets.forEach(updateAssetTelemetry);
+      renderAssetList(assetSearch.value);
       renderDetails();
     }, 5000);
 

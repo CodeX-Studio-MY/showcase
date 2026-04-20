@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sanggul Emas - Enterprise Overview</title>
+<style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a0e27; color: white; margin: 0; padding: 20px; overflow-x: hidden; }
+    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e2a4a; padding-bottom: 15px; margin-bottom: 20px; }
+    .title h1 { margin: 0; font-size: 20px; color: #00d4aa; }
+    .title p { margin: 5px 0 0; font-size: 12px; color: #8892b0; text-transform: uppercase; letter-spacing: 1px; }
+    
+    .controls-wrapper { display: flex; gap: 20px; }
+    
+    /* Toggles */
+    .toggle { display: flex; background: #131836; border-radius: 8px; padding: 4px; border: 1px solid #1e2a4a; }
+    .toggle-btn { background: transparent; color: #8892b0; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; transition: all 0.3s; }
+    .toggle-btn.active { background: #00d4aa; color: #0a0e27; }
+    .toggle-btn.sim-active { background: #ff9f43; color: #0a0e27; } /* Special color for simulation mode */
+    
+    /* Grid View */
+    .grid-view { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+    .tank-card { background: #131836; border: 1px solid #1e2a4a; border-radius: 12px; padding: 20px; width: 260px; cursor: pointer; transition: all 0.2s; position: relative; }
+    .tank-card:hover { transform: translateY(-5px); box-shadow: 0 5px 20px rgba(0,0,0,0.5); border-color: #8892b0; }
+    .tank-card.status-alarm { border-color: #ff4757; box-shadow: 0 0 15px rgba(255,71,87,0.2); animation: cardPulse 2s infinite; }
+    .tank-card.status-warning { border-color: #ff9f43; }
+    .tank-card.status-normal { border-color: #00d4aa; }
+    
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #1e2a4a; padding-bottom: 10px; }
+    .card-header h3 { margin: 0; font-size: 18px; }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-normal { background: #00d4aa; }
+    .dot-warning { background: #ff9f43; }
+    .dot-alarm { background: #ff4757; animation: pulseRed 1s infinite; }
+    
+    .metrics { display: flex; justify-content: space-between; }
+    .metric-value { font-size: 24px; font-weight: bold; }
+    .metric-label { font-size: 11px; color: #8892b0; text-transform: uppercase; }
+    
+    /* Map View */
+    .map-view { display: none; height: 700px; background: linear-gradient(135deg, #0d1235, #0a0e27); border: 1px solid #1e2a4a; border-radius: 12px; position: relative; overflow: hidden; }
+    .isometric-floor { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotateX(60deg) rotateZ(45deg); width: 800px; height: 800px; background: repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(30,42,74,0.5) 40px), repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(30,42,74,0.5) 40px); border: 2px solid #1e2a4a; box-shadow: inset 0 0 150px rgba(0,0,0,0.8); }
+    
+    .pin { position: absolute; width: 16px; height: 16px; border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; transition: all 0.3s; z-index: 10; }
+    .pin:hover { transform: translate(-50%, -50%) scale(1.5); z-index: 30; }
+    .pin-normal { background: #00d4aa; box-shadow: 0 0 10px #00d4aa; }
+    .pin-warning { background: #ff9f43; box-shadow: 0 0 15px #ff9f43; }
+    .pin-alarm { background: #ff4757; box-shadow: 0 0 20px #ff4757; animation: pulseRed 1s infinite; z-index: 20; }
+    
+    .pin-label { position: absolute; background: rgba(19,24,54,0.95); padding: 10px; border-radius: 6px; border: 1px solid #1e2a4a; font-size: 12px; pointer-events: none; opacity: 0; transition: opacity 0.2s; white-space: nowrap; z-index: 40; transform: translate(-50%, -120%); }
+    .pin:hover + .pin-label { opacity: 1; }
+
+    @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(255,71,87,0.6); } 70% { box-shadow: 0 0 0 15px rgba(255,71,87,0); } 100% { box-shadow: 0 0 0 0 rgba(255,71,87,0); } }
+    @keyframes cardPulse { 0% { border-color: rgba(255,71,87,0.5); } 50% { border-color: rgba(255,71,87,1); } 100% { border-color: rgba(255,71,87,0.5); } }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <div class="title">
+        <h1>Plant Overview</h1>
+        <p id="subtitle">Sanggul Emas - Live POC Deployment</p>
+    </div>
+    
+    <div class="controls-wrapper">
+        <div class="toggle">
+            <button class="toggle-btn active" id="btn-poc" onclick="setScale('poc')">Live POC (1 Tank)</button>
+            <button class="toggle-btn" id="btn-sim" onclick="setScale('sim')">Simulate Plant (24 Tanks)</button>
+        </div>
+        
+        <div class="toggle">
+            <button class="toggle-btn active" id="btn-grid" onclick="setView('grid')">Grid View</button>
+            <button class="toggle-btn" id="btn-map" onclick="setView('map')">Map View</button>
+        </div>
+    </div>
+</div>
+
+<div class="grid-view" id="gridView">
+    </div>
+
+<div class="map-view" id="mapView">
+    <div class="isometric-floor"></div>
+    <div id="mapPins">
+        </div>
+</div>
+
+<script>
+    let currentScale = 'poc'; // 'poc' or 'sim'
+    
+    // Simulate 24 tanks. Tank 1 is the POC tank. Tank 14 is failing.
+    const tanks = [];
+    for (let i = 1; i <= 24; i++) {
+        let status = 'normal';
+        let level = (Math.random() * 40 + 30).toFixed(1); // 30-70%
+        let vib = (Math.random() * 2 + 1).toFixed(1);     // 1-3 mm/s
+        
+        if (i === 1) {
+            level = 68.0; vib = 2.1; // POC Tank exact data
+        } else if (i === 14) {
+            status = 'alarm'; level = 92.5; vib = 5.8; // The failing tank
+        } else if (i === 8 || i === 3) {
+            status = 'warning'; level = 18.2; vib = 4.1; // Warning tanks
+        }
+
+        tanks.push({
+            id: i,
+            name: `Tank ${i.toString().padStart(2, '0')}`,
+            status: status,
+            level: level,
+            vib: vib,
+            top: `${Math.floor(Math.random() * 60 + 20)}%`, // Random map positions
+            left: `${Math.floor(Math.random() * 60 + 20)}%`
+        });
+    }
+
+    function renderGrid() {
+        const container = document.getElementById('gridView');
+        container.innerHTML = '';
+        
+        const displayTanks = currentScale === 'poc' ? [tanks[0]] : tanks;
+        
+        displayTanks.forEach(tank => {
+            const card = document.createElement('div');
+            card.className = `tank-card status-${tank.status}`;
+            // Links straight to your detailed HTML file
+            card.onclick = () => window.location.href = 'tank_monitoring.html';
+            
+            card.innerHTML = `
+                <div class="card-header">
+                    <h3>${tank.name}</h3>
+                    <div class="status-dot dot-${tank.status}"></div>
+                </div>
+                <div class="metrics">
+                    <div>
+                        <div class="metric-value" style="color: ${tank.status === 'alarm' ? '#ff4757' : (tank.status === 'warning' ? '#ff9f43' : '#00d4aa')}">${tank.level}%</div>
+                        <div class="metric-label">Level</div>
+                    </div>
+                    <div>
+                        <div class="metric-value">${tank.vib} <span style="font-size:12px; color:#8892b0;">mm/s</span></div>
+                        <div class="metric-label">Vibration</div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function renderMap() {
+        const container = document.getElementById('mapPins');
+        container.innerHTML = '';
+        
+        const displayTanks = currentScale === 'poc' ? [tanks[0]] : tanks;
+        
+        // Force Tank 1 to center for POC mode, else use scattered positions
+        displayTanks.forEach(tank => {
+            const wrapper = document.createElement('div');
+            
+            const pinTop = currentScale === 'poc' ? '50%' : tank.top;
+            const pinLeft = currentScale === 'poc' ? '50%' : tank.left;
+
+            wrapper.innerHTML = `
+                <div class="pin pin-${tank.status}" style="top: ${pinTop}; left: ${pinLeft};" onclick="window.location.href='tank_monitoring.html'"></div>
+                <div class="pin-label" style="top: ${pinTop}; left: ${pinLeft};">
+                    <strong style="color: ${tank.status === 'alarm' ? '#ff4757' : '#00d4aa'}">${tank.name}</strong><br>
+                    Level: ${tank.level}% | Vib: ${tank.vib} mm/s
+                </div>
+            `;
+            container.appendChild(wrapper);
+        });
+    }
+
+    function setScale(scale) {
+        currentScale = scale;
+        document.getElementById('btn-poc').classList.toggle('active', scale === 'poc');
+        document.getElementById('btn-sim').classList.toggle('sim-active', scale === 'sim');
+        document.getElementById('subtitle').innerText = scale === 'poc' ? "Sanggul Emas - Live POC Deployment" : "Petronas Pitch - Scaled Enterprise Simulation";
+        
+        renderGrid();
+        renderMap();
+    }
+
+    function setView(view) {
+        document.getElementById('gridView').style.display = view === 'grid' ? 'flex' : 'none';
+        document.getElementById('mapView').style.display = view === 'map' ? 'block' : 'none';
+        
+        document.getElementById('btn-grid').classList.toggle('active', view === 'grid');
+        document.getElementById('btn-map').classList.toggle('active', view === 'map');
+    }
+
+    // Initialize
+    renderGrid();
+    renderMap();
+</script>
+
+</body>
+</html>

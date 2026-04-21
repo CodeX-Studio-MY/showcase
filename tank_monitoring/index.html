@@ -1908,8 +1908,10 @@
                 display: flex;
                 flex-direction: column;
                 overflow: hidden;
+                /* ADD THESE TWO LINES */
+                margin-top: 0 !important; 
+                padding-top: 0 !important;
             }
-
             /* Map fills all remaining space */
             #nationalMapContainer {
                 flex: 1;
@@ -2215,11 +2217,12 @@
             .footer {
                 font-size: 10px;
                 padding: 8px 14px;
+                display: none !important;
             }
 
             /* Map view */
             .map-view {
-                margin: 8px 14px;
+                margin: 0 !important; /* Changed from 8px 14px to 0 to kill the gap */
                 min-height: 300px;
             }
 
@@ -2475,7 +2478,9 @@
 
 
     <!-- Mobile breadcrumb bar (hidden on desktop, shown on mobile via CSS) -->
-    <div id="mobileBreadcrumbBar" style="display:none;"></div>
+    <div id="mobileBreadcrumbBar" style="display: none;">
+        <button class="breadcrumb-btn" onclick="openMobSheet()">Custom Date Range</button>
+    </div>
 
     <!-- ════════════════════════════════════════════════════════════
      SECTION 0: NATIONAL MAP (Malaysia overview)
@@ -4205,19 +4210,21 @@
             document.getElementById('drTrigger').classList.remove('open');
         }
 
-        // ── Mobile bottom sheet ──
-        function openMobSheet() {
-            // Only run the logic if the screen is mobile-sized
-            if (window.innerWidth <= 768) {
-                document.getElementById('mobSheet').classList.add('active');
-                document.getElementById('mobSheetBackdrop').classList.add('active');
-            }
-        }
+// ── Mobile bottom sheet ──
+function openMobSheet() {
+    // Only run the logic if the screen is mobile-sized
+    if (window.innerWidth <= 768) {
+        // Change 'active' to 'open' to match your CSS
+        document.getElementById('mobSheet').classList.add('open');
+        document.getElementById('mobSheetBackdrop').classList.add('open');
+    }
+}
 
-        function closeMobSheet() {
-            document.getElementById('mobSheetBackdrop').classList.remove('open');
-            document.getElementById('mobSheet').classList.remove('open');
-        }
+function closeMobSheet() {
+    // Ensure this also uses 'open'
+    document.getElementById('mobSheet').classList.remove('open');
+    document.getElementById('mobSheetBackdrop').classList.remove('open');
+}
 
         function applyMobSheet() {
             // Copy mobile values back to desktop inputs then reuse existing logic

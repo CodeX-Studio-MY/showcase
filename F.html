@@ -1883,8 +1883,8 @@
             </div>
             <div style="display:flex; align-items:center; gap:12px;">
                 <div class="toggle">
-                    <button class="toggle-btn" onclick="switchView('grid')" id="btnGrid">Grid View</button>
-                    <button class="toggle-btn active" onclick="switchView('map')" id="btnMap">3D Map View</button>
+                    <button class="toggle-btn active" onclick="switchView('grid')" id="btnGrid">Grid View</button>
+                    <button class="toggle-btn" onclick="switchView('map')" id="btnMap">3D Map View</button>
                 </div>
                 <label class="demo-toggle">
                     <input type="checkbox" id="demoCheck" onchange="toggleDemoMode(this.checked)">
@@ -1894,7 +1894,7 @@
         </div>
 
         <!-- Grid View -->
-        <div class="grid-view" id="gridView" style="display:none;">
+        <div class="grid-view" id="gridView" style="display:flex;">
             <!-- Single tank (default) — liquid card -->
             <div id="singleTankGrid" style="display:flex; justify-content:center; align-items:center; flex:1;">
                 <div class="tank-card ok" id="heroCard" style="width:200px; cursor:pointer;">
@@ -1936,7 +1936,7 @@
         </div>
 
         <!-- Map View -->
-        <div class="map-view" id="mapView" style="display:block;">
+        <div class="map-view" id="mapView" style="display:none;">
             <div class="isometric-floor"></div>
             <!-- Single pin (default) -->
             <div id="singlePinGroup">
@@ -2256,7 +2256,6 @@
                         <button class="breadcrumb-btn" onclick="showNational()">Malaysia</button>
                         <span class="breadcrumb-sep">/</span>
                         <span class="breadcrumb-current">Pengerang PIC</span>
-                        <span class="breadcrumb-live">● LIVE</span>
                     </nav>
                     <button class="theme-pill" id="themeToggle" title="Toggle theme" style="margin-left:12px;">
                         <span class="pill-icon" id="themeIcon">&#9788;</span>
@@ -2298,6 +2297,7 @@
             document.getElementById('sectionOverview').style.display = 'flex';
             document.getElementById('sectionDeepdive').style.display = 'none';
             stopAnimate();
+            switchView('grid');
             // Keep dataInterval alive so overview card stays in sync with deep-dive data
             // Only start it fresh if it hasn't been initialised yet (first visit before deep-dive)
             renderBreadcrumb('overview');

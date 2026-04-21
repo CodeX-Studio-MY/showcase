@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>National Asset Overview | CodeX Studio</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #050814; 
+            color: #ffffff;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            overflow: hidden;
+        }
+        .header {
+            position: absolute;
+            top: 30px;
+            left: 40px;
+            z-index: 10;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            color: #00d4aa;
+            letter-spacing: 2px;
+        }
+        .header p {
+            margin: 5px 0 0;
+            font-size: 13px;
+            color: #8892b0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .stats-panel {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            background: rgba(19, 24, 54, 0.7);
+            border: 1px solid #1e2a4a;
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            z-index: 10;
+            display: flex;
+            gap: 30px;
+        }
+        .stat-item h4 {
+            margin: 0;
+            font-size: 11px;
+            color: #8892b0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .stat-item .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-top: 5px;
+        }
+        .stat-item .value.live {
+            color: #00d4aa;
+        }
+        #map-container {
+            width: 100vw;
+            height: 100vh;
+        }
+        /* Loading Text */
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #00d4aa;
+            font-size: 18px;
+            letter-spacing: 2px;
+            z-index: 5;
+        }
+        .hint {
+            position: absolute;
+            bottom: 30px;
+            left: 40px;
+            font-size: 12px;
+            color: #8892b0;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>SANGGUL EMAS</h1>
+        <p>National Asset Monitoring Command Center</p>
+    </div>
+
+    <div class="stats-panel">
+        <div class="stat-item">
+            <h4>Total Tanks</h4>
+            <div class="value">124</div>
+        </div>
+        <div class="stat-item">
+            <h4>Live Active POC</h4>
+            <div class="value live">1</div>
+        </div>
+        <div class="stat-item">
+            <h4>Network Status</h4>
+            <div class="value" style="color: #00d4aa; font-size: 16px; padding-top:8px;">● SECURE</div>
+        </div>
+    </div>
+
+    <div id="loading">Loading Map Data...</div>
+    <div id="map-container"></div>
+
+    <div class="hint">
+        * Click on the glowing Pengerang node to enter site-level Deep Dive.
+    </div>
+
+    <script>
+        var myChart = echarts.init(document.getElementById('map-container'));
+
+        // Fix: Fetch the GeoJSON map data directly from the browser instead of hardcoding it
+        fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries/MYS.geo.json')
+            .then(response => response.json())
+            .then(geojson => {
+                // Hide loading text
+                document.getElementById('loading').style.display = 'none';
+
+                // Register map
+                echarts.registerMap('Malaysia', geojson);
+
+                var option = {
+                    backgroundColor: 'transparent',
+                    tooltip: {
+                        trigger: 'item',
+                        backgroundColor: 'rgba(19, 24, 54, 0.95)',
+                        borderColor: '#00d4aa',
+                        textStyle: { color: '#fff' },
+                        padding: 15,
+                        formatter: function (params) {
+                            if (params.data && params.data.isLive) {
+                                return `<strong style="color:#00d4aa; font-size:16px;">${params.name}</strong><br/><br/>` +
+                                       `<span style="color:#8892b0">Status:</span> 🟢 LIVE POC<br/>` +
+                                       `<span style="color:#8892b0">Active Nodes:</span> 1<br/>` +
+                                       `<span style="color:#8892b0">Lat/Lng:</span> ${params.value[1]}, ${params.value[0]}`;
+                            } else {
+                                return `<strong style="color:#8892b0; font-size:16px;">${params.name}</strong><br/><br/>` +
+                                       `<span style="color:#8892b0">Status:</span> ⚪ Planned Expansion<br/>` +
+                                       `<span style="color:#8892b0">Projected Nodes:</span> ${params.data ? params.data.projected : 'N/A'}`;
+                            }
+                        }
+                    },
+                    geo: {
+                        map: 'Malaysia',
+                        roam: true, 
+                        zoom: 2.2,  
+                        center: [109.0, 3.5], 
+                        label: { show: false },
+                        itemStyle: {
+                            areaColor: '#0a0e27', 
+                            borderColor: '#1e2a4a', 
+                            borderWidth: 1.5,
+                            shadowColor: 'rgba(0, 212, 170, 0.2)', 
+                            shadowBlur: 15
+                        },
+                        emphasis: {
+                            itemStyle: {
+                                areaColor: '#131836', 
+                                borderColor: '#00d4aa'
+                            },
+                            label: { show: false }
+                        }
+                    },
+                    series: [
+                        {
+                            name: 'Live Assets',
+                            type: 'effectScatter',
+                            coordinateSystem: 'geo',
+                            data: [
+                                {
+                                    name: 'Pengerang PIC (Johor)',
+                                    value: [104.16, 1.36], 
+                                    isLive: true,
+                                    itemStyle: { color: '#00d4aa' } 
+                                }
+                            ],
+                            symbolSize: 20,
+                            showEffectOn: 'render',
+                            rippleEffect: {
+                                brushType: 'stroke',
+                                scale: 5, 
+                                period: 3 
+                            },
+                            label: {
+                                show: true,
+                                formatter: '{b}',
+                                position: 'right',
+                                color: '#00d4aa',
+                                fontSize: 14,
+                                fontWeight: 'bold',
+                                textShadowBlur: 5,
+                                textShadowColor: '#00d4aa'
+                            },
+                            itemStyle: {
+                                shadowBlur: 20,
+                                shadowColor: '#00d4aa'
+                            },
+                            zlevel: 1
+                        },
+                        {
+                            name: 'Planned Assets',
+                            type: 'scatter',
+                            coordinateSystem: 'geo',
+                            data: [
+                                {
+                                    name: 'Kertih IPC (Terengganu)',
+                                    value: [103.44, 4.51],
+                                    projected: 45,
+                                    itemStyle: { color: '#8892b0' } 
+                                },
+                                {
+                                    name: 'Bintulu LNG (Sarawak)',
+                                    value: [113.04, 3.17],
+                                    projected: 78,
+                                    itemStyle: { color: '#8892b0' } 
+                                }
+                            ],
+                            symbolSize: 10,
+                            label: {
+                                show: true,
+                                formatter: '{b}',
+                                position: 'right',
+                                color: '#8892b0',
+                                fontSize: 12
+                            },
+                            itemStyle: {
+                                opacity: 0.6
+                            }
+                        }
+                    ]
+                };
+
+                myChart.setOption(option);
+            })
+            .catch(error => {
+                console.error("Error loading map data:", error);
+                document.getElementById('loading').innerText = "Failed to load map data. Please check your internet connection.";
+                document.getElementById('loading').style.color = "#ff4757";
+            });
+
+        window.addEventListener('resize', function() {
+            myChart.resize();
+        });
+
+        myChart.on('click', function (params) {
+            if (params.data && params.data.isLive) {
+                alert('Transitioning to Pengerang Site View & 3D Deep Dive for POC Tank...');
+            }
+        });
+    </script>
+</body>
+</html>

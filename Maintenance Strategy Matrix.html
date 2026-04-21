@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maintenance Strategy Matrix – BD Prospect Board</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+        @page { size: A2 landscape; margin: 6mm; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family:'Inter','Segoe UI',Arial,sans-serif;
+            background:#0f172a; color:#e2e8f0; padding:14px;
+            -webkit-print-color-adjust:exact; print-color-adjust:exact;
+        }
+        .poster { max-width:1800px; margin:0 auto; }
+
+        /* HEADER */
+        .hdr {
+            text-align:center; padding:20px 20px 16px;
+            background:linear-gradient(135deg,#1e293b,#0f172a);
+            border:2px solid #334155; border-radius:14px; margin-bottom:12px;
+            position:relative; overflow:hidden;
+        }
+        .hdr::before { content:''; position:absolute; top:0; left:0; right:0; height:4px;
+            background:linear-gradient(90deg,#ef4444,#f97316,#eab308,#22c55e,#06b6d4); }
+        .hdr h1 { font-size:1.9em; font-weight:900; letter-spacing:2px; text-transform:uppercase;
+            background:linear-gradient(90deg,#f8fafc,#94a3b8);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .hdr .s1 { font-size:0.8em; color:#94a3b8; margin-top:3px; letter-spacing:3px; text-transform:uppercase; }
+        .hdr .s2 { font-size:0.7em; color:#64748b; margin-top:5px; letter-spacing:1px; }
+
+        /* TABLE */
+        .mx { width:100%; border-collapse:separate; border-spacing:4px; }
+        .mx th,.mx td { padding:8px 10px; vertical-align:top; border-radius:8px; }
+
+        /* Col Headers */
+        .ch { text-align:center; padding:14px 6px; font-size:0.92em; font-weight:800;
+            text-transform:uppercase; letter-spacing:1.2px; border:2px solid; }
+        .ch .ic { font-size:1.5em; display:block; margin-bottom:3px; }
+        .ch .st { display:block; font-size:0.58em; font-weight:400; margin-top:3px;
+            letter-spacing:0.5px; text-transform:none; opacity:0.85; }
+        .c1{background:linear-gradient(180deg,#7f1d1d,#451a1a);border-color:#ef4444;color:#fca5a5;}
+        .c2{background:linear-gradient(180deg,#7c2d12,#431a07);border-color:#f97316;color:#fdba74;}
+        .c3{background:linear-gradient(180deg,#713f12,#422006);border-color:#eab308;color:#fde047;}
+        .c4{background:linear-gradient(180deg,#14532d,#052e16);border-color:#22c55e;color:#86efac;}
+        .c5{background:linear-gradient(180deg,#164e63,#083344);border-color:#06b6d4;color:#67e8f9;}
+
+        /* Row Labels */
+        .rl { background:#1e293b; border:1px solid #334155; font-weight:700; font-size:0.72em;
+            text-transform:uppercase; letter-spacing:1px; color:#cbd5e1; min-width:110px;
+            text-align:center; vertical-align:middle; }
+        .rl .ri { font-size:1.15em; display:block; margin-bottom:2px; }
+
+        /* Data Cells */
+        .dc { background:#1e293b; border:1px solid #334155; font-size:0.7em; line-height:1.45; color:#cbd5e1; }
+        .dc strong { color:#f1f5f9; }
+        .b1{border-left:4px solid #ef4444;} .b2{border-left:4px solid #f97316;}
+        .b3{border-left:4px solid #eab308;} .b4{border-left:4px solid #22c55e;}
+        .b5{border-left:4px solid #06b6d4;}
+
+        /* Tags */
+        .tg{display:inline-block;padding:2px 6px;border-radius:5px;font-size:0.73em;font-weight:600;margin:1px;white-space:nowrap;}
+        .t1{background:#7f1d1d;color:#fca5a5;} .t2{background:#7c2d12;color:#fdba74;}
+        .t3{background:#713f12;color:#fde047;} .t4{background:#14532d;color:#86efac;}
+        .t5{background:#164e63;color:#67e8f9;}
+
+        /* Cost Box */
+        .cb{display:inline-block;padding:3px 9px;border-radius:6px;font-weight:800;font-size:1em;margin-top:2px;}
+        .cb1{background:#7f1d1d;color:#fca5a5;} .cb2{background:#7c2d12;color:#fdba74;}
+        .cb3{background:#713f12;color:#fde047;} .cb4{background:#14532d;color:#86efac;}
+        .cb5{background:#164e63;color:#67e8f9;}
+
+        /* Company List */
+        .cl{list-style:none;padding:0;margin:0;}
+        .cl li{padding:2px 0;font-size:0.76em;border-bottom:1px solid #293548;color:#cbd5e1;}
+        .cl li:last-child{border-bottom:none;}
+        .cl li strong{color:#f1f5f9;}
+        .cn{display:inline-block;width:16px;height:16px;line-height:16px;text-align:center;
+            border-radius:50%;font-size:0.6em;font-weight:700;margin-right:3px;color:#fff;}
+        .n1{background:#ef4444;} .n2{background:#f97316;} .n3{background:#eab308;color:#1a1a1a;}
+        .n4{background:#22c55e;} .n5{background:#06b6d4;}
+
+        /* Revenue highlight */
+        .rv{display:inline-block;padding:3px 8px;border-radius:6px;font-weight:800;font-size:0.95em;margin-top:3px;}
+        .rv1{background:#991b1b;color:#fecaca;} .rv2{background:#9a3412;color:#fed7aa;}
+        .rv3{background:#854d0e;color:#fef08a;} .rv4{background:#166534;color:#bbf7d0;}
+        .rv5{background:#155e75;color:#a5f3fc;}
+
+        /* Competitor badge */
+        .comp{display:inline-block;padding:1px 6px;border-radius:4px;font-size:0.7em;
+            font-weight:600;margin:1px;background:#334155;color:#94a3b8;white-space:nowrap;}
+        .comp-intl{background:#1e3a5f;color:#7dd3fc;}
+        .comp-local{background:#3b1f2b;color:#fda4af;}
+
+        /* Section Label */
+        .sl{font-size:0.65em;text-transform:uppercase;letter-spacing:2px;color:#475569;
+            text-align:center;padding:5px;font-weight:700;}
+
+        /* Maturity Bar */
+        .mb{margin-top:12px;padding:12px 20px;background:#1e293b;border:1px solid #334155;
+            border-radius:10px;text-align:center;}
+        .mb h3{font-size:0.8em;text-transform:uppercase;letter-spacing:2px;color:#94a3b8;margin-bottom:8px;}
+        .af{display:flex;align-items:center;justify-content:center;gap:0;}
+        .as{padding:8px 20px;font-weight:700;font-size:0.78em;text-transform:uppercase;letter-spacing:1px;
+            clip-path:polygon(0% 0%,85% 0%,100% 50%,85% 100%,0% 100%,15% 50%);min-width:165px;text-align:center;}
+        .as:first-child{clip-path:polygon(0% 0%,85% 0%,100% 50%,85% 100%,0% 100%);padding-left:14px;}
+        .s1{background:#ef4444;color:#fff;} .s2{background:#f97316;color:#fff;}
+        .s3{background:#eab308;color:#1a1a1a;} .s4{background:#22c55e;color:#fff;}
+        .s5{background:#06b6d4;color:#fff;}
+        .al{display:block;font-size:0.65em;font-weight:400;margin-top:2px;}
+
+        /* Footer */
+        .ft{margin-top:10px;text-align:center;font-size:0.65em;color:#475569;letter-spacing:1px;}
+
+        @media print { body{padding:4mm;} .poster{max-width:100%;} }
+    </style>
+</head>
+<body>
+<div class="poster">
+
+    <!-- ══ HEADER ══ -->
+    <div class="hdr">
+        <h1>Maintenance Strategy Matrix</h1>
+        <div class="s2">🎯 Business Development Prospect Board &nbsp;|&nbsp; 💰 Revenue Estimates &nbsp;|&nbsp; ⚔️ Competitor Landscape &nbsp;|&nbsp; All values in MYR (1 USD ≈ RM 4.00)</div>
+    </div>
+
+    <!-- ══ MAIN TABLE ══ -->
+    <table class="mx">
+        <thead>
+            <tr>
+                <th class="rl" style="background:#0f172a;border:none;"></th>
+                <th class="ch c1"><span class="ic">🔧</span>Reactive<span class="st">"Fix after it breaks"</span></th>
+                <th class="ch c2"><span class="ic">📅</span>Preventive<span class="st">"Fix on a schedule"</span></th>
+                <th class="ch c3"><span class="ic">📊</span>Condition-Based<span class="st">"Fix when data says so"</span></th>
+                <th class="ch c4"><span class="ic">🤖</span>Predictive<span class="st">"Fix before it breaks"</span></th>
+                <th class="ch c5"><span class="ic">🧠</span>Prescriptive<span class="st">"Fix in the best way"</span></th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <!-- ROW: Definition -->
+            <tr>
+                <td class="rl"><span class="ri">📖</span>Definition</td>
+                <td class="dc b1">No action until equipment <strong>fails</strong>. Purely responsive — repair/replace after breakdown.</td>
+                <td class="dc b2">Maintenance at <strong>fixed intervals</strong> (time/cycles) regardless of condition. OEM-driven.</td>
+                <td class="dc b3">Triggered when <strong>real-time sensor data</strong> crosses defined thresholds.</td>
+                <td class="dc b4"><strong>Historical data + ML/AI</strong> forecasts when failure will occur. Act just before.</td>
+                <td class="dc b5">AI predicts failure <strong>AND recommends optimal action</strong> — what, when, how.</td>
+            </tr>
+
+            <!-- ROW: Industries -->
+            <tr>
+                <td class="rl"><span class="ri">🏭</span>Target<br>Industries</td>
+                <td class="dc b1">
+                    <span class="tg t1">Small Workshops</span><span class="tg t1">Retail / F&B</span><span class="tg t1">Small Offices</span><span class="tg t1">Residential</span><span class="tg t1">Non-critical Assets</span>
+                </td>
+                <td class="dc b2">
+                    <span class="tg t2">Manufacturing</span><span class="tg t2">Facility Mgmt</span><span class="tg t2">Fleet / Logistics</span><span class="tg t2">Healthcare</span><span class="tg t2">FMCG / F&B</span>
+                </td>
+                <td class="dc b3">
+                    <span class="tg t3">Plantation / Agri</span><span class="tg t3">Water Utilities</span><span class="tg t3">Mining / Cement</span><span class="tg t3">Food Processing</span><span class="tg t3">Heavy Machinery</span>
+                </td>
+                <td class="dc b4">
+                    <span class="tg t4">Oil & Gas</span><span class="tg t4">Automotive Mfg</span><span class="tg t4">Rail / Transit</span><span class="tg t4">Power Generation</span><span class="tg t4">Renewable Energy</span>
+                </td>
+                <td class="dc b5">
+                    <span class="tg t5">Aerospace / MRO</span><span class="tg t5">Nuclear Energy</span><span class="tg t5">Semiconductor</span><span class="tg t5">Petrochemical</span><span class="tg t5">Defence</span>
+                </td>
+            </tr>
+
+            <!-- ROW: Cost/Month MYR -->
+            <tr>
+                <td class="rl"><span class="ri">💰</span>Client's<br>Maint. Cost<br>/Month<br><small style="font-weight:400;font-size:0.68em;color:#64748b;">(per facility)</small></td>
+                <td class="dc b1" style="text-align:center;">
+                    <div>Low upfront,<br><strong>high long-term</strong></div>
+                    <div class="cb cb1">RM 8K – 60K</div>
+                    <div style="margin-top:4px;font-size:0.75em;color:#94a3b8;">3–5× more over asset lifetime due to emergency cost</div>
+                </td>
+                <td class="dc b2" style="text-align:center;">
+                    <div>Moderate &<br><strong>predictable</strong></div>
+                    <div class="cb cb2">RM 20K – 100K</div>
+                    <div style="margin-top:4px;font-size:0.75em;color:#94a3b8;">12–18% savings vs reactive (DOE)</div>
+                </td>
+                <td class="dc b3" style="text-align:center;">
+                    <div>Moderate-High,<br><strong>sensor investment</strong></div>
+                    <div class="cb cb3">RM 40K – 200K</div>
+                    <div style="margin-top:4px;font-size:0.75em;color:#94a3b8;">Sensor RM2K–20K/asset. Cuts PM waste by 25%</div>
+                </td>
+                <td class="dc b4" style="text-align:center;">
+                    <div>High,<br><strong>ROI-driven</strong></div>
+                    <div class="cb cb4">RM 100K – 400K</div>
+                    <div style="margin-top:4px;font-size:0.75em;color:#94a3b8;">Saves 8–12% over PM, 40% over reactive</div>
+                </td>
+                <td class="dc b5" style="text-align:center;">
+                    <div>Very High,<br><strong>mission-critical</strong></div>
+                    <div class="cb cb5">RM 200K – 2M+</div>
+                    <div style="margin-top:4px;font-size:0.75em;color:#94a3b8;">AI, digital twins. Justified when downtime >RM400K/hr</div>
+                </td>
+            </tr>
+
+            <!-- ROW: Tech Required -->
+            <tr>
+                <td class="rl"><span class="ri">📡</span>Data &<br>Tech</td>
+                <td class="dc b1"><strong>None.</strong><br>Logbook, paper records, basic spare parts.</td>
+                <td class="dc b2"><strong>Minimal.</strong><br>CMMS, OEM manuals, work order tracking.</td>
+                <td class="dc b3"><strong>Moderate.</strong><br>IoT sensors, SCADA, threshold alerting.</td>
+                <td class="dc b4"><strong>High.</strong><br>2+ yr historical data, ML models, cloud, ERP integration.</td>
+                <td class="dc b5"><strong>Very High.</strong><br>Digital twins, AI/ML, simulation, decision engines.</td>
+            </tr>
+
+            <!-- ROW: Trade-offs -->
+            <tr>
+                <td class="rl"><span class="ri">⚖️</span>Trade-<br>offs</td>
+                <td class="dc b1">
+                    <strong style="color:#86efac;">✓</strong> Zero upfront<br>
+                    <strong style="color:#fca5a5;">✗</strong> Highest long-term<br>
+                    <strong style="color:#fca5a5;">✗</strong> Unplanned downtime<br>
+                    <strong style="color:#fca5a5;">✗</strong> Safety risk
+                </td>
+                <td class="dc b2">
+                    <strong style="color:#86efac;">✓</strong> Predictable budget<br>
+                    <strong style="color:#86efac;">✓</strong> Extends asset life<br>
+                    <strong style="color:#fca5a5;">✗</strong> Over-maintenance<br>
+                    <strong style="color:#fca5a5;">✗</strong> Wastes good parts
+                </td>
+                <td class="dc b3">
+                    <strong style="color:#86efac;">✓</strong> Maintain when needed<br>
+                    <strong style="color:#86efac;">✓</strong> Reduces waste<br>
+                    <strong style="color:#fca5a5;">✗</strong> Sensor cost<br>
+                    <strong style="color:#fca5a5;">✗</strong> Skilled staff needed
+                </td>
+                <td class="dc b4">
+                    <strong style="color:#86efac;">✓</strong> Minimal downtime<br>
+                    <strong style="color:#86efac;">✓</strong> Best cost/benefit<br>
+                    <strong style="color:#fca5a5;">✗</strong> Needs mature data<br>
+                    <strong style="color:#fca5a5;">✗</strong> Complex setup
+                </td>
+                <td class="dc b5">
+                    <strong style="color:#86efac;">✓</strong> Optimal decisions<br>
+                    <strong style="color:#86efac;">✓</strong> Full automation<br>
+                    <strong style="color:#fca5a5;">✗</strong> Highest cost<br>
+                    <strong style="color:#fca5a5;">✗</strong> Very complex
+                </td>
+            </tr>
+
+            <!-- ── DIVIDER: PROSPECTS ── -->
+            <tr><td colspan="6" class="sl">🎯 &nbsp; POTENTIAL CLIENTS TO APPROACH &nbsp;—&nbsp; MALAYSIA & REGIONAL &nbsp; 🎯</td></tr>
+
+            <!-- ROW: 10 Prospect Clients -->
+            <tr>
+                <td class="rl"><span class="ri">🎯</span>10 Prospect<br>Clients</td>
+                <td class="dc b1">
+                    <ol class="cl">
+                        <li><span class="cn n1">1</span> <strong>Mydin</strong> – retail chain</li>
+                        <li><span class="cn n1">2</span> <strong>Secret Recipe</strong> – F&B</li>
+                        <li><span class="cn n1">3</span> <strong>MR D.I.Y.</strong> – retail stores</li>
+                        <li><span class="cn n1">4</span> <strong>Old Town Coffee</strong> – QSR</li>
+                        <li><span class="cn n1">5</span> <strong>Bata Malaysia</strong> – retail</li>
+                        <li><span class="cn n1">6</span> <strong>99 Speedmart</strong> – chain</li>
+                        <li><span class="cn n1">7</span> <strong>Marrybrown</strong> – QSR</li>
+                        <li><span class="cn n1">8</span> <strong>Strata mgmt cos.</strong></li>
+                        <li><span class="cn n1">9</span> <strong>Local print shops</strong></li>
+                        <li><span class="cn n1">10</span> <strong>Small hotel groups</strong></li>
+                    </ol>
+                </td>
+                <td class="dc b2">
+                    <ol class="cl">
+                        <li><span class="cn n2">1</span> <strong>Nestlé Malaysia</strong></li>
+                        <li><span class="cn n2">2</span> <strong>Dutch Lady</strong></li>
+                        <li><span class="cn n2">3</span> <strong>Fraser & Neave</strong></li>
+                        <li><span class="cn n2">4</span> <strong>Top Glove</strong></li>
+                        <li><span class="cn n2">5</span> <strong>UEM Edgenta</strong></li>
+                        <li><span class="cn n2">6</span> <strong>GFM Services</strong></li>
+                        <li><span class="cn n2">7</span> <strong>DHL Malaysia</strong></li>
+                        <li><span class="cn n2">8</span> <strong>Pos Malaysia</strong></li>
+                        <li><span class="cn n2">9</span> <strong>Panasonic MY</strong></li>
+                        <li><span class="cn n2">10</span> <strong>Ajinomoto MY</strong></li>
+                    </ol>
+                </td>
+                <td class="dc b3">
+                    <ol class="cl">
+                        <li><span class="cn n3">1</span> <strong>Sime Darby Plant.</strong></li>
+                        <li><span class="cn n3">2</span> <strong>FGV Holdings</strong></li>
+                        <li><span class="cn n3">3</span> <strong>KL Kepong (KLK)</strong></li>
+                        <li><span class="cn n3">4</span> <strong>IOI Corporation</strong></li>
+                        <li><span class="cn n3">5</span> <strong>Malayan Cement</strong></li>
+                        <li><span class="cn n3">6</span> <strong>YTL Cement</strong></li>
+                        <li><span class="cn n3">7</span> <strong>Cahya Mata Swk</strong></li>
+                        <li><span class="cn n3">8</span> <strong>Ranhill SAJ</strong></li>
+                        <li><span class="cn n3">9</span> <strong>Air Selangor</strong></li>
+                        <li><span class="cn n3">10</span> <strong>Mamee-Dbl Decker</strong></li>
+                    </ol>
+                </td>
+                <td class="dc b4">
+                    <ol class="cl">
+                        <li><span class="cn n4">1</span> <strong>PETRONAS</strong></li>
+                        <li><span class="cn n4">2</span> <strong>TNB</strong></li>
+                        <li><span class="cn n4">3</span> <strong>Malakoff Corp</strong></li>
+                        <li><span class="cn n4">4</span> <strong>Proton</strong></li>
+                        <li><span class="cn n4">5</span> <strong>Perodua</strong></li>
+                        <li><span class="cn n4">6</span> <strong>Shell Malaysia</strong></li>
+                        <li><span class="cn n4">7</span> <strong>ExxonMobil MY</strong></li>
+                        <li><span class="cn n4">8</span> <strong>Sarawak Energy</strong></li>
+                        <li><span class="cn n4">9</span> <strong>Prasarana</strong></li>
+                        <li><span class="cn n4">10</span> <strong>MISC Berhad</strong></li>
+                    </ol>
+                </td>
+                <td class="dc b5">
+                    <ol class="cl">
+                        <li><span class="cn n5">1</span> <strong>Intel Penang/Kulim</strong></li>
+                        <li><span class="cn n5">2</span> <strong>Infineon MY</strong></li>
+                        <li><span class="cn n5">3</span> <strong>Texas Instruments</strong></li>
+                        <li><span class="cn n5">4</span> <strong>Micron Muar</strong></li>
+                        <li><span class="cn n5">5</span> <strong>Bosch Semicon</strong></li>
+                        <li><span class="cn n5">6</span> <strong>PETRONAS PFLNG</strong></li>
+                        <li><span class="cn n5">7</span> <strong>Airbus Heli MY</strong></li>
+                        <li><span class="cn n5">8</span> <strong>SilTerra</strong></li>
+                        <li><span class="cn n5">9</span> <strong>Lam Research MY</strong></li>
+                        <li><span class="cn n5">10</span> <strong>CTRM Aero</strong></li>
+                    </ol>
+                </td>
+            </tr>
+
+            <!-- ROW: Est. Revenue Per Client -->
+            <tr>
+                <td class="rl"><span class="ri">💵</span>Est. Revenue<br>Per Client<br><small style="font-weight:400;font-size:0.68em;color:#64748b;">(Annual<br>Contract Value)</small></td>
+                <td class="dc b1" style="text-align:center;">
+                    <div class="rv rv1">RM 12K – 60K<br><small>/year</small></div>
+                    <div style="margin-top:5px;font-size:0.75em;color:#94a3b8;">
+                        Basic repair retainer, call-out fees, spare parts supply. <strong>Low margin</strong>, high volume play.
+                    </div>
+                    <div style="margin-top:3px;font-size:0.7em;color:#64748b;">
+                        ~RM 1K–5K/month per outlet
+                    </div>
+                </td>
+                <td class="dc b2" style="text-align:center;">
+                    <div class="rv rv2">RM 60K – 300K<br><small>/year</small></div>
+                    <div style="margin-top:5px;font-size:0.75em;color:#94a3b8;">
+                        CMMS license + PM scheduling + annual service contract. <strong>Recurring revenue</strong>.
+                    </div>
+                    <div style="margin-top:3px;font-size:0.7em;color:#64748b;">
+                        ~RM 5K–25K/month per facility
+                    </div>
+                </td>
+                <td class="dc b3" style="text-align:center;">
+                    <div class="rv rv3">RM 200K – 800K<br><small>/year</small></div>
+                    <div style="margin-top:5px;font-size:0.75em;color:#94a3b8;">
+                        Sensor supply + install + monitoring dashboard + advisory. <strong>Sticky contract</strong>.
+                    </div>
+                    <div style="margin-top:3px;font-size:0.7em;color:#64748b;">
+                        ~RM 15K–65K/month per site
+                    </div>
+                </td>
+                <td class="dc b4" style="text-align:center;">
+                    <div class="rv rv4">RM 500K – 2M<br><small>/year</small></div>
+                    <div style="margin-top:5px;font-size:0.75em;color:#94a3b8;">
+                        Platform license + ML models + integration + managed service. <strong>High-value, multi-year</strong>.
+                    </div>
+                    <div style="margin-top:3px;font-size:0.7em;color:#64748b;">
+                        ~RM 40K–170K/month per plant
+                    </div>
+                </td>
+                <td class="dc b5" style="text-align:center;">
+                    <div class="rv rv5">RM 2M – 10M+<br><small>/year</small></div>
+                    <div style="margin-top:5px;font-size:0.75em;color:#94a3b8;">
+                        Full AI suite + digital twin + prescriptive engine + dedicated team. <strong>Enterprise deal</strong>.
+                    </div>
+                    <div style="margin-top:3px;font-size:0.7em;color:#64748b;">
+                        ~RM 170K–850K+/month per fab/plant
+                    </div>
+                </td>
+            </tr>
+
+            <!-- ── DIVIDER: COMPETITORS ── -->
+            <tr><td colspan="6" class="sl">⚔️ &nbsp; COMPETITORS & REAL INDUSTRY PLAYERS &nbsp;—&nbsp; KNOW WHO YOU'RE UP AGAINST &nbsp; ⚔️</td></tr>
+
+            <!-- ROW: Competitors - International -->
+            <tr>
+                <td class="rl"><span class="ri">🌍</span>Competitors<br><small style="font-weight:400;font-size:0.75em;color:#7dd3fc;">International</small></td>
+                <td class="dc b1">
+                    <span class="comp comp-intl">General handyman platforms</span>
+                    <span class="comp comp-intl">Local contractors</span>
+                    <span class="comp comp-intl">OEM warranty services</span>
+                    <span class="comp comp-intl">Kaodim / Recommend.my</span>
+                    <div style="margin-top:6px;font-size:0.72em;color:#94a3b8;">
+                        <strong>Low barrier.</strong> Anyone can offer reactive repair. Compete on <em>speed & trust</em>.
+                    </div>
+                </td>
+                <td class="dc b2">
+                    <span class="comp comp-intl">IBM Maximo (lite)</span>
+                    <span class="comp comp-intl">SAP PM Module</span>
+                    <span class="comp comp-intl">UpKeep</span>
+                    <span class="comp comp-intl">Limble CMMS</span>
+                    <span class="comp comp-intl">MaintainX</span>
+                    <span class="comp comp-intl">Brightly (Siemens)</span>
+                    <div style="margin-top:6px;font-size:0.72em;color:#94a3b8;">
+                        <strong>Crowded market.</strong> Compete on <em>local support & Bahasa UI</em>.
+                    </div>
+                </td>
+                <td class="dc b3">
+                    <span class="comp comp-intl">SKF Remote Diag.</span>
+                    <span class="comp comp-intl">Emerson AMS</span>
+                    <span class="comp comp-intl">Honeywell Forge</span>
+                    <span class="comp comp-intl">ABB Ability</span>
+                    <span class="comp comp-intl">Augury</span>
+                    <span class="comp comp-intl">Fluke Connect</span>
+                    <div style="margin-top:6px;font-size:0.72em;color:#94a3b8;">
+                        <strong>Hardware-led.</strong> Compete on <em>integration & analytics layer</em>.
+                    </div>
+                </td>
+                <td class="dc b4">
+                    <span class="comp comp-intl">Siemens Senseye</span>
+                    <span class="comp comp-intl">GE Digital Predix</span>
+                    <span class="comp comp-intl">IBM Maximo APM</span>
+                    <span class="comp comp-intl">PTC ThingWorx</span>
+                    <span class="comp comp-intl">Nanoprecise</span>
+                    <span class="comp comp-intl">Uptake</span>
+                    <div style="margin-top:6px;font-size:0.72em;color:#94a3b8;">
+                        <strong>Big players.</strong> Compete on <em>domain expertise & pilot speed</em>.
+                    </div>
+                </td>
+                <td class="dc b5">
+                    <span class="comp comp-intl">IBM Maximo (full)</span>
+                    <span class="comp comp-intl">Siemens MindSphere</span>
+                    <span class="comp comp-intl">GE Digital APM</span>
+                    <span class="comp comp-intl">Schneider EcoStruxure</span>
+                    <span class="comp comp-intl">Microsoft Azure IoT</span>
+                    <span class="comp comp-intl">SAP PdMS</span>
+                    <div style="margin-top:6px;font-size:0.72em;color:#94a3b8;">
+                        <strong>Enterprise giants.</strong> Compete on <em>niche vertical & co-sell/partner</em>.
+                    </div>
+                </td>
+            </tr>
+
+            <!-- ROW: Competitors - Local MY -->
+            <tr>
+                <td class="rl"><span class="ri">🇲🇾</span>Competitors<br><small style="font-weight:400;font-size:0.75em;color:#fda4af;">Local MY</small></td>
+                <td class="dc b1">
+                    <span class="comp comp-local">Kaodim</span>
+                    <span class="comp comp-local">Recommend.my</span>
+                    <span class="comp comp-local">ServisHero</span>
+                    <span class="comp comp-local">Local contractors</span>
+                    <span class="comp comp-local">Property mgmt cos</span>
+                    <div style="margin-top:6px;font-size:0.72em;color:#94a3b8;">
+                        <strong>Fragmented.</strong> No dominant player. Win with <em>SLA guarantee & bundled packages</em>.
+                    </div>
+                </td>
+                <td class="dc b2">
+                    <span class="comp comp-local">HashMicro MY</span>
+                    <span class="comp comp-local">Reams CMMS</span>
+                    <span class="comp comp-local">Blue Ocean DS</span>
+                    <span class="comp comp-local">FieldEx MY</span>
+                    <span class="comp comp-local">Cryotos MY</span>
+                    <span class="comp comp-local">FOX Facility</span>
+                    <div style="margin-top:6px;font-size:0.72em;color:#94a3b8;">
+                        <strong>Growing market.</strong> Win with <em>industry-specific templates & onboarding</em>.
+                    </div>
+                </td>
+                <td class="dc b3">
+                    <span class="comp comp-local">Sciengate Automation</span>
+                    <span class="comp comp-local">AIoTmission</span>
+                    <span class="comp comp-local">Teras Integrasi</span>
+                    <span class="comp comp-local">Telekom MY (IoT)</span>
+                    <span class="comp comp-local">Favoriot</span>
+                    <div style="margin-top:6px;font-size:0.72em;color:#94a3b8;">
+                        <strong>Niche local.</strong> Win with <em>end-to-end solution (sensor to dashboard)</em>.
+                    </div>
+                </td>
+                <td class="dc b4">
+                    <span class="comp comp-local">Petronas Digital</span>
+                    <span class="comp comp-local">Fusionex</span>
+                    <span class="comp comp-local">Aerodyne (drone)</span>
+                    <span class="comp comp-local">Invoke Solutions</span>
+                    <span class="comp comp-local">Nanoprecise MY</span>
+                    <div style="margin-top:6px;font-size:0.72em;color:#94a3b8;">
+                        <strong>Emerging.</strong> Win with <em>proven ROI case study & fast pilot (90 days)</em>.
+                    </div>
+                </td>
+                <td class="dc b5">
+                    <span class="comp comp-local">Petronas Digital (in-house)</span>
+                    <span class="comp comp-local">TNB REMACO</span>
+                    <span class="comp comp-local">Intel internal teams</span>
+                    <div style="margin-top:6px;font-size:0.72em;color:#94a3b8;">
+                        <strong>Mostly in-house.</strong> Win by <em>offering managed service to reduce their headcount burden</em>.
+                    </div>
+                </td>
+            </tr>
+
+            <!-- ROW: 10 Real Industry Players (who already do this) -->
+            <tr>
+                <td class="rl"><span class="ri">🏢</span>10 Real<br>Players<br><small style="font-weight:400;font-size:0.7em;color:#64748b;">(Already<br>Doing This)</small></td>
+                <td class="dc b1">
+                    <ol class="cl">
+                        <li><span class="cn n1">1</span> <strong>99 Speedmart</strong> – break/fix</li>
+                        <li><span class="cn n1">2</span> <strong>Small F&B chains</strong></li>
+                        <li><span class="cn n1">3</span> <strong>Pasar malam vendors</strong></li>
+                        <li><span class="cn n1">4</span> <strong>Budget hotels</strong></li>
+                        <li><span class="cn n1">5</span> <strong>Local car workshops</strong></li>
+                        <li><span class="cn n1">6</span> <strong>Kedai runcit</strong></li>
+                        <li><span class="cn n1">7</span> <strong>Laundromat ops</strong></li>
+                        <li><span class="cn n1">8</span> <strong>School facilities</strong></li>
+                        <li><span class="cn n1">9</span> <strong>Small clinics</strong></li>
+                        <li><span class="cn n1">10</span> <strong>Cottage industries</strong></li>
+                    </ol>
+                </td>
+                <td class="dc b2">
+                    <ol class="cl">
+                        <li><span class="cn n2">1</span> <strong>Toyota</strong> – TPS system</li>
+                        <li><span class="cn n2">2</span> <strong>Nestlé</strong> – global PM</li>
+                        <li><span class="cn n2">3</span> <strong>EMCOR Group</strong></li>
+                        <li><span class="cn n2">4</span> <strong>Bechtel Corp</strong></li>
+                        <li><span class="cn n2">5</span> <strong>Goodyear</strong></li>
+                        <li><span class="cn n2">6</span> <strong>Valvoline</strong></li>
+                        <li><span class="cn n2">7</span> <strong>FedEx</strong> – fleet PM</li>
+                        <li><span class="cn n2">8</span> <strong>Walmart</strong> – facility</li>
+                        <li><span class="cn n2">9</span> <strong>Marriott Intl.</strong></li>
+                        <li><span class="cn n2">10</span> <strong>Jacobs Eng.</strong></li>
+                    </ol>
+                </td>
+                <td class="dc b3">
+                    <ol class="cl">
+                        <li><span class="cn n3">1</span> <strong>SKF</strong> – bearings CBM</li>
+                        <li><span class="cn n3">2</span> <strong>Caterpillar</strong> – CAT Connect</li>
+                        <li><span class="cn n3">3</span> <strong>Komatsu</strong> – KOMTRAX</li>
+                        <li><span class="cn n3">4</span> <strong>ABB</strong> – motors</li>
+                        <li><span class="cn n3">5</span> <strong>Emerson Electric</strong></li>
+                        <li><span class="cn n3">6</span> <strong>Honeywell</strong></li>
+                        <li><span class="cn n3">7</span> <strong>Parker Hannifin</strong></li>
+                        <li><span class="cn n3">8</span> <strong>Fluke Corp</strong></li>
+                        <li><span class="cn n3">9</span> <strong>Augury</strong> – vibration</li>
+                        <li><span class="cn n3">10</span> <strong>DC Water</strong> – utility</li>
+                    </ol>
+                </td>
+                <td class="dc b4">
+                    <ol class="cl">
+                        <li><span class="cn n4">1</span> <strong>Rolls-Royce</strong> – TotalCare</li>
+                        <li><span class="cn n4">2</span> <strong>Siemens</strong> – Senseye</li>
+                        <li><span class="cn n4">3</span> <strong>GE Digital</strong> – Predix</li>
+                        <li><span class="cn n4">4</span> <strong>Shell</strong> – refinery PdM</li>
+                        <li><span class="cn n4">5</span> <strong>KONE</strong> – elevators</li>
+                        <li><span class="cn n4">6</span> <strong>UPS</strong> – fleet PdM</li>
+                        <li><span class="cn n4">7</span> <strong>DHL</strong> – logistics</li>
+                        <li><span class="cn n4">8</span> <strong>Chevron</strong> – upstream</li>
+                        <li><span class="cn n4">9</span> <strong>Vestas</strong> – wind</li>
+                        <li><span class="cn n4">10</span> <strong>Tesla</strong> – Gigafactory</li>
+                    </ol>
+                </td>
+                <td class="dc b5">
+                    <ol class="cl">
+                        <li><span class="cn n5">1</span> <strong>IBM</strong> – Maximo APM</li>
+                        <li><span class="cn n5">2</span> <strong>NASA</strong> – spacecraft</li>
+                        <li><span class="cn n5">3</span> <strong>TSMC</strong> – wafer fab</li>
+                        <li><span class="cn n5">4</span> <strong>Schneider Electric</strong></li>
+                        <li><span class="cn n5">5</span> <strong>EDF Energy</strong> – nuclear</li>
+                        <li><span class="cn n5">6</span> <strong>Airbus</strong> – Skywise</li>
+                        <li><span class="cn n5">7</span> <strong>Intel</strong> – fab AI</li>
+                        <li><span class="cn n5">8</span> <strong>Boeing</strong> – AnalytX</li>
+                        <li><span class="cn n5">9</span> <strong>Samsung SDI</strong></li>
+                        <li><span class="cn n5">10</span> <strong>PETRONAS</strong> – digital</li>
+                    </ol>
+                </td>
+            </tr>
+
+            <!-- ROW: Sales Pitch -->
+            <tr>
+                <td class="rl"><span class="ri">💬</span>Sales<br>Pitch</td>
+                <td class="dc b1" style="font-style:italic;color:#94a3b8;">
+                    <strong style="color:#fca5a5;">"You're bleeding money every time a machine stops."</strong><br><br>
+                    Show the <strong>hidden cost</strong>. Offer a PM starter package to level them up.
+                </td>
+                <td class="dc b2" style="font-style:italic;color:#94a3b8;">
+                    <strong style="color:#fdba74;">"Your schedule is good — but are you fixing the right things?"</strong><br><br>
+                    Upsell to CBM. They're <strong>replacing parts too early</strong>.
+                </td>
+                <td class="dc b3" style="font-style:italic;color:#94a3b8;">
+                    <strong style="color:#fde047;">"Your sensors talk — are you listening?"</strong><br><br>
+                    Many have sensors but <strong>no analytics</strong>. Offer the brain.
+                </td>
+                <td class="dc b4" style="font-style:italic;color:#94a3b8;">
+                    <strong style="color:#86efac;">"What if you could predict failure 30 days ahead?"</strong><br><br>
+                    Every 1% less downtime = <strong>RM XXK saved</strong>. Offer 90-day pilot.
+                </td>
+                <td class="dc b5" style="font-style:italic;color:#94a3b8;">
+                    <strong style="color:#67e8f9;">"Don't just predict — let the system tell your team exactly what to do."</strong><br><br>
+                    Close the loop: <strong>prescriptive actions + auto work orders</strong>.
+                </td>
+            </tr>
+
+        </tbody>
+    </table>
+
+    <!-- ══ MATURITY ARROW ══ -->
+    <div class="mb">
+        <h3>⬇ Maintenance Maturity Journey — Sell the Next Step, Always ⬇</h3>
+        <div class="af">
+            <div class="as s1">Reactive<span class="al">RM 12K–60K/yr</span></div>
+            <div class="as s2">Preventive<span class="al">RM 60K–300K/yr</span></div>
+            <div class="as s3">Condition<span class="al">RM 200K–800K/yr</span></div>
+            <div class="as s4">Predictive<span class="al">RM 500K–2M/yr</span></div>
+            <div class="as s5">Prescriptive<span class="al">RM 2M–10M+/yr</span></div>
+        </div>
+    </div>
+
+    <!-- ══ FOOTER ══ -->
+    <div class="ft">
+        <p>📌 Sources: U.S. DOE FEMP O&M Guide · IoT Analytics · BNM Exchange Rate (1 USD ≈ RM 4.00, Apr 2026) · Industry Benchmarks · Company Annual Reports</p>
+        <p style="margin-top:3px;">🔒 CONFIDENTIAL — Internal Use Only — Business Development Prospect Board &nbsp;|&nbsp; <span id="pd"></span></p>
+    </div>
+
+</div>
+<script>document.getElementById('pd').textContent='Generated: '+new Date().toLocaleDateString('en-MY',{year:'numeric',month:'long',day:'numeric'});</script>
+</body>
+</html>

@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HVAC Monitoring System | Codex Studio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+    <style>
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        :root{
+            --bg:#080c24;--bg2:#0f1535;--bg3:#151c3e;
+            --bdr:#1c2652;--bdr2:#263060;
+            --accent:#00cfff;--accent2:#00e8a2;
+            --warm:#ff9f43;--hot:#ff4757;--cold:#3b82f6;
+            --txt:#ffffff;--txt2:#7b8ab8;--txt3:#4a5680;
+            --font:'Inter',system-ui,sans-serif;
+        }
+        html{font-size:14px}
+        body{font-family:var(--font);background:var(--bg);color:var(--txt);min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden}
+        ::selection{background:var(--accent);color:var(--bg)}
+        ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:3px}
+
+        /* ═══ HEADER ═══ */
+        .hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 24px;background:linear-gradient(90deg,#0a1030,#0f1535);border-bottom:1px solid var(--bdr);flex-shrink:0;position:relative;z-index:20}
+        .hdr-logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;letter-spacing:2px;color:var(--accent)}
+        .hdr-logo .ico{width:30px;height:30px;border:2px solid var(--accent);border-radius:6px;display:grid;place-items:center;font-size:11px;font-weight:800}
+        .hdr-center{position:absolute;left:50%;transform:translateX(-50%);font-size:13px;font-weight:500;color:var(--txt2);letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap}
+        .hdr-right{text-align:right;min-width:190px}
+        .hdr-date{font-size:10px;color:var(--txt2);margin-bottom:1px}
+        .hdr-time{font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--txt)}
+
+        /* ═══ MAIN LAYOUT ═══ */
+        .main{display:flex;flex:1;overflow:hidden}
+
+        /* ═══ LEFT - 3D ═══ */
+        .left{width:58%;position:relative;border-right:1px solid var(--bdr)}
+        .left canvas{display:block}
+        .scene-label{position:absolute;top:16px;left:20px;pointer-events:none}
+        .scene-label h3{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--txt2);font-weight:500}
+        .scene-label h3 span{color:var(--accent)}
+        .scene-hint{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--txt3);pointer-events:none}
+        .scene-legend{position:absolute;bottom:12px;left:16px;display:flex;gap:12px;pointer-events:none}
+        .scene-legend .leg{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--txt2)}
+        .scene-legend .leg .dot{width:8px;height:8px;border-radius:50%}
+
+        /* ═══ RIGHT PANEL ═══ */
+        .right{width:42%;overflow-y:auto;padding:14px 16px 20px;display:flex;flex-direction:column;gap:12px}
+
+        /* ═══ SYSTEM TABS ═══ */
+        .sys-tabs{display:flex;gap:6px;flex-shrink:0}
+        .sys-tab{flex:1;padding:9px 6px;border:1px solid var(--bdr);border-radius:8px;background:var(--bg2);color:var(--txt2);font-family:var(--font);font-size:11px;font-weight:500;cursor:pointer;text-align:center;transition:all .25s}
+        .sys-tab.active{border-color:var(--accent);color:var(--accent);background:rgba(0,207,255,.06);box-shadow:0 0 14px rgba(0,207,255,.08)}
+        .sys-tab.inactive{opacity:.4;cursor:default}
+        .sys-tab small{display:block;font-size:9px;font-weight:400;margin-top:1px;opacity:.7}
+
+        /* ═══ CARD ═══ */
+        .card{background:var(--bg2);border:1px solid var(--bdr);border-radius:12px;padding:16px;box-shadow:0 4px 24px rgba(0,0,0,.3);transition:box-shadow .3s}
+        .card:hover{box-shadow:0 4px 32px rgba(0,0,0,.45)}
+        .card-t{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--txt2);font-weight:600;margin-bottom:12px}
+
+        /* ═══ KPI ROW ═══ */
+        .kpi-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+        .kpi{background:var(--bg3);border:1px solid rgba(255,255,255,.03);border-radius:10px;padding:14px 12px;text-align:center;position:relative;overflow:hidden}
+        .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0}
+        .kpi.cool::before{background:var(--accent)}
+        .kpi.warm::before{background:var(--warm)}
+        .kpi.hot::before{background:var(--hot)}
+        .kpi.green::before{background:var(--accent2)}
+        .kpi.blue::before{background:var(--cold)}
+        .kpi-label{font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:var(--txt2);margin-bottom:6px;font-weight:500}
+        .kpi-val{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1;transition:color .4s}
+        .kpi-unit{font-size:11px;color:var(--txt2);margin-top:3px}
+
+        /* ═══ SYSTEM OVERVIEW GAUGE ═══ */
+        .overview-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+        .gauge-card{text-align:center;padding:18px 12px}
+        .gauge-wrap{position:relative;width:130px;height:130px;margin:0 auto 8px}
+        .gauge-wrap svg{width:100%;height:100%;transform:rotate(-90deg)}
+        .gauge-bg{fill:none;stroke:var(--bdr);stroke-width:8}
+        .gauge-fg{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .9s ease,stroke .5s}
+        .gauge-mid{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+        .gauge-mid .v{font-size:26px;font-weight:700;line-height:1}
+        .gauge-mid .l{font-size:9px;color:var(--txt2);margin-top:3px;text-transform:uppercase;letter-spacing:1px}
+
+        /* ═══ PIPE DIAGRAM INDICATORS ═══ */
+        .pipe-row{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg3);border-radius:8px;margin-bottom:6px;position:relative}
+        .pipe-row:last-child{margin-bottom:0}
+        .pipe-icon{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;flex-shrink:0;font-size:14px}
+        .pipe-icon.supply{background:rgba(0,207,255,.12);color:var(--accent)}
+        .pipe-icon.return{background:rgba(255,71,87,.12);color:var(--hot)}
+        .pipe-icon.cond{background:rgba(255,159,67,.12);color:var(--warm)}
+        .pipe-icon.fan{background:rgba(0,232,162,.12);color:var(--accent2)}
+        .pipe-info{flex:1}
+        .pipe-info .plbl{font-size:10px;color:var(--txt2);text-transform:uppercase;letter-spacing:1px}
+        .pipe-info .pval{font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:1px}
+        .pipe-delta{font-size:11px;font-weight:500;padding:3px 8px;border-radius:6px;flex-shrink:0;font-variant-numeric:tabular-nums}
+        .pipe-delta.pos{background:rgba(255,71,87,.1);color:var(--hot)}
+        .pipe-delta.neg{background:rgba(0,232,162,.1);color:var(--accent2)}
+
+        /* ═══ ALERT SECTION ═══ */
+        .alert-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+        .alert-badge.ok{background:rgba(0,232,162,.12);color:var(--accent2);border:1px solid rgba(0,232,162,.25)}
+        .alert-badge.warn{background:rgba(255,159,67,.12);color:var(--warm);border:1px solid rgba(255,159,67,.25);animation:pulse 1.4s ease-in-out infinite}
+        .alert-badge.crit{background:rgba(255,71,87,.12);color:var(--hot);border:1px solid rgba(255,71,87,.25);animation:pulse .7s ease-in-out infinite}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+        .alert-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+        .thresh-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:10px}
+        .thresh{display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:5px 10px;border-radius:6px;background:rgba(255,255,255,.015)}
+        .thresh .tl{color:var(--txt2)}.thresh .tv{font-weight:600;font-variant-numeric:tabular-nums}
+
+        /* ═══ CHART ═══ */
+        .chart-box{position:relative;height:180px}
+        .chart-box canvas{width:100%!important;height:100%!important}
+
+        /* ═══ EQUIPMENT TABLE ═══ */
+        .eq-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;margin-top:10px}
+        .eq-r{font-size:11px;padding:3px 0}
+        .eq-r .el{color:var(--txt2)}.eq-r .ev{font-weight:500;word-break:break-all}
+
+        /* ═══ COLLAPSIBLE ═══ */
+        .coll-hdr{display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none}
+        .coll-hdr .chev{font-size:11px;color:var(--txt3);transition:transform .3s}
+        .coll-hdr.shut .chev{transform:rotate(-90deg)}
+        .coll-body{overflow:hidden;transition:max-height .4s ease,opacity .3s;max-height:800px;opacity:1}
+        .coll-body.hide{max-height:0;opacity:0}
+
+        /* ═══ STATUS DOTS ═══ */
+        .st-row{display:flex;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap}
+        .st-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--txt2)}
+        .st-dot{width:8px;height:8px;border-radius:50%}
+        .st-dot.on{background:var(--accent2);box-shadow:0 0 6px var(--accent2)}
+        .st-dot.off{background:var(--txt3)}
+        .st-dot.warn{background:var(--warm);box-shadow:0 0 6px var(--warm)}
+
+        /* ═══ INACTIVE ═══ */
+        .inactive-box{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center}
+        .inactive-box .ii{width:56px;height:56px;border:2px dashed var(--bdr);border-radius:50%;display:grid;place-items:center;margin-bottom:14px;font-size:20px;color:var(--txt3);opacity:.4}
+        .inactive-box .im{font-size:13px;color:var(--txt2);opacity:.45}
+        .inactive-box .is{font-size:11px;color:var(--txt3);opacity:.3;margin-top:5px}
+
+        /* ═══ VALUE FLASH ═══ */
+        .vflash{animation:vf .5s ease}
+        @keyframes vf{0%{opacity:.4;transform:translateY(2px)}100%{opacity:1;transform:translateY(0)}}
+
+        /* ═══ FOOTER ═══ */
+        .ftr{text-align:center;padding:8px 16px;font-size:10px;color:var(--txt3);border-top:1px solid var(--bdr);flex-shrink:0;letter-spacing:.5px}
+
+        /* ═══ RESPONSIVE ═══ */
+        @media(max-width:1100px){
+            .main{flex-direction:column}
+            .left{width:100%;height:45vh;border-right:none;border-bottom:1px solid var(--bdr)}
+            .right{width:100%}
+            .hdr-center{display:none}
+            .kpi-row{grid-template-columns:1fr 1fr}
+        }
+
+        /* ═══ ANIMATED FLOW DOTS (CSS) ═══ */
+        .flow-anim{position:absolute;width:100%;height:100%;pointer-events:none;overflow:hidden;border-radius:12px}
+        .flow-anim .particle{position:absolute;width:4px;height:4px;border-radius:50%;opacity:.6}
+    </style>
+</head>
+<body>
+
+<!-- ════ HEADER ════ -->
+<header class="hdr">
+    <div class="hdr-logo"><div class="ico">CX</div>CODEX STUDIO</div>
+    <div class="hdr-center">HVAC Monitoring &amp; Control System</div>
+    <div class="hdr-right">
+        <div class="hdr-date" id="hDate"></div>
+        <div class="hdr-time" id="hTime"></div>
+    </div>
+</header>
+
+<!-- ════ MAIN ════ -->
+<div class="main">
+
+<!-- ──── LEFT: 3D ──── -->
+<div class="left" id="viewport">
+    <div class="scene-label"><h3>3D Plant Overview — <span>Live Simulation</span></h3></div>
+    <div class="scene-legend">
+        <div class="leg"><div class="dot" style="background:var(--accent)"></div>Chilled Water</div>
+        <div class="leg"><div class="dot" style="background:var(--hot)"></div>Return / Hot</div>
+        <div class="leg"><div class="dot" style="background:var(--warm)"></div>Condenser</div>
+        <div class="leg"><div class="dot" style="background:var(--accent2)"></div>Air Flow</div>
+    </div>
+    <div class="scene-hint">Drag to rotate • Scroll to zoom • Right-click to pan</div>
+</div>
+
+<!-- ──── RIGHT: DASHBOARD ──── -->
+<div class="right" id="rPanel">
+
+    <!-- System Tabs -->
+    <div class="sys-tabs">
+        <button class="sys-tab active" onclick="swTab(0)" id="stab0">Chiller Plant 1<small>Online</small></button>
+        <button class="sys-tab inactive" onclick="swTab(1)" id="stab1">Chiller Plant 2<small>Standby</small></button>
+        <button class="sys-tab inactive" onclick="swTab(2)" id="stab2">Rooftop AHU<small>Offline</small></button>
+    </div>
+
+    <div id="activeContent">
+
+        <!-- ── Top KPIs ── -->
+        <div class="kpi-row">
+            <div class="kpi cool">
+                <div class="kpi-label">COP</div>
+                <div class="kpi-val" id="kCOP" style="color:var(--accent)">—</div>
+                <div class="kpi-unit">Efficiency</div>
+            </div>
+            <div class="kpi green">
+                <div class="kpi-label">Cooling Load</div>
+                <div class="kpi-val" id="kLoad" style="color:var(--accent2)">—</div>
+                <div class="kpi-unit">kW (thermal)</div>
+            </div>
+            <div class="kpi warm">
+                <div class="kpi-label">Power Draw</div>
+                <div class="kpi-val" id="kPower" style="color:var(--warm)">—</div>
+                <div class="kpi-unit">kW (elec)</div>
+            </div>
+        </div>
+
+        <!-- ── Gauges: Supply & Return ── -->
+        <div class="overview-row">
+            <div class="card gauge-card">
+                <div class="gauge-wrap">
+                    <svg viewBox="0 0 130 130">
+                        <circle class="gauge-bg" cx="65" cy="65" r="56"/>
+                        <circle class="gauge-fg" id="gChS" cx="65" cy="65" r="56" stroke="var(--accent)" stroke-dasharray="351.86" stroke-dashoffset="351.86"/>
+                    </svg>
+                    <div class="gauge-mid">
+                        <div class="v" id="gChSV" style="color:var(--accent)">—</div>
+                        <div class="l">Supply °C</div>
+                    </div>
+                </div>
+                <div style="font-size:11px;color:var(--txt2)">Chilled Water Supply</div>
+            </div>
+            <div class="card gauge-card">
+                <div class="gauge-wrap">
+                    <svg viewBox="0 0 130 130">
+                        <circle class="gauge-bg" cx="65" cy="65" r="56"/>
+                        <circle class="gauge-fg" id="gChR" cx="65" cy="65" r="56" stroke="var(--hot)" stroke-dasharray="351.86" stroke-dashoffset="351.86"/>
+                    </svg>
+                    <div class="gauge-mid">
+                        <div class="v" id="gChRV" style="color:var(--hot)">—</div>
+                        <div class="l">Return °C</div>
+                    </div>
+                </div>
+                <div style="font-size:11px;color:var(--txt2)">Chilled Water Return</div>
+            </div>
+        </div>
+
+        <!-- ── Pipe Readings ── -->
+        <div class="card">
+            <div class="card-t">System Temperatures &amp; Flow</div>
+            <div class="pipe-row">
+                <div class="pipe-icon supply">&#10052;</div>
+                <div class="pipe-info"><div class="plbl">CHW Supply Temp</div><div class="pval" id="pChwS">—</div></div>
+                <div class="pipe-delta neg" id="pDeltaT">ΔT —</div>
+            </div>
+            <div class="pipe-row">
+                <div class="pipe-icon return">&#9650;</div>
+                <div class="pipe-info"><div class="plbl">CHW Return Temp</div><div class="pval" id="pChwR">—</div></div>
+            </div>
+            <div class="pipe-row">
+                <div class="pipe-icon cond">&#9670;</div>
+                <div class="pipe-info"><div class="plbl">Condenser Water Temp</div><div class="pval" id="pCond">—</div></div>
+                <div class="pipe-delta pos" id="pCondD">—</div>
+            </div>
+            <div class="pipe-row">
+                <div class="pipe-icon fan">&#9735;</div>
+                <div class="pipe-info"><div class="plbl">AHU Discharge Temp</div><div class="pval" id="pAhu">—</div></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+                <div class="pipe-row" style="margin:0">
+                    <div class="pipe-info"><div class="plbl">Flow Rate</div><div class="pval" id="pFlow" style="font-size:14px">—</div></div>
+                </div>
+                <div class="pipe-row" style="margin:0">
+                    <div class="pipe-info"><div class="plbl">Refrigerant Press.</div><div class="pval" id="pRefr" style="font-size:14px">—</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Zone Conditions ── -->
+        <div class="card">
+            <div class="card-t">Zone Conditions</div>
+            <div class="kpi-row" style="grid-template-columns:1fr 1fr 1fr 1fr">
+                <div class="kpi blue">
+                    <div class="kpi-label">Zone Temp</div>
+                    <div class="kpi-val" id="zTemp" style="font-size:18px;color:var(--cold)">—</div>
+                    <div class="kpi-unit">°C</div>
+                </div>
+                <div class="kpi cool">
+                    <div class="kpi-label">Humidity</div>
+                    <div class="kpi-val" id="zHum" style="font-size:18px;color:var(--accent)">—</div>
+                    <div class="kpi-unit">%RH</div>
+                </div>
+                <div class="kpi green">
+                    <div class="kpi-label">CO₂</div>
+                    <div class="kpi-val" id="zCO2" style="font-size:18px;color:var(--accent2)">—</div>
+                    <div class="kpi-unit">ppm</div>
+                </div>
+                <div class="kpi cool">
+                    <div class="kpi-label">Air Quality</div>
+                    <div class="kpi-val" id="zAQ" style="font-size:18px;color:var(--accent)">—</div>
+                    <div class="kpi-unit">IAQ Index</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Equipment Status ── -->
+        <div class="card">
+            <div class="card-t">Equipment Status</div>
+            <div class="st-row">
+                <div class="st-item"><div class="st-dot on"></div>Chiller #1</div>
+                <div class="st-item"><div class="st-dot off"></div>Chiller #2 (Stby)</div>
+                <div class="st-item"><div class="st-dot on"></div>CW Pump</div>
+                <div class="st-item"><div class="st-dot on"></div>CHW Pump</div>
+                <div class="st-item"><div class="st-dot on" id="ctSt"></div><span id="ctLbl">Cooling Tower Fan</span></div>
+                <div class="st-item"><div class="st-dot on"></div>AHU-1 Supply Fan</div>
+                <div class="st-item"><div class="st-dot warn" id="fltSt"></div><span id="fltLbl" style="color:var(--warm)">Filter ΔP High</span></div>
+            </div>
+            <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--txt2)">
+                <span>Compressor Run Hours</span>
+                <span style="font-weight:600;color:var(--txt);font-variant-numeric:tabular-nums" id="runHrs">—</span>
+            </div>
+            <div style="margin-top:4px;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--txt2)">
+                <span>Last Updated</span>
+                <span style="font-weight:500;color:var(--txt);font-variant-numeric:tabular-nums" id="lastUp">—</span>
+            </div>
+        </div>
+
+        <!-- ── Alerts ── -->
+        <div class="card">
+            <div class="coll-hdr" onclick="togColl(this)">
+                <div class="card-t" style="margin:0">Alarm Configuration</div>
+                <span class="chev">&#9660;</span>
+            </div>
+            <div class="coll-body">
+                <div style="margin:12px 0 8px;display:flex;align-items:center;gap:10px">
+                    <span style="font-size:11px;color:var(--txt2)">System Status:</span>
+                    <div class="alert-badge ok" id="aBadge"><div class="alert-dot"></div><span id="aTxt">NORMAL</span></div>
+                </div>
+                <div class="thresh-grid">
+                    <div class="thresh"><span class="tl">High Supply Temp</span><span class="tv" style="color:var(--hot)">&gt; 9.0 °C</span></div>
+                    <div class="thresh"><span class="tl">Low Supply Temp</span><span class="tv" style="color:var(--cold)">&lt; 4.0 °C</span></div>
+                    <div class="thresh"><span class="tl">High Zone Temp</span><span class="tv" style="color:var(--hot)">&gt; 26.0 °C</span></div>
+                    <div class="thresh"><span class="tl">High Humidity</span><span class="tv" style="color:var(--warm)">&gt; 70 %RH</span></div>
+                    <div class="thresh"><span class="tl">Low COP</span><span class="tv" style="color:var(--warm)">&lt; 3.0</span></div>
+                    <div class="thresh"><span class="tl">High CO₂</span><span class="tv" style="color:var(--hot)">&gt; 1000 ppm</span></div>
+                    <div class="thresh"><span class="tl">Filter ΔP</span><span class="tv" style="color:var(--warm)">&gt; 250 Pa</span></div>
+                    <div class="thresh"><span class="tl">Refrigerant Press.</span><span class="tv" style="color:var(--hot)">&gt; 18 bar</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Trend Chart ── -->
+        <div class="card">
+            <div class="card-t">24-Hour Trend — Chilled Water &amp; Zone Temp</div>
+            <div class="chart-box"><canvas id="trendC"></canvas></div>
+        </div>
+
+        <!-- ── Device / Plant Info ── -->
+        <div class="card">
+            <div class="coll-hdr" onclick="togColl(this)">
+                <div class="card-t" style="margin:0">Plant Information</div>
+                <span class="chev">&#9660;</span>
+            </div>
+            <div class="coll-body">
+                <div class="eq-grid">
+                    <div class="eq-r"><div class="el">Plant ID</div><div class="ev">HVAC-CP01-KL</div></div>
+                    <div class="eq-r"><div class="el">Site</div><div class="ev">Hextar HQ — Shah Alam</div></div>
+                    <div class="eq-r"><div class="el">Chiller Model</div><div class="ev">York YCIV 150 kW</div></div>
+                    <div class="eq-r"><div class="el">Refrigerant</div><div class="ev">R-134a</div></div>
+                    <div class="eq-r"><div class="el">Cooling Tower</div><div class="ev">BAC FXT-28 (1 cell)</div></div>
+                    <div class="eq-r"><div class="el">AHU</div><div class="ev">Carrier 39M — 10,000 CFM</div></div>
+                    <div class="eq-r"><div class="el">BMS Gateway</div><div class="ev">Codex IoT GW-400</div></div>
+                    <div class="eq-r"><div class="el">Protocol</div><div class="ev">BACnet / LoRaWAN</div></div>
+                    <div class="eq-r"><div class="el">Polling Interval</div><div class="ev">30 seconds</div></div>
+                    <div class="eq-r"><div class="el">Commissioned</div><div class="ev">March 2026</div></div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /activeContent -->
+
+    <!-- Inactive -->
+    <div id="inactiveContent" style="display:none">
+        <div class="card">
+            <div class="inactive-box">
+                <div class="ii">—</div>
+                <div class="im" id="inactiveMsg">System offline or not connected</div>
+                <div class="is">This plant slot is provisioned and ready for BMS integration.</div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /right -->
+</div><!-- /main -->
+
+<!-- ════ FOOTER ════ -->
+<div class="ftr">Codex Studio Sdn Bhd &nbsp;|&nbsp; Custom Industrial IoT &amp; BMS Platform &nbsp;|&nbsp; codexstudio.com.my</div>
+
+<!-- ════════════════════════ JAVASCRIPT ════════════════════════ -->
+<script>
+// ───── Globals ─────
+let scene,camera,renderer,controls,clock;
+let chillerGroup,ctFanBlades,ahuFanBlades,compressorDisc;
+let pipeCHWS_particles=[],pipeCHWR_particles=[],pipeCOND_particles=[],airParticles=[];
+let simData={chwSupply:6.7,chwReturn:12.2,condTemp:32.5,ahuDischarge:14.0,zoneTemp:23.5,humidity:52,co2:480,cop:4.8,load:120,power:25,flow:28.5,refrPress:12.4,aq:42,runHrs:12847};
+
+// ───── Clock ─────
+function updClock(){const n=new Date();document.getElementById('hDate').textContent=n.toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'});document.getElementById('hTime').textContent=n.toLocaleTimeString('en-GB',{hour12:false})}
+setInterval(updClock,1000);updClock();
+
+// ───── Tabs ─────
+function swTab(i){
+    document.querySelectorAll('.sys-tab').forEach((t,j)=>{t.className='sys-tab'+(j===i?' active':j===0?'':' inactive')});
+    document.getElementById('activeContent').style.display=i===0?'contents':'none';
+    document.getElementById('inactiveContent').style.display=i===0?'none':'block';
+    if(i===1)document.getElementById('inactiveMsg').textContent='Chiller Plant 2 — Standby mode';
+    if(i===2)document.getElementById('inactiveMsg').textContent='Rooftop AHU — Currently offline';
+}
+
+// ───── Collapsible ─────
+function togColl(h){h.classList.toggle('shut');h.nextElementSibling.classList.toggle('hide')}
+
+// ───── Flash ─────
+function flash(el){el.classList.remove('vflash');void el.offsetWidth;el.classList.add('vflash')}
+
+// ───── Colour helpers ─────
+function tempColor(t,low,high){
+    if(t<=low)return'var(--accent)';if(t>=high)return'var(--hot)';
+    const r=(t-low)/(high-low);return r<.5?'var(--accent)':'var(--warm)';
+}
+
+// ════════════════ THREE.JS ════════════════
+function initThree(){
+    const c=document.getElementById('viewport');const w=c.clientWidth,h=c.clientHeight;
+    scene=new THREE.Scene();
+    scene.background=new THREE.Color(0x080c24);
+    scene.fog=new THREE.FogExp2(0x080c24,0.04);
+
+    camera=new THREE.PerspectiveCamera(38,w/h,0.1,200);
+    camera.position.set(10,7,12);
+
+    renderer=new THREE.WebGLRenderer({antialias:true});
+    renderer.setSize(w,h);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+    renderer.shadowMap.enabled=true;
+    renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+    renderer.toneMapping=THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure=1.1;
+    c.appendChild(renderer.domElement);
+
+    controls=new THREE.OrbitControls(camera,renderer.domElement);
+    controls.enableDamping=true;controls.dampingFactor=0.07;
+    controls.target.set(0,1.8,0);controls.minDistance=6;controls.maxDistance=25;controls.maxPolarAngle=Math.PI*0.85;
+
+    // Lights
+    scene.add(new THREE.AmbientLight(0x223355,0.6));
+    const dl=new THREE.DirectionalLight(0xffffff,0.9);dl.position.set(8,12,6);dl.castShadow=true;
+    dl.shadow.mapSize.width=1024;dl.shadow.mapSize.height=1024;
+    dl.shadow.camera.near=1;dl.shadow.camera.far=30;dl.shadow.camera.left=-12;dl.shadow.camera.right=12;dl.shadow.camera.top=12;dl.shadow.camera.bottom=-12;
+    scene.add(dl);
+    const fl=new THREE.DirectionalLight(0x4488cc,0.25);fl.position.set(-5,3,-4);scene.add(fl);
+    const pl=new THREE.PointLight(0x00cfff,0.4,15);pl.position.set(-3,5,5);scene.add(pl);
+    const pl2=new THREE.PointLight(0xff9f43,0.2,10);pl2.position.set(5,3,-3);scene.add(pl2);
+
+    clock=new THREE.Clock();
+    chillerGroup=new THREE.Group();
+    scene.add(chillerGroup);
+
+    buildGround();
+    buildChiller();
+    buildCoolingTower();
+    buildAHU();
+    buildPiping();
+    buildLabels();
+
+    window.addEventListener('resize',()=>{const w2=c.clientWidth,h2=c.clientHeight;camera.aspect=w2/h2;camera.updateProjectionMatrix();renderer.setSize(w2,h2)});
+}
+
+// ── Materials ──
+const mMetal=new THREE.MeshStandardMaterial({color:0x5a6a7a,metalness:0.7,roughness:0.35});
+const mDarkMetal=new THREE.MeshStandardMaterial({color:0x3a4a5a,metalness:0.8,roughness:0.3});
+const mChillerBody=new THREE.MeshStandardMaterial({color:0x2244aa,metalness:0.5,roughness:0.4});
+const mCTBody=new THREE.MeshStandardMaterial({color:0x556b70,metalness:0.4,roughness:0.5});
+const mAHUBody=new THREE.MeshStandardMaterial({color:0x607080,metalness:0.5,roughness:0.4});
+const mPipeCold=new THREE.MeshStandardMaterial({color:0x0088cc,metalness:0.6,roughness:0.3});
+const mPipeHot=new THREE.MeshStandardMaterial({color:0xcc4444,metalness:0.6,roughness:0.3});
+const mPipeCond=new THREE.MeshStandardMaterial({color:0xcc8833,metalness:0.6,roughness:0.3});
+const mGreen=new THREE.MeshStandardMaterial({color:0x00cc88,metalness:0.5,roughness:0.4});
+const mGlass=new THREE.MeshPhysicalMaterial({color:0x88bbdd,transparent:true,opacity:0.18,roughness:0.05,metalness:0.1,side:THREE.DoubleSide,depthWrite:false});
+const mFan=new THREE.MeshStandardMaterial({color:0x99aabb,metalness:0.6,roughness:0.3,side:THREE.DoubleSide});
+const mBase=new THREE.MeshStandardMaterial({color:0x333e55,metalness:0.3,roughness:0.7});
+
+// ── Ground ──
+function buildGround(){
+    const g=new THREE.Mesh(new THREE.PlaneGeometry(40,40),new THREE.MeshStandardMaterial({color:0x080c24,roughness:0.95}));
+    g.rotation.x=-Math.PI/2;g.position.y=-0.01;g.receiveShadow=true;scene.add(g);
+    const gr=new THREE.GridHelper(30,60,0x1c2652,0x0f1535);gr.position.y=0;gr.material.opacity=0.5;gr.material.transparent=true;scene.add(gr);
+    // Concrete pad
+    const pad=new THREE.Mesh(new THREE.BoxGeometry(14,0.15,10),mBase);pad.position.set(0,0.075,0);pad.receiveShadow=true;chillerGroup.add(pad);
+}
+
+// ── CHILLER ──
+function buildChiller(){
+    const body=new THREE.Mesh(new THREE.BoxGeometry(3.5,2.0,1.6),mChillerBody);
+    body.position.set(-2.5,1.2,0);body.castShadow=true;chillerGroup.add(body);
+
+    // Chiller top detail
+    const top=new THREE.Mesh(new THREE.BoxGeometry(3.6,0.06,1.7),mDarkMetal);
+    top.position.set(-2.5,2.23,0);chillerGroup.add(top);
+
+    // Compressor housing (cylinder on top)
+    const comp=new THREE.Mesh(new THREE.CylinderGeometry(0.45,0.45,0.6,24),mDarkMetal);
+    comp.position.set(-3.2,2.55,0);comp.castShadow=true;chillerGroup.add(comp);
+    const compTop=new THREE.Mesh(new THREE.CylinderGeometry(0.48,0.48,0.04,24),mMetal);
+    compTop.position.set(-3.2,2.87,0);chillerGroup.add(compTop);
+
+    // Spinning disc (compressor indicator)
+    compressorDisc=new THREE.Mesh(new THREE.TorusGeometry(0.3,0.03,8,24),mGreen);
+    compressorDisc.position.set(-3.2,2.9,0);compressorDisc.rotation.x=Math.PI/2;chillerGroup.add(compressorDisc);
+
+    // Evaporator tubes (visible through glass)
+    const evaGlass=new THREE.Mesh(new THREE.CylinderGeometry(0.35,0.35,2.8,20,1,true),mGlass);
+    evaGlass.rotation.z=Math.PI/2;evaGlass.position.set(-2.5,0.8,0.55);chillerGroup.add(evaGlass);
+    // inner tubes
+    for(let i=-1;i<=1;i++){
+        const tube=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,2.6,8),new THREE.MeshStandardMaterial({color:0x33aadd,metalness:0.7,roughness:0.2}));
+        tube.rotation.z=Math.PI/2;tube.position.set(-2.5,0.8+i*0.12,0.55);chillerGroup.add(tube);
+    }
+
+    // Control panel on chiller
+    const panel=new THREE.Mesh(new THREE.BoxGeometry(0.6,0.5,0.05),new THREE.MeshStandardMaterial({color:0x1a1a2e,metalness:0.3,roughness:0.5}));
+    panel.position.set(-1.5,1.6,-0.83);chillerGroup.add(panel);
+    // Panel screen
+    const screen=new THREE.Mesh(new THREE.PlaneGeometry(0.45,0.3),new THREE.MeshBasicMaterial({color:0x00cfff,transparent:true,opacity:0.3}));
+    screen.position.set(-1.5,1.65,-0.855);chillerGroup.add(screen);
+
+    // Legs
+    [[-3.9,0,-0.6],[-3.9,0,0.6],[-1.1,0,-0.6],[-1.1,0,0.6]].forEach(p=>{
+        const leg=new THREE.Mesh(new THREE.BoxGeometry(0.15,0.3,0.15),mDarkMetal);
+        leg.position.set(p[0],0.3,p[2]);leg.castShadow=true;chillerGroup.add(leg);
+    });
+}
+
+// ── COOLING TOWER ──
+function buildCoolingTower(){
+    // Tower body — tapered
+    const ctBody=new THREE.Mesh(new THREE.CylinderGeometry(1.0,1.2,3.0,8),mCTBody);
+    ctBody.position.set(3.5,1.65,3);ctBody.castShadow=true;chillerGroup.add(ctBody);
+
+    // Top ring
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(1.05,0.05,8,8),mDarkMetal);
+    ring.rotation.x=Math.PI/2;ring.position.set(3.5,3.17,3);chillerGroup.add(ring);
+
+    // Fan shroud (top)
+    const shroud=new THREE.Mesh(new THREE.CylinderGeometry(0.85,0.85,0.3,24,1,true),mMetal);
+    shroud.position.set(3.5,3.35,3);chillerGroup.add(shroud);
+
+    // Fan blades
+    ctFanBlades=new THREE.Group();
+    for(let i=0;i<6;i++){
+        const blade=new THREE.Mesh(new THREE.BoxGeometry(0.7,0.02,0.15),mFan);
+        blade.position.set(0.3,0,0);
+        const pivot=new THREE.Group();
+        pivot.add(blade);
+        pivot.rotation.y=(Math.PI*2/6)*i;
+        ctFanBlades.add(pivot);
+    }
+    const hub=new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.08,0.12,12),mDarkMetal);
+    ctFanBlades.add(hub);
+    ctFanBlades.position.set(3.5,3.55,3);
+    chillerGroup.add(ctFanBlades);
+
+    // Fill media (visible slats)
+    for(let i=0;i<4;i++){
+        const slat=new THREE.Mesh(new THREE.BoxGeometry(1.8,0.03,1.8),new THREE.MeshStandardMaterial({color:0x445566,transparent:true,opacity:0.35,side:THREE.DoubleSide}));
+        slat.position.set(3.5,0.6+i*0.5,3);chillerGroup.add(slat);
+    }
+
+    // Water basin
+    const basin=new THREE.Mesh(new THREE.CylinderGeometry(1.3,1.3,0.3,8),mDarkMetal);
+    basin.position.set(3.5,0.3,3);chillerGroup.add(basin);
+    // Water in basin
+    const water=new THREE.Mesh(new THREE.CylinderGeometry(1.2,1.2,0.08,24),new THREE.MeshPhysicalMaterial({color:0x2288aa,transparent:true,opacity:0.5,roughness:0.1}));
+    water.position.set(3.5,0.42,3);chillerGroup.add(water);
+
+    // CT Legs
+    for(let i=0;i<4;i++){
+        const a=Math.PI/4+i*Math.PI/2;
+        const leg=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,0.15,8),mDarkMetal);
+        leg.position.set(3.5+Math.cos(a)*1.1,0.075,3+Math.sin(a)*1.1);chillerGroup.add(leg);
+    }
+}
+
+// ── AHU ──
+function buildAHU(){
+    // AHU body
+    const body=new THREE.Mesh(new THREE.BoxGeometry(3.0,1.8,1.4),mAHUBody);
+    body.position.set(3.5,1.05,-3);body.castShadow=true;chillerGroup.add(body);
+
+    // Sections dividers
+    for(let i=0;i<2;i++){
+        const div=new THREE.Mesh(new THREE.BoxGeometry(0.02,1.7,1.35),mDarkMetal);
+        div.position.set(2.7+i*1.5,1.05,-3);chillerGroup.add(div);
+    }
+
+    // Filter section (left)
+    const filterFrame=new THREE.Mesh(new THREE.BoxGeometry(0.06,1.4,1.1),new THREE.MeshStandardMaterial({color:0x887766,roughness:0.8}));
+    filterFrame.position.set(2.2,1.05,-3);chillerGroup.add(filterFrame);
+
+    // Coil section (middle) — visible copper tubes
+    for(let r=0;r<3;r++){
+        for(let c=0;c<5;c++){
+            const tube=new THREE.Mesh(new THREE.CylinderGeometry(0.025,0.025,1.2,8),new THREE.MeshStandardMaterial({color:0xcc7733,metalness:0.8,roughness:0.2}));
+            tube.position.set(3.2+r*0.12,0.5+c*0.25,-3);chillerGroup.add(tube);
+        }
+    }
+
+    // Fan section — blower wheel
+    ahuFanBlades=new THREE.Group();
+    for(let i=0;i<8;i++){
+        const blade=new THREE.Mesh(new THREE.BoxGeometry(0.35,0.04,0.1),mFan);
+        blade.position.set(0.15,0,0);
+        const p=new THREE.Group();p.add(blade);
+        p.rotation.z=(Math.PI*2/8)*i;
+        ahuFanBlades.add(p);
+    }
+    const fHub=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,0.1,12),mDarkMetal);
+    fHub.rotation.x=Math.PI/2;ahuFanBlades.add(fHub);
+    ahuFanBlades.position.set(4.2,1.05,-3);
+    ahuFanBlades.rotation.y=Math.PI/2;
+    chillerGroup.add(ahuFanBlades);
+
+    // Discharge duct
+    const duct=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.6,1.0),mMetal);
+    duct.position.set(5.25,1.5,-3);chillerGroup.add(duct);
+    // Duct opening (green = air)
+    const opening=new THREE.Mesh(new THREE.PlaneGeometry(0.48,0.58),new THREE.MeshBasicMaterial({color:0x00e8a2,transparent:true,opacity:0.15}));
+    opening.position.set(5.51,1.5,-3);chillerGroup.add(opening);
+
+    // AHU Legs
+    [[2.3,0,-3.5],[2.3,0,-2.5],[4.7,0,-3.5],[4.7,0,-2.5]].forEach(p=>{
+        const lg=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.2,0.12),mDarkMetal);
+        lg.position.set(p[0],0.25,p[2]);chillerGroup.add(lg);
+    });
+
+    // AHU Label panel
+    const lbl=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.3,0.02),new THREE.MeshStandardMaterial({color:0x1a1a2e}));
+    lbl.position.set(3.5,1.7,-2.28);chillerGroup.add(lbl);
+}
+
+// ── PIPING ──
+function buildPiping(){
+    const pipeR=0.06;
+    const createPipe=(pts,mat)=>{
+        for(let i=0;i<pts.length-1;i++){
+            const a=new THREE.Vector3(...pts[i]),b=new THREE.Vector3(...pts[i+1]);
+            const dir=new THREE.Vector3().subVectors(b,a);
+            const len=dir.length();
+            const mid=new THREE.Vector3().addVectors(a,b).multiplyScalar(0.5);
+            const pipe=new THREE.Mesh(new THREE.CylinderGeometry(pipeR,pipeR,len,8),mat);
+            pipe.position.copy(mid);
+            pipe.lookAt(b);pipe.rotateX(Math.PI/2);
+            pipe.castShadow=true;chillerGroup.add(pipe);
+            // Elbow joint
+            if(i<pts.length-2){
+                const joint=new THREE.Mesh(new THREE.SphereGeometry(pipeR*1.3,8,8),mat);
+                joint.position.copy(b);chillerGroup.add(joint);
+            }
+        }
+    };
+
+    // CHW Supply (chiller → AHU) — blue
+    createPipe([[-0.75,0.6,0],[-0.75,0.6,-1.5],[2.0,0.6,-1.5],[2.0,0.6,-3]],mPipeCold);
+    // CHW Return (AHU → chiller) — red
+    createPipe([[2.0,1.5,-3],[-0.3,1.5,-3],[-0.3,1.5,0],[-0.75,1.5,0]],mPipeHot);
+    // Condenser water (chiller → CT) — orange out
+    createPipe([[-0.75,1.0,0.8],[-0.75,1.0,3],[2.3,1.0,3]],mPipeCond);
+    // Condenser return (CT → chiller) — orange in
+    createPipe([[2.3,0.4,3],[-0.75,0.4,3],[-0.75,0.4,0.8]],mPipeCond);
+
+    // Flow particles — CHW Supply
+    createFlowParticles(pipeCHWS_particles,[[-0.75,0.6,0],[-0.75,0.6,-1.5],[2.0,0.6,-1.5],[2.0,0.6,-3]],0x00cfff,12);
+    // CHW Return
+    createFlowParticles(pipeCHWR_particles,[[2.0,1.5,-3],[-0.3,1.5,-3],[-0.3,1.5,0],[-0.75,1.5,0]],0xff4757,10);
+    // Condenser out
+    createFlowParticles(pipeCOND_particles,[[-0.75,1.0,0.8],[-0.75,1.0,3],[2.3,1.0,3]],0xff9f43,8);
+    // Air particles from AHU
+    createAirParticles();
+}
+
+function createFlowParticles(arr,pts,color,count){
+    const mat=new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:0.85});
+    const geo=new THREE.SphereGeometry(0.035,6,6);
+    const segments=[];
+    let totalLen=0;
+    for(let i=0;i<pts.length-1;i++){
+        const a=new THREE.Vector3(...pts[i]),b=new THREE.Vector3(...pts[i+1]);
+        const len=a.distanceTo(b);
+        segments.push({a,b,len});
+        totalLen+=len;
+    }
+    for(let i=0;i<count;i++){
+        const m=new THREE.Mesh(geo,mat);
+        m.userData={segments,totalLen,offset:i/count,speed:0.15+Math.random()*0.05};
+        arr.push(m);
+        chillerGroup.add(m);
+    }
+}
+
+function createAirParticles(){
+    const mat=new THREE.MeshBasicMaterial({color:0x00e8a2,transparent:true,opacity:0.5});
+    const geo=new THREE.SphereGeometry(0.025,4,4);
+    for(let i=0;i<15;i++){
+        const m=new THREE.Mesh(geo,mat);
+        m.userData={phase:Math.random()*Math.PI*2,speed:0.5+Math.random()*0.3,range:0.8+Math.random()*0.6};
+        airParticles.push(m);
+        chillerGroup.add(m);
+    }
+}
+
+function updateParticles(arr,t){
+    arr.forEach(p=>{
+        const d=p.userData;
+        let pos=((d.offset+t*d.speed*0.1)%1)*d.totalLen;
+        let accum=0;
+        for(const seg of d.segments){
+            if(accum+seg.len>=pos){
+                const frac=(pos-accum)/seg.len;
+                const pt=new THREE.Vector3().lerpVectors(seg.a,seg.b,frac);
+                p.position.copy(pt);
+                break;
+            }
+            accum+=seg.len;
+        }
+    });
+}
+
+function updateAirParticles(t){
+    airParticles.forEach(p=>{
+        const d=p.userData;
+        const prog=(t*d.speed+d.phase)%d.range;
+        p.position.set(5.55+prog,1.3+Math.sin(t*3+d.phase)*0.15,-3+Math.cos(t*2+d.phase)*0.3);
+        p.material.opacity=0.5*(1-prog/d.range);
+    });
+}
+
+// ── Labels ──
+function buildLabels(){
+    const makeLabel=(text,pos,color)=>{
+        const c=document.createElement('canvas');c.width=256;c.height=64;
+        const ctx=c.getContext('2d');
+        ctx.fillStyle=color||'#7b8ab8';
+        ctx.font='bold 24px Inter,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.fillText(text,128,32);
+        const tex=new THREE.CanvasTexture(c);
+        const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));
+        sp.position.set(...pos);sp.scale.set(1.5,0.38,1);
+        chillerGroup.add(sp);
+        return sp;
+    };
+
+    makeLabel('CHILLER',[-2.5,2.9,0],'#4488ff');
+    makeLabel('COOLING TOWER',[3.5,4.1,3],'#ff9f43');
+    makeLabel('AHU',[3.5,2.3,-3],'#00e8a2');
+    makeLabel('CHW Supply',[-0.75,0.2,-0.8],'#00cfff');
+    makeLabel('CHW Return',[-0.3,1.9,-1.5],'#ff4757');
+    makeLabel('CW',[0.8,1.3,3],'#ff9f43');
+}
+
+// ── Animate ──
+function animate(){
+    requestAnimationFrame(animate);
+    const t=clock.getElapsedTime();
+
+    // Spin fans
+    if(ctFanBlades)ctFanBlades.rotation.y=t*1.8;
+    if(ahuFanBlades){
+        ahuFanBlades.children.forEach((c,i)=>{
+            if(c.type==='Group'){}
+        });
+        ahuFanBlades.rotation.x=t*3.5;
+    }
+    if(compressorDisc)compressorDisc.rotation.y=t*4;
+
+    // Flow particles
+    updateParticles(pipeCHWS_particles,t);
+    updateParticles(pipeCHWR_particles,t);
+    updateParticles(pipeCOND_particles,t);
+    updateAirParticles(t);
+
+    controls.update();
+    renderer.render(scene,camera);
+}
+
+// ════════════════ CHART ════════════════
+let trendChart;
+function initChart(){
+    const ctx=document.getElementById('trendC').getContext('2d');
+    const labels=[],dSup=[],dRet=[],dZone=[];
+    const now=new Date();
+    for(let i=24;i>=0;i--){
+        const d=new Date(now.getTime()-i*3600000);
+        labels.push(d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}));
+        const base_s=6.7+Math.sin(i/6*Math.PI)*0.8+(Math.random()-0.5)*0.4;
+        const base_r=12.2+Math.sin(i/6*Math.PI)*1.0+(Math.random()-0.5)*0.5;
+        const base_z=23.5+Math.sin(i/8*Math.PI)*1.2+(Math.random()-0.5)*0.6;
+        dSup.push(+base_s.toFixed(1));dRet.push(+base_r.toFixed(1));dZone.push(+base_z.toFixed(1));
+    }
+
+    trendChart=new Chart(ctx,{
+        type:'line',
+        data:{
+            labels,
+            datasets:[
+                {label:'CHW Supply',data:dSup,borderColor:'#00cfff',backgroundColor:'rgba(0,207,255,.06)',fill:true,tension:.4,pointRadius:0,pointHoverRadius:4,borderWidth:2},
+                {label:'CHW Return',data:dRet,borderColor:'#ff4757',backgroundColor:'rgba(255,71,87,.06)',fill:true,tension:.4,pointRadius:0,pointHoverRadius:4,borderWidth:2},
+                {label:'Zone Temp',data:dZone,borderColor:'#00e8a2',backgroundColor:'rgba(0,232,162,.06)',fill:true,tension:.4,pointRadius:0,pointHoverRadius:4,borderWidth:2},
+                {label:'High Zone Alarm (26°C)',data:Array(25).fill(26),borderColor:'rgba(255,71,87,.4)',borderDash:[6,4],borderWidth:1,pointRadius:0,pointHoverRadius:0,fill:false},
+                {label:'Set Point (7°C)',data:Array(25).fill(7),borderColor:'rgba(0,207,255,.3)',borderDash:[4,4],borderWidth:1,pointRadius:0,pointHoverRadius:0,fill:false}
+            ]
+        },
+        options:{
+            responsive:true,maintainAspectRatio:false,
+            interaction:{mode:'index',intersect:false},
+            plugins:{
+                legend:{display:true,position:'bottom',labels:{color:'#7b8ab8',font:{size:9,family:'Inter'},boxWidth:12,padding:8,usePointStyle:true}},
+                tooltip:{backgroundColor:'#0f1535',borderColor:'#1c2652',borderWidth:1,titleColor:'#7b8ab8',bodyColor:'#fff',bodyFont:{family:'Inter'},titleFont:{family:'Inter'},padding:8,displayColors:true,callbacks:{label:c=>c.dataset.label+': '+c.parsed.y.toFixed(1)+'°C'}}
+            },
+            scales:{
+                x:{grid:{color:'rgba(28,38,82,.5)',drawBorder:false},ticks:{color:'#7b8ab8',font:{size:9,family:'Inter'},maxTicksLimit:12}},
+                y:{min:0,max:30,grid:{color:'rgba(28,38,82,.5)',drawBorder:false},ticks:{color:'#7b8ab8',font:{size:9,family:'Inter'},callback:v=>v+'°C',stepSize:5}}
+            }
+        }
+    });
+}
+
+// ════════════════ SIMULATED DATA ════════════════
+function updateData(){
+    const d=simData;
+    // Fluctuate values
+    d.chwSupply=+(6.7+(Math.random()-0.5)*1.2).toFixed(1);
+    d.chwReturn=+(12.2+(Math.random()-0.5)*1.4).toFixed(1);
+    d.condTemp=+(32.5+(Math.random()-0.5)*2).toFixed(1);
+    d.ahuDischarge=+(14+(Math.random()-0.5)*1.5).toFixed(1);
+    d.zoneTemp=+(23.5+(Math.random()-0.5)*1.2).toFixed(1);
+    d.humidity=Math.round(52+(Math.random()-0.5)*8);
+    d.co2=Math.round(480+(Math.random()-0.5)*80);
+    d.flow=+(28.5+(Math.random()-0.5)*3).toFixed(1);
+    d.refrPress=+(12.4+(Math.random()-0.5)*1.5).toFixed(1);
+    const deltaT=+(d.chwReturn-d.chwSupply).toFixed(1);
+    d.load=+(4.186*d.flow*deltaT/3.6).toFixed(0); // Q = m·cp·ΔT simplified
+    if(d.load<40)d.load=80+Math.round(Math.random()*40);
+    d.power=+(d.load/(4.5+Math.random()*0.6)).toFixed(1);
+    d.cop=+(d.load/d.power).toFixed(2);
+    d.aq=Math.round(38+(Math.random()-0.5)*12);
+    d.runHrs+=Math.random()>0.5?1:0;
+
+    const circumf=351.86;
+
+    // Gauges — supply (range 2–12°C mapped to 0–100%)
+    const sPct=Math.max(0,Math.min(100,((d.chwSupply-2)/10)*100));
+    const sOff=circumf-(circumf*sPct/100);
+    document.getElementById('gChS').style.strokeDashoffset=sOff;
+    const sv=document.getElementById('gChSV');sv.textContent=d.chwSupply+'°C';flash(sv);
+
+    // Return (range 8–18°C)
+    const rPct=Math.max(0,Math.min(100,((d.chwReturn-8)/10)*100));
+    const rOff=circumf-(circumf*rPct/100);
+    document.getElementById('gChR').style.strokeDashoffset=rOff;
+    const rv=document.getElementById('gChRV');rv.textContent=d.chwReturn+'°C';flash(rv);
+
+    // KPIs
+    const el=(id,v)=>{const e=document.getElementById(id);e.textContent=v;flash(e);return e};
+    el('kCOP',d.cop);
+    const copEl=document.getElementById('kCOP');
+    copEl.style.color=d.cop<3?'var(--hot)':d.cop<4?'var(--warm)':'var(--accent)';
+    el('kLoad',d.load);
+    el('kPower',d.power);
+
+    // Pipe readings
+    el('pChwS',d.chwSupply+' °C');
+    el('pChwR',d.chwReturn+' °C');
+    el('pCond',d.condTemp+' °C');
+    el('pAhu',d.ahuDischarge+' °C');
+    el('pFlow',d.flow+' L/s');
+    el('pRefr',d.refrPress+' bar');
+
+    const dtEl=document.getElementById('pDeltaT');
+    dtEl.textContent='ΔT '+deltaT+'°C';
+
+    const cdEl=document.getElementById('pCondD');
+    cdEl.textContent=d.condTemp>34?'HIGH':'OK';
+    cdEl.className='pipe-delta '+(d.condTemp>34?'pos':'neg');
+
+    // Zone
+    el('zTemp',d.zoneTemp);
+    document.getElementById('zTemp').style.color=d.zoneTemp>26?'var(--hot)':d.zoneTemp>25?'var(--warm)':'var(--cold)';
+    el('zHum',d.humidity);
+    document.getElementById('zHum').style.color=d.humidity>65?'var(--warm)':'var(--accent)';
+    el('zCO2',d.co2);
+    document.getElementById('zCO2').style.color=d.co2>800?'var(--hot)':d.co2>600?'var(--warm)':'var(--accent2)';
+    el('zAQ',d.aq);
+
+    // Run hrs
+    document.getElementById('runHrs').textContent=d.runHrs.toLocaleString()+' hrs';
+
+    // Last updated
+    const now=new Date();
+    document.getElementById('lastUp').textContent=now.toLocaleTimeString('en-GB',{hour12:false})+' — '+now.toLocaleDateString('en-GB');
+
+    // Alert
+    const badge=document.getElementById('aBadge');
+    const atxt=document.getElementById('aTxt');
+    badge.className='alert-badge';
+    if(d.chwSupply>9||d.zoneTemp>26||d.co2>1000){
+        badge.classList.add('crit');atxt.textContent='ALARM';
+    } else if(d.chwSupply>8||d.zoneTemp>25.5||d.humidity>65||d.cop<3.5||d.condTemp>34){
+        badge.classList.add('warn');atxt.textContent='WARNING';
+    } else {
+        badge.classList.add('ok');atxt.textContent='ALL NORMAL';
+    }
+
+    // Filter ΔP warning toggle
+    const fltDot=document.getElementById('fltSt');
+    const fltLbl=document.getElementById('fltLbl');
+    if(Math.random()>0.3){fltDot.className='st-dot warn';fltLbl.style.color='var(--warm)';fltLbl.textContent='Filter ΔP High'}
+    else{fltDot.className='st-dot on';fltLbl.style.color='';fltLbl.textContent='Filter OK'}
+
+    // Chart — push new point
+    if(trendChart){
+        const ds=trendChart.data.datasets;
+        ds[0].data.push(d.chwSupply);ds[0].data.shift();
+        ds[1].data.push(d.chwReturn);ds[1].data.shift();
+        ds[2].data.push(d.zoneTemp);ds[2].data.shift();
+        trendChart.data.labels.push(now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}));
+        trendChart.data.labels.shift();
+        trendChart.update('none');
+    }
+}
+
+// ════════════════ INIT ════════════════
+window.addEventListener('DOMContentLoaded',()=>{
+    initThree();animate();initChart();updateData();
+    setInterval(updateData,5000);
+});
+</script>
+</body>
+</html>

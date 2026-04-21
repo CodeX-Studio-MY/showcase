@@ -50,8 +50,8 @@
             font-family: var(--font);
             background: var(--bg-primary);
             color: var(--text-primary);
-            overflow-x: hidden;
-            min-height: 100vh;
+            overflow: hidden;
+            height: 100vh;
             display: flex;
             flex-direction: column;
         }
@@ -111,24 +111,37 @@
             justify-content: center;
             align-items: center;
             height: 60px;
+            position: relative;
+        }
+
+        .header-logo::before {
+            display: none;
         }
 
         .header-logo .logo-icon {
             height: 40px;
             width: auto;
             max-width: 200px;
-            border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             object-fit: contain;
-            background: rgba(255, 255, 255, 0.92);
-            padding: 4px 10px;
+            background: #ffffff;
+            padding: 3px 8px;
             display: block;
-            transition: background 0.3s;
+            position: relative;
+            z-index: 1;
+            transition: filter 0.3s;
         }
 
         [data-theme="light"] .header-logo .logo-icon {
             background: transparent;
+            border: none;
+            box-shadow: none;
             padding: 0;
+            filter: none;
+        }
+
+        [data-theme="light"] .header-logo::before {
+            display: none;
         }
 
         .header-right {
@@ -244,16 +257,37 @@
         /* ════════════════════════════════════════════════════════════
        SECTION WRAPPERS
        ════════════════════════════════════════════════════════════ */
+        .section-national {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 0;
+            position: relative;
+            background:
+                radial-gradient(1500px 620px at 18% 108%, rgba(0, 212, 170, 0.08), transparent 62%),
+                radial-gradient(1100px 500px at 84% -6%, rgba(94, 141, 255, 0.12), transparent 58%),
+                linear-gradient(180deg, #050a27 0%, #020823 56%, #03061c 100%);
+        }
+
+        [data-theme="light"] .section-national {
+            background: linear-gradient(180deg, #f8fbff 0%, #f1f5f9 100%);
+        }
+
         .section-overview {
             flex: 1;
             display: none;
             flex-direction: column;
+            overflow: hidden;
+            min-height: 0;
         }
 
         .section-deepdive {
             flex: 1;
             display: none;
             flex-direction: column;
+            overflow: hidden;
+            min-height: 0;
         }
 
         /* ════════════════════════════════════════════════════════════
@@ -316,10 +350,8 @@
             align-items: center;
             flex: 1;
             padding: 20px;
-        }
-
-        .grid-view.multi {
-            /* overridden below in Tank Cards section */
+            min-height: 0;
+            overflow: auto;
         }
 
         /* ════════════════════════════════════════════════════════════
@@ -359,6 +391,32 @@
         .tank-card.warn:hover { box-shadow: 0 6px 20px rgba(255,159,67,0.15); }
         .tank-card.crit:hover { box-shadow: 0 6px 20px rgba(255,71,87,0.15); }
 
+        /* Strong alert treatment for critical tank cards */
+        .tank-card.crit {
+            background: linear-gradient(180deg, rgba(255, 71, 87, 0.08), var(--bg-card) 34%);
+            box-shadow: 0 0 0 1px rgba(255, 71, 87, 0.35), 0 0 22px rgba(255, 71, 87, 0.2);
+            animation: crit-card-pulse 1.2s ease-in-out infinite;
+        }
+
+        .tank-card.crit .tc-status {
+            text-shadow: 0 0 10px rgba(255, 71, 87, 0.55);
+            animation: crit-status-blink 0.8s ease-in-out infinite alternate;
+        }
+
+        @keyframes crit-card-pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 1px rgba(255, 71, 87, 0.35), 0 0 18px rgba(255, 71, 87, 0.18);
+            }
+            50% {
+                box-shadow: 0 0 0 1px rgba(255, 71, 87, 0.7), 0 0 32px rgba(255, 71, 87, 0.36);
+            }
+        }
+
+        @keyframes crit-status-blink {
+            from { opacity: 1; }
+            to { opacity: 0.45; }
+        }
+
         .tank-card-header {
             display: flex;
             justify-content: space-between;
@@ -380,26 +438,168 @@
             padding: 1px 5px;
         }
 
-        /* Liquid tank SVG container */
+        /* Liquid tank canvas container */
         .tank-liquid-wrap {
             position: relative;
             width: 100%;
             aspect-ratio: 1 / 1.45;
         }
 
-        .tank-liquid-wrap svg {
+        /* Tank visual (image-style replacement for grid view) */
+        .tank-visual-wrap {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 0.9 / 1.45;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .tank-visual {
+            width: 96%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .tank-knob {
+            width: 18%;
+            height: 5%;
+            border-radius: 999px 999px 0 0;
+            background: #79bdd8;
+        }
+
+        .tank-neck {
+            width: 34%;
+            height: 3.2%;
+            border-radius: 6px 6px 0 0;
+            background: #2f9ebd;
+            margin-top: 0.6%;
+        }
+
+        .tank-cap {
+            width: 45%;
+            height: 3.2%;
+            border-radius: 8px 8px 0 0;
+            background: #4f98be;
+            margin-top: 0.5%;
+        }
+
+        .tank-shell {
+            width: 90%;
+            height: 64%;
+            margin-top: 1.4%;
+            border-radius: 28px 28px 14px 14px;
+            background: #89bdd7;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset -16px 0 0 rgba(115, 170, 207, 0.95);
+        }
+
+        .tank-fill {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 60%;
+            background: linear-gradient(180deg, rgba(120, 230, 170, 0.90), rgba(72, 199, 130, 0.95));
+            transition: height 0.6s ease, background 0.35s ease;
+        }
+
+        .tank-band {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 1.8%;
+            background: #24778f;
+            z-index: 2;
+        }
+
+        .tank-band.top {
+            top: 22%;
+        }
+
+        .tank-band.bottom {
+            top: 86%;
+        }
+
+        .tank-highlight {
+            position: absolute;
+            top: 4%;
+            right: 11%;
+            width: 18%;
+            height: 90%;
+            border-radius: 16px;
+            background: rgba(198, 238, 255, 0.35);
+            transform: skewX(-3deg);
+            z-index: 1;
+        }
+
+        .tank-stand {
+            width: 100%;
+            height: 26%;
+            position: relative;
+            margin-top: 1.2%;
+        }
+
+        .tank-beam {
+            position: absolute;
+            left: 3%;
+            right: 3%;
+            top: 0;
+            height: 14%;
+            background: #3c4042;
+            border-radius: 6px;
+        }
+
+        .tank-leg {
+            position: absolute;
+            width: 7.5%;
+            top: 12%;
+            bottom: 9%;
+            background: #3b3f41;
+        }
+
+        .tank-leg.l1 { left: 7%; }
+        .tank-leg.l2 { left: 47%; }
+        .tank-leg.l3 { right: 7%; }
+
+        .tank-foot {
+            position: absolute;
+            width: 13%;
+            height: 9%;
+            bottom: 0;
+            background: #4b5551;
+            border-radius: 4px 4px 0 0;
+        }
+
+        .tank-foot.f1 { left: 4%; }
+        .tank-foot.f2 { left: 44%; }
+        .tank-foot.f3 { right: 4%; }
+
+        .tank-level-label {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            font-size: 12px;
+            font-weight: 700;
+            color: #0f172a;
+            background: rgba(255, 255, 255, 0.72);
+            border-radius: 10px;
+            padding: 2px 8px;
+            backdrop-filter: blur(2px);
+        }
+
+        /* Liquid wave - driven by JS canvas RAF */
+        .tank-liquid-wrap canvas {
+            display: block;
             width: 100%;
             height: 100%;
-        }
-
-        /* Liquid wave animation */
-        @keyframes wave-move {
-            0%   { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-
-        .liquid-wave {
-            animation: wave-move 2.8s linear infinite;
+            border-radius: 8px;
         }
 
         .tank-card-footer {
@@ -531,6 +731,7 @@
             position: relative;
             overflow: hidden;
             margin: 10px 20px;
+            min-height: 0;
         }
 
         .isometric-floor {
@@ -650,16 +851,122 @@
             display: flex;
             flex: 1;
             overflow: hidden;
+            min-height: 0;
         }
 
         .left-panel {
             width: 60%;
             position: relative;
             border-right: 1px solid var(--border-card);
+            overflow: hidden;
         }
 
         .left-panel canvas {
             display: block;
+        }
+
+        /* Alarm overlay — submarine red alert */
+        .alarm-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 5;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .alarm-overlay.active {
+            opacity: 1;
+            animation: alarm-pulse 1.2s ease-in-out infinite;
+        }
+
+        @keyframes alarm-pulse {
+            0%, 100% {
+                box-shadow: inset 0 0 0 0 rgba(255,71,87,0);
+                background: rgba(255,71,87,0);
+            }
+            50% {
+                box-shadow: inset 0 0 80px 30px rgba(255,71,87,0.18);
+                background: rgba(255,71,87,0.04);
+            }
+        }
+
+        /* Flashing red border around the whole panel */
+        .left-panel.alarming {
+            animation: border-flash 1.2s ease-in-out infinite;
+        }
+
+        @keyframes border-flash {
+            0%, 100% { border-right-color: var(--border-card); }
+            50%       { border-right-color: #ff4757; box-shadow: 0 0 20px rgba(255,71,87,0.4); }
+        }
+
+        /* Soft edge glow for alarm state (replaces harsh scanline) */
+        .alarm-overlay.active::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 50% 0%, rgba(255,71,87,0.16), transparent 48%),
+                radial-gradient(circle at 50% 100%, rgba(255,71,87,0.10), transparent 52%);
+            animation: alarm-edge-breathe 1.6s ease-in-out infinite;
+        }
+
+        @keyframes alarm-edge-breathe {
+            0%, 100% { opacity: 0.55; }
+            50% { opacity: 0.95; }
+        }
+
+        /* Bottom banner — doesn't block top label */
+        .alarm-banner {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            background: linear-gradient(90deg, #ff4757, #c0392b, #ff4757);
+            background-size: 200% 100%;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-align: center;
+            padding: 7px 0;
+            z-index: 6;
+            pointer-events: none;
+            transform: translateY(100%);
+            transition: transform 0.3s;
+            animation: none;
+        }
+
+        .alarm-banner.active {
+            transform: translateY(0);
+            animation: banner-scroll 3s linear infinite;
+        }
+
+        @keyframes banner-scroll {
+            0%   { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        /* Alarm indicator dot in tank-label — visible without blocking */
+        .alarm-dot {
+            display: inline-block;
+            width: 8px; height: 8px;
+            background: #ff4757;
+            border-radius: 50%;
+            margin-right: 6px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            animation: none;
+            vertical-align: middle;
+        }
+
+        .alarm-dot.active {
+            opacity: 1;
+            animation: dot-blink 0.6s ease-in-out infinite alternate;
+        }
+
+        @keyframes dot-blink {
+            from { opacity: 1; transform: scale(1); }
+            to   { opacity: 0.3; transform: scale(0.7); }
         }
 
         .tank-label {
@@ -1219,17 +1526,42 @@
         /* ════════════════════════════════════════════════════════════
        NATIONAL MAP SECTION
        ════════════════════════════════════════════════════════════ */
-        .section-national {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
-        }
-
         #nationalMapContainer {
             width: 100%;
             flex: 1;
+            min-height: 0;
+            position: relative;
+        }
+
+        #nationalMapContainer::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                repeating-linear-gradient(90deg, rgba(109, 142, 245, 0.05) 0, rgba(109, 142, 245, 0.05) 1px, transparent 1px, transparent 52px),
+                repeating-linear-gradient(0deg, rgba(109, 142, 245, 0.04) 0, rgba(109, 142, 245, 0.04) 1px, transparent 1px, transparent 52px);
+            opacity: 0.28;
+            z-index: 1;
+        }
+
+        #nationalMapContainer::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(circle at 50% 58%, rgba(0, 209, 255, 0.11), transparent 54%),
+                radial-gradient(circle at 22% 90%, rgba(0, 209, 255, 0.06), transparent 46%);
+            z-index: 1;
+        }
+
+        [data-theme="light"] #nationalMapContainer::after {
+            background: none;
+        }
+
+        [data-theme="light"] #nationalMapContainer::before {
+            display: none;
         }
 
         .national-header {
@@ -1298,6 +1630,131 @@
             z-index: 10;
             pointer-events: none;
         }
+
+        /* Custom date range — popover panel */
+        .dr-trigger {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-card);
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-family: var(--font);
+            transition: border-color 0.15s, color 0.15s;
+            white-space: nowrap;
+        }
+
+        .dr-trigger:hover, .dr-trigger.open {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .dr-wrap {
+            position: relative;
+        }
+
+        .dr-popover {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: calc(100% + 8px);
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 10px;
+            padding: 14px;
+            z-index: 50;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+            min-width: 280px;
+        }
+
+        .dr-popover.open { display: block; }
+
+        .dr-popover-title {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .dr-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .dr-field label {
+            display: block;
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .dr-field input[type="datetime-local"] {
+            width: 100%;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-card);
+            border-radius: 5px;
+            color: var(--text-primary);
+            font-family: var(--font);
+            font-size: 11px;
+            padding: 5px 7px;
+            color-scheme: dark;
+            transition: border-color 0.15s;
+            box-sizing: border-box;
+        }
+
+        [data-theme="light"] .dr-field input { color-scheme: light; }
+
+        .dr-field input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .dr-popover-actions {
+            display: flex;
+            gap: 6px;
+            justify-content: flex-end;
+            padding-top: 8px;
+            border-top: 1px solid var(--border-card);
+        }
+
+        .dr-btn-cancel {
+            background: none;
+            border: 1px solid var(--border-card);
+            border-radius: 5px;
+            color: var(--text-secondary);
+            font-family: var(--font);
+            font-size: 11px;
+            padding: 4px 12px;
+            cursor: pointer;
+            transition: border-color 0.15s;
+        }
+
+        .dr-btn-cancel:hover { border-color: var(--text-secondary); }
+
+        .dr-btn-apply {
+            background: var(--accent);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 5px;
+            font-family: var(--font);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 14px;
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+
+        .dr-btn-apply:hover { opacity: 0.85; }
 
         /* Timeframe toggle for trend chart */
         .timeframe-toggle {
@@ -1438,29 +1895,40 @@
 
         <!-- Grid View -->
         <div class="grid-view" id="gridView" style="display:none;">
-            <!-- Single tank (default) -->
-            <div id="singleTankGrid">
-                <div class="hero-card" id="heroCard">
-                    <div class="live-badge">
-                        <div class="dot"></div> LIVE POC DATA
+            <!-- Single tank (default) — liquid card -->
+            <div id="singleTankGrid" style="display:flex; justify-content:center; align-items:center; flex:1;">
+                <div class="tank-card ok" id="heroCard" style="width:200px; cursor:pointer;">
+                    <div class="tank-card-header">
+                        <span class="tank-card-name">Tank 01</span>
+                        <span class="tank-card-zone">POC</span>
                     </div>
-                    <h2 style="margin:0 0 5px; font-size:24px;">Tank 01</h2>
-                    <p style="margin:0; color:var(--text-secondary); font-size:13px; margin-bottom:20px;">Aircom Node:
-                        0c9cc6feff1bebea</p>
-                    <div style="height:1px; background:var(--border-card); width:100%;"></div>
-                    <div class="metrics">
-                        <div>
-                            <div class="metric-value" style="color:var(--accent);" id="overviewLevel">68.0%</div>
-                            <div class="metric-label">Tank Level</div>
+                    <div class="tank-visual-wrap">
+                        <div class="tank-visual">
+                            <div class="tank-knob"></div>
+                            <div class="tank-neck"></div>
+                            <div class="tank-cap"></div>
+                            <div class="tank-shell">
+                                <div class="tank-fill" id="heroTankFill"></div>
+                                <div class="tank-band top"></div>
+                                <div class="tank-band bottom"></div>
+                                <div class="tank-highlight"></div>
+                            </div>
+                            <div class="tank-stand">
+                                <div class="tank-beam"></div>
+                                <div class="tank-leg l1"></div>
+                                <div class="tank-leg l2"></div>
+                                <div class="tank-leg l3"></div>
+                                <div class="tank-foot f1"></div>
+                                <div class="tank-foot f2"></div>
+                                <div class="tank-foot f3"></div>
+                            </div>
                         </div>
-                        <div>
-                            <div class="metric-value" id="overviewVib">2.1 <span
-                                    style="font-size:14px; color:var(--text-secondary);">mm/s</span></div>
-                            <div class="metric-label">Vibration RMS</div>
-                        </div>
+                        <div class="tank-level-label" id="heroLevelLabel">68%</div>
                     </div>
-                    <p style="margin-top:25px; font-size:11px; color:var(--text-secondary); text-align:center;">Click to
-                        view 3D Interactive Deep Dive →</p>
+                    <div class="tank-card-footer">
+                        <span class="tc-temp">🌡 <span id="heroTemp">--</span></span>
+                        <span class="tc-status ok" id="heroStatus">LIVE</span>
+                    </div>
                 </div>
             </div>
             <!-- Multi tank (demo) -->
@@ -1501,7 +1969,9 @@
 
             <!-- Left Panel — 3D Tank -->
             <div class="left-panel" id="threeContainer">
-                <div class="tank-label">3D Visualisation &mdash; <span>Live Level</span></div>
+                <div class="alarm-overlay" id="alarmOverlay"></div>
+                <div class="alarm-banner" id="alarmBanner">⚠ LOW LEVEL ALARM — IMMEDIATE ATTENTION REQUIRED</div>
+                <div class="tank-label"><span class="alarm-dot" id="alarmDot"></span>3D Visualisation &mdash; <span>Live Level</span></div>
                 <div class="orbit-hint">&#x1F5B1; Drag to rotate &bull; Scroll to zoom</div>
             </div>
 
@@ -1593,14 +2063,40 @@
                     </div>
 
                     <!-- Historical Trend -->
-                    <div class="card">
+                    <div class="card" style="position:relative;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
                             <div class="card-title" id="trendTitle" style="margin-bottom: 0;">Historical Trend — Tank Level (7 Days)</div>
-                            <div class="timeframe-toggle">
-                                <button class="tf-btn" onclick="setTrendTimeframe('24h')">24h</button>
-                                <button class="tf-btn active" onclick="setTrendTimeframe('7d')">7d</button>
-                                <button class="tf-btn" onclick="setTrendTimeframe('14d')">14d</button>
-                                <button class="tf-btn" onclick="setTrendTimeframe('30d')">30d</button>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <div class="timeframe-toggle">
+                                    <button class="tf-btn" onclick="setTrendTimeframe('24h')">24h</button>
+                                    <button class="tf-btn active" onclick="setTrendTimeframe('7d')">7d</button>
+                                    <button class="tf-btn" onclick="setTrendTimeframe('14d')">14d</button>
+                                    <button class="tf-btn" onclick="setTrendTimeframe('30d')">30d</button>
+                                </div>
+                                <div class="dr-wrap">
+                                    <button class="dr-trigger" id="drTrigger" onclick="toggleDrPopover()">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                        Custom
+                                    </button>
+                                    <!-- Custom date popover -->
+                                    <div class="dr-popover" id="drPopover">
+                                        <div class="dr-popover-title">Custom Date Range</div>
+                                        <div class="dr-fields">
+                                            <div class="dr-field">
+                                                <label>From</label>
+                                                <input type="datetime-local" id="drFrom" />
+                                            </div>
+                                            <div class="dr-field">
+                                                <label>To</label>
+                                                <input type="datetime-local" id="drTo" />
+                                            </div>
+                                        </div>
+                                        <div class="dr-popover-actions">
+                                            <button class="dr-btn-cancel" onclick="closeDrPopover()">Cancel</button>
+                                            <button class="dr-btn-apply" onclick="applyCustomRange()">Apply</button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="chart-container">
@@ -1802,8 +2298,17 @@
             document.getElementById('sectionOverview').style.display = 'flex';
             document.getElementById('sectionDeepdive').style.display = 'none';
             stopAnimate();
-            if (dataInterval) { clearInterval(dataInterval); dataInterval = null; }
+            // Keep dataInterval alive so overview card stays in sync with deep-dive data
+            // Only start it fresh if it hasn't been initialised yet (first visit before deep-dive)
             renderBreadcrumb('overview');
+            setTimeout(() => {
+                initHeroLiquid(currentLevel);
+                // If data has never started (user hasn't opened deep-dive yet), kick off updates now
+                if (!dataInterval) {
+                    updateData();
+                    dataInterval = setInterval(updateData, 5000);
+                }
+            }, 30);
         }
 
         function showDeepdive(tankData = null) {
@@ -1834,6 +2339,7 @@
                     threeInitialized = true;
                     startAnimate();
                     initChart();
+                    initDateInputs();
                     updateData();
                     dataInterval = setInterval(updateData, 5000);
                 } else {
@@ -1849,9 +2355,15 @@
         }
 
         // Click handlers — hero card + map pin → deep dive
-        const defaultTank = { id: '01', level: 68.0, temp: '25.4', zone: 'A', status: 'ok' };
-        document.getElementById('heroCard').addEventListener('click', () => showDeepdive(defaultTank));
-        document.getElementById('mapPin').addEventListener('click', () => showDeepdive(defaultTank));
+        // getLiveTank() always reflects the latest live currentLevel so deep-dive opens in sync
+        function getLiveTank() {
+            const tempEl = document.getElementById('heroTemp');
+            const temp = tempEl ? tempEl.textContent.replace('°C','').trim() : '25.4';
+            const status = currentLevel < 40 ? 'crit' : currentLevel < 60 ? 'warn' : 'ok';
+            return { id: '01', level: currentLevel, temp, zone: 'A', status };
+        }
+        document.getElementById('heroCard').addEventListener('click', () => showDeepdive(getLiveTank()));
+        document.getElementById('mapPin').addEventListener('click', () => showDeepdive(getLiveTank()));
 
         // Initial breadcrumb render (national map is the entry point)
         renderBreadcrumb('national');
@@ -1863,113 +2375,121 @@
             const container = document.getElementById('nationalMapContainer');
             nationalChart = echarts.init(container);
 
+            function getNationalMapOption(isDark) {
+                const accent = isDark ? '#00d4aa' : '#0d9488';
+                const areaColor = isDark ? '#133d64' : '#dbeafe';
+                const areaHover = isDark ? '#1d568a' : '#bfdbfe';
+                const borderColor = isDark ? '#7dd8ff' : '#93c5fd';
+                const plannedColor = isDark ? 'rgba(153, 182, 221, 0.88)' : '#64748b';
+
+                return {
+                    backgroundColor: 'transparent',
+                    tooltip: {
+                        trigger: 'item',
+                        backgroundColor: isDark ? 'rgba(8,16,40,0.96)' : 'rgba(255,255,255,0.96)',
+                        borderColor: accent,
+                        borderWidth: 1,
+                        textStyle: { color: isDark ? '#e7efff' : '#0f172a' },
+                        padding: 15,
+                        formatter: function (params) {
+                            if (params.data && params.data.isLive) {
+                                return `<strong style="color:${accent}; font-size:15px;">${params.name}</strong><br/><br/>` +
+                                       `<span style="color:#8892b0">Status:</span> Live POC<br/>` +
+                                       `<span style="color:#8892b0">Active Tanks:</span> 1<br/>` +
+                                       `<span style="color:#8892b0">Click to enter site view -></span>`;
+                            } else {
+                                return `<strong style="color:#8892b0; font-size:15px;">${params.name}</strong><br/><br/>` +
+                                       `<span style="color:#8892b0">Status:</span> Planned Expansion<br/>` +
+                                       `<span style="color:#8892b0">Projected Tanks:</span> ${params.data ? params.data.projected : 'N/A'}`;
+                            }
+                        }
+                    },
+                    geo: {
+                        map: 'Malaysia',
+                        roam: true,
+                        layoutCenter: ['50%', '52%'],
+                        layoutSize: '150%',
+                        label: { show: false },
+                        itemStyle: {
+                            areaColor: areaColor,
+                            borderColor: borderColor,
+                            borderWidth: isDark ? 1.8 : 1.4,
+                            shadowColor: isDark ? 'rgba(59, 183, 255, 0.45)' : 'rgba(37, 99, 235, 0.12)',
+                            shadowBlur: isDark ? 24 : 8
+                        },
+                        emphasis: {
+                            itemStyle: {
+                                areaColor: areaHover,
+                                borderColor: accent
+                            },
+                            label: { show: false }
+                        }
+                    },
+                    series: [
+                        {
+                            name: 'Live Assets',
+                            type: 'effectScatter',
+                            coordinateSystem: 'geo',
+                            data: [{
+                                name: 'Pengerang PIC (Johor)',
+                                value: [104.16, 1.36],
+                                isLive: true,
+                                itemStyle: { color: accent }
+                            }],
+                            symbolSize: 20,
+                            showEffectOn: 'render',
+                            rippleEffect: { brushType: 'stroke', scale: 5, period: 3 },
+                            label: {
+                                show: true,
+                                formatter: '{b}',
+                                position: 'right',
+                                color: accent,
+                                fontSize: 13,
+                                fontWeight: 'bold',
+                                textShadowBlur: 8,
+                                textShadowColor: isDark ? accent : 'rgba(13,148,136,0.4)'
+                            },
+                            itemStyle: { shadowBlur: 24, shadowColor: accent },
+                            zlevel: 1
+                        },
+                        {
+                            name: 'Planned Assets',
+                            type: 'scatter',
+                            coordinateSystem: 'geo',
+                            data: [
+                                { name: 'Kertih IPC (Terengganu)', value: [103.44, 4.51], projected: 45, itemStyle: { color: plannedColor } },
+                                { name: 'Bintulu LNG (Sarawak)', value: [113.04, 3.17], projected: 78, itemStyle: { color: plannedColor } }
+                            ],
+                            symbolSize: 10,
+                            label: {
+                                show: true,
+                                formatter: '{b}',
+                                position: 'right',
+                                color: plannedColor,
+                                fontSize: 11
+                            },
+                            itemStyle: { opacity: isDark ? 0.8 : 0.7 }
+                        }
+                    ]
+                };
+            }
+
             fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries/MYS.geo.json')
                 .then(r => r.json())
                 .then(geojson => {
                     echarts.registerMap('Malaysia', geojson);
 
                     const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-                    const areaColor = isDark ? '#0a0e27' : '#dbeafe';
-                    const borderColor = isDark ? '#1e2a4a' : '#93c5fd';
-                    const bgColor = isDark ? '#050814' : '#f1f5f9';
-
-                    const option = {
-                        backgroundColor: 'transparent',
-                        tooltip: {
-                            trigger: 'item',
-                            backgroundColor: isDark ? 'rgba(19,24,54,0.95)' : 'rgba(255,255,255,0.95)',
-                            borderColor: '#00d4aa',
-                            textStyle: { color: isDark ? '#fff' : '#0f172a' },
-                            padding: 15,
-                            formatter: function (params) {
-                                if (params.data && params.data.isLive) {
-                                    return `<strong style="color:#00d4aa; font-size:15px;">${params.name}</strong><br/><br/>` +
-                                           `<span style="color:#8892b0">Status:</span> 🟢 LIVE POC<br/>` +
-                                           `<span style="color:#8892b0">Active Tanks:</span> 1<br/>` +
-                                           `<span style="color:#8892b0">Click to enter site view →</span>`;
-                                } else {
-                                    return `<strong style="color:#8892b0; font-size:15px;">${params.name}</strong><br/><br/>` +
-                                           `<span style="color:#8892b0">Status:</span> ⚪ Planned Expansion<br/>` +
-                                           `<span style="color:#8892b0">Projected Tanks:</span> ${params.data ? params.data.projected : 'N/A'}`;
-                                }
-                            }
-                        },
-                        geo: {
-                            map: 'Malaysia',
-                            roam: true,
-                            layoutCenter: ['50%', '55%'],
-                            layoutSize: '90%',
-                            label: { show: false },
-                            itemStyle: {
-                                areaColor: areaColor,
-                                borderColor: borderColor,
-                                borderWidth: 1.5,
-                                shadowColor: 'rgba(0,212,170,0.15)',
-                                shadowBlur: 12
-                            },
-                            emphasis: {
-                                itemStyle: {
-                                    areaColor: isDark ? '#131836' : '#bfdbfe',
-                                    borderColor: '#00d4aa'
-                                },
-                                label: { show: false }
-                            }
-                        },
-                        series: [
-                            {
-                                name: 'Live Assets',
-                                type: 'effectScatter',
-                                coordinateSystem: 'geo',
-                                data: [{
-                                    name: 'Pengerang PIC (Johor)',
-                                    value: [104.16, 1.36],
-                                    isLive: true,
-                                    itemStyle: { color: '#00d4aa' }
-                                }],
-                                symbolSize: 20,
-                                showEffectOn: 'render',
-                                rippleEffect: { brushType: 'stroke', scale: 5, period: 3 },
-                                label: {
-                                    show: true,
-                                    formatter: '{b}',
-                                    position: 'right',
-                                    color: '#00d4aa',
-                                    fontSize: 13,
-                                    fontWeight: 'bold',
-                                    textShadowBlur: 6,
-                                    textShadowColor: '#00d4aa'
-                                },
-                                itemStyle: { shadowBlur: 20, shadowColor: '#00d4aa' },
-                                zlevel: 1
-                            },
-                            {
-                                name: 'Planned Assets',
-                                type: 'scatter',
-                                coordinateSystem: 'geo',
-                                data: [
-                                    { name: 'Kertih IPC (Terengganu)', value: [103.44, 4.51], projected: 45, itemStyle: { color: '#8892b0' } },
-                                    { name: 'Bintulu LNG (Sarawak)', value: [113.04, 3.17], projected: 78, itemStyle: { color: '#8892b0' } }
-                                ],
-                                symbolSize: 10,
-                                label: {
-                                    show: true,
-                                    formatter: '{b}',
-                                    position: 'right',
-                                    color: '#8892b0',
-                                    fontSize: 11
-                                },
-                                itemStyle: { opacity: 0.6 }
-                            }
-                        ]
-                    };
-
-                    nationalChart.setOption(option);
+                    nationalChart.setOption(getNationalMapOption(isDark));
 
                     nationalChart.on('click', function (params) {
                         if (params.data && params.data.isLive) {
                             showOverview();
                         }
                     });
+
+                    // Expose for theme switching after map is initialized.
+                    nationalChart.__getThemedOption = getNationalMapOption;
                 })
                 .catch(() => {
                     container.innerHTML = '<div style="color:#ff4757; text-align:center; padding:40px;">Failed to load map. Check internet connection.</div>';
@@ -2028,25 +2548,201 @@
             return 'var(--accent)';
         }
 
+        // ═══════════════════ LIQUID CANVAS ENGINE ═══════════════════
+        // Each tank card gets a canvas driven by one shared rAF loop
+        const liquidCanvases = []; // { canvas, ctx, level, color, waveOffset, speed }
+        let liquidRafId = null;
+
+        function getThemeColors() {
+            const style = getComputedStyle(document.documentElement);
+            return {
+                bg: style.getPropertyValue('--bg-card').trim() || '#131836',
+                border: style.getPropertyValue('--border-card').trim() || '#1e2a4a',
+            };
+        }
+
+        function hexToRgb(hex) {
+            // Strips # and converts 6-char hex to {r,g,b}
+            const h = hex.replace('#','');
+            return {
+                r: parseInt(h.slice(0,2),16),
+                g: parseInt(h.slice(2,4),16),
+                b: parseInt(h.slice(4,6),16)
+            };
+        }
+
+        function drawLiquidCanvas(entry) {
+            const { canvas, ctx, level, color, waveOffset } = entry;
+            const W = canvas.width, H = canvas.height;
+            const wall = Math.round(W * 0.07);
+            const rx = Math.round(W * 0.1);
+            const safeLevel = Number.isFinite(Number(level))
+                ? Math.max(0, Math.min(100, Number(level)))
+                : 0;
+            const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+            const bgColor = isDark ? '#0d1130' : '#f8fafc';
+            const emptyColor = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)';
+            const borderAlpha = isDark ? 0.3 : 0.25;
+
+            const rgb = hexToRgb(color);
+            const c = (a) => `rgba(${rgb.r},${rgb.g},${rgb.b},${a})`;
+
+            ctx.clearRect(0, 0, W, H);
+
+            const innerX = wall, innerY = wall;
+            const innerW = W - wall * 2, innerH = H - wall * 2;
+            const fillH = Math.round((safeLevel / 100) * innerH);
+            const fillY = innerY + innerH - fillH;
+            const amp = Math.max(3, H * 0.022);
+
+            // Outer card background
+            ctx.fillStyle = bgColor;
+            ctx.beginPath();
+            ctx.roundRect(0, 0, W, H, rx);
+            ctx.fill();
+
+            // Clip to inner tank area
+            ctx.save();
+            ctx.beginPath();
+            ctx.roundRect(innerX, innerY, innerW, innerH, rx * 0.5);
+            ctx.clip();
+
+            // Empty space above liquid
+            ctx.fillStyle = emptyColor;
+            ctx.fillRect(innerX, innerY, innerW, innerH);
+
+            // Liquid gradient — from top of fill to bottom
+            const grad = ctx.createLinearGradient(0, fillY, 0, innerY + innerH);
+            grad.addColorStop(0, c(0.82));
+            grad.addColorStop(1, c(0.45));
+
+            // Solid liquid body below wave
+            ctx.fillStyle = grad;
+            ctx.fillRect(innerX, fillY + amp, innerW, innerH + innerY);
+
+            // Wave surface
+            ctx.beginPath();
+            const step = 2;
+            const wShift = (waveOffset / (Math.PI * 2)) * innerW;
+            ctx.moveTo(innerX, innerY + innerH + 2);
+            for (let x = 0; x <= innerW + 4; x += step) {
+                const sx = x + wShift;
+                const y = fillY + Math.sin((sx / innerW) * Math.PI * 2) * amp;
+                ctx.lineTo(innerX + x, y);
+            }
+            ctx.lineTo(innerX + innerW, innerY + innerH + 2);
+            ctx.closePath();
+            ctx.fillStyle = grad;
+            ctx.fill();
+
+            ctx.restore();
+
+            // Tank wall border — thin, coloured, subtle
+            ctx.strokeStyle = c(borderAlpha);
+            ctx.lineWidth = Math.max(1.5, wall * 0.5);
+            ctx.beginPath();
+            ctx.roundRect(wall * 0.5, wall * 0.5, W - wall, H - wall, rx * 0.85);
+            ctx.stroke();
+
+            // Tick marks on the right side — like a measuring cylinder
+            const tickX = innerX + innerW - 2;
+            ctx.strokeStyle = c(0.25);
+            ctx.lineWidth = 1;
+            for (let t = 0; t <= 4; t++) {
+                const ty = innerY + (t / 4) * innerH;
+                const len = t % 2 === 0 ? 8 : 4;
+                ctx.beginPath();
+                ctx.moveTo(tickX - len, ty);
+                ctx.lineTo(tickX, ty);
+                ctx.stroke();
+            }
+
+            // Percentage text
+            ctx.save();
+            const fontSize = Math.round(H * 0.15);
+            ctx.font = `700 ${fontSize}px Inter,sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            const textY = H / 2 + H * 0.02;
+            const levelLabel = `${safeLevel.toFixed(1).replace(/\.0$/, '')}%`;
+            // Backdrop for readability
+            ctx.fillStyle = isDark ? 'rgba(5,8,20,0.45)' : 'rgba(255,255,255,0.55)';
+            const tw = ctx.measureText(levelLabel).width;
+            ctx.beginPath();
+            ctx.roundRect(W/2 - tw/2 - 6, textY - fontSize*0.6, tw + 12, fontSize * 1.2, 4);
+            ctx.fill();
+            ctx.fillStyle = color;
+            ctx.fillText(levelLabel, W / 2, textY);
+            ctx.restore();
+        }
+
+        function startLiquidLoop() {
+            if (liquidRafId) return;
+            function tick() {
+                liquidCanvases.forEach(e => {
+                    e.waveOffset += e.speed;
+                    if (e.waveOffset > Math.PI * 2) e.waveOffset -= Math.PI * 2;
+                    drawLiquidCanvas(e);
+                });
+                liquidRafId = requestAnimationFrame(tick);
+            }
+            liquidRafId = requestAnimationFrame(tick);
+        }
+
+        function stopLiquidLoop() {
+            if (liquidRafId) { cancelAnimationFrame(liquidRafId); liquidRafId = null; }
+        }
+
+        function makeLiquidCanvas(canvasEl, level, colorHex) {
+            // High-DPI
+            const rect = canvasEl.parentElement.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            const W = Math.round((rect.width || 160) * dpr);
+            const H = Math.round(W * 1.45);
+            canvasEl.width = W;
+            canvasEl.height = H;
+            const entry = {
+                canvas: canvasEl,
+                ctx: canvasEl.getContext('2d'),
+                level,
+                color: colorHex,
+                waveOffset: Math.random() * Math.PI * 2,
+                speed: 0.018 + Math.random() * 0.008,
+            };
+            liquidCanvases.push(entry);
+            return entry;
+        }
+
+        // ═══════════════════ HERO CARD LIQUID (single tank) ═══════════════════
+        let heroLiquidEntry = null;
+
+        function initHeroLiquid(level) {
+            const safeLevel = Math.max(2, Math.min(100, Number(level) || 0));
+            const fill = document.getElementById('heroTankFill');
+            const levelLabel = document.getElementById('heroLevelLabel');
+            const card = document.getElementById('heroCard');
+            if (fill) {
+                fill.style.height = `${safeLevel}%`;
+                if (safeLevel < 40) fill.style.background = 'linear-gradient(180deg, rgba(255,120,120,0.82), rgba(235,70,90,0.95))';
+                else if (safeLevel < 60) fill.style.background = 'linear-gradient(180deg, rgba(255,198,108,0.85), rgba(240,149,52,0.95))';
+                else fill.style.background = 'linear-gradient(180deg, rgba(120,230,170,0.90), rgba(72,199,130,0.95))';
+            }
+            if (levelLabel) levelLabel.textContent = `${safeLevel.toFixed(1).replace(/\.0$/, '')}%`;
+            if (card) card.className = `tank-card ${safeLevel < 40 ? 'crit' : safeLevel < 60 ? 'warn' : 'ok'}`;
+        }
+
         function buildMultiGrid() {
             const container = document.getElementById('multiTankGrid');
             if (container.children.length) return;
             const tanks = generateDemoTanks();
             tanks.forEach(t => {
-                const col = t.status === 'crit' ? 'var(--alarm)' : t.status === 'warn' ? 'var(--warning)' : 'var(--accent)';
-                const colHex = t.status === 'crit' ? '#ff4757' : t.status === 'warn' ? '#ff9f43' : '#00d4aa';
                 const statusLabel = t.status === 'crit' ? 'ALARM' : t.status === 'warn' ? 'WARN' : 'OK';
-
-                // Tank body dimensions
-                const W = 100, H = 160;
-                const wallT = 6;       // wall thickness
-                const rx = 8;          // corner radius
-                const fillH = Math.round((t.level / 100) * (H - wallT * 2));
-                const fillY = H - wallT - fillH;
-                // Wave path (2 cycles wide so we can scroll it)
-                const wAmp = 4, wLen = W;
-                const waveTop = fillY;
-                const wavePath = `M0,${waveTop} Q${wLen*0.25},${waveTop - wAmp} ${wLen*0.5},${waveTop} Q${wLen*0.75},${waveTop + wAmp} ${wLen},${waveTop} Q${wLen*1.25},${waveTop - wAmp} ${wLen*1.5},${waveTop} Q${wLen*1.75},${waveTop + wAmp} ${wLen*2},${waveTop} V${H - wallT} H0 Z`;
+                const levelPct = Math.max(2, Math.min(100, Number(t.level) || 0));
+                const fillBg = t.status === 'crit'
+                    ? 'linear-gradient(180deg, rgba(255,120,120,0.82), rgba(235,70,90,0.95))'
+                    : t.status === 'warn'
+                    ? 'linear-gradient(180deg, rgba(255,198,108,0.85), rgba(240,149,52,0.95))'
+                    : 'linear-gradient(180deg, rgba(120,230,170,0.90), rgba(72,199,130,0.95))';
 
                 const el = document.createElement('div');
                 el.className = `tank-card ${t.status}`;
@@ -2056,37 +2752,28 @@
                         <span class="tank-card-name">Tank ${t.id}</span>
                         <span class="tank-card-zone">Zone ${t.zone}</span>
                     </div>
-                    <div class="tank-liquid-wrap">
-                        <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
-                            <defs>
-                                <clipPath id="tank-clip-${t.id}">
-                                    <rect x="${wallT}" y="${wallT}" width="${W - wallT*2}" height="${H - wallT*2}" rx="${rx - 2}"/>
-                                </clipPath>
-                                <linearGradient id="fill-grad-${t.id}" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stop-color="${colHex}" stop-opacity="0.85"/>
-                                    <stop offset="100%" stop-color="${colHex}" stop-opacity="0.4"/>
-                                </linearGradient>
-                            </defs>
-                            <!-- Tank body outline -->
-                            <rect x="${wallT/2}" y="${wallT/2}" width="${W - wallT}" height="${H - wallT}"
-                                  rx="${rx}" fill="none"
-                                  stroke="${colHex}" stroke-opacity="0.35" stroke-width="${wallT}"/>
-                            <!-- Liquid fill with wave, clipped inside tank -->
-                            <g clip-path="url(#tank-clip-${t.id})">
-                                <!-- Solid fill below wave -->
-                                <rect x="0" y="${fillY + wAmp}" width="${W}" height="${H}" fill="url(#fill-grad-${t.id})"/>
-                                <!-- Wave surface -->
-                                <path class="liquid-wave" d="${wavePath}"
-                                      fill="url(#fill-grad-${t.id})" opacity="0.9"/>
-                            </g>
-                            <!-- Percentage text centred -->
-                            <text x="${W/2}" y="${H/2 + 5}" text-anchor="middle"
-                                  font-size="22" font-weight="700" font-family="Inter,sans-serif"
-                                  fill="${colHex}"
-                                  paint-order="stroke" stroke="var(--bg-card)" stroke-width="4" stroke-linejoin="round">
-                                ${t.level}%
-                            </text>
-                        </svg>
+                    <div class="tank-visual-wrap">
+                        <div class="tank-visual">
+                            <div class="tank-knob"></div>
+                            <div class="tank-neck"></div>
+                            <div class="tank-cap"></div>
+                            <div class="tank-shell">
+                                <div class="tank-fill" style="height:${levelPct}%; background:${fillBg};"></div>
+                                <div class="tank-band top"></div>
+                                <div class="tank-band bottom"></div>
+                                <div class="tank-highlight"></div>
+                            </div>
+                            <div class="tank-stand">
+                                <div class="tank-beam"></div>
+                                <div class="tank-leg l1"></div>
+                                <div class="tank-leg l2"></div>
+                                <div class="tank-leg l3"></div>
+                                <div class="tank-foot f1"></div>
+                                <div class="tank-foot f2"></div>
+                                <div class="tank-foot f3"></div>
+                            </div>
+                        </div>
+                        <div class="tank-level-label">${levelPct}%</div>
                     </div>
                     <div class="tank-card-footer">
                         <span class="tc-temp">🌡 ${t.temp}°C</span>
@@ -2169,7 +2856,7 @@
                 if (gv.style.display !== 'none') gv.style.display = 'grid';
             } else {
                 gv.classList.remove('multi');
-                single.style.display = '';
+                single.style.display = 'flex';
                 multi.style.display = 'none';
                 singlePin.style.display = '';
                 multiPin.style.display = 'none';
@@ -2198,7 +2885,7 @@
         function getLevelColor(pct) {
             if (pct < 40) return { hex: '#ff4757', r: 1.0, g: 0.278, b: 0.341 };
             if (pct < 60) return { hex: '#ff9f43', r: 1.0, g: 0.624, b: 0.263 };
-            return { hex: '#00d4aa', r: 0.0, g: 0.831, b: 0.667 };
+            return { hex: '#4cd97a', r: 0.298, g: 0.851, b: 0.478 };
         }
 
         // ═══════════════════ THREE.JS SETUP ═══════════════════
@@ -2214,7 +2901,7 @@
             scene.fog = new THREE.Fog(bgHex, isDarkInit ? 12 : 15, isDarkInit ? 22 : 30);
 
             camera = new THREE.PerspectiveCamera(40, w / h, 0.1, 100);
-            camera.position.set(4.5, 3.5, 6);
+            camera.position.set(5.5, 4.5, 9);
 
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
             renderer.setSize(w, h);
@@ -2230,7 +2917,7 @@
             controls.dampingFactor = 0.08;
             controls.target.set(0, 1.5, 0);
             controls.minDistance = 4;
-            controls.maxDistance = 14;
+            controls.maxDistance = 18;
             controls.maxPolarAngle = Math.PI * 0.85;
 
             // Lights
@@ -2686,9 +3373,9 @@
             volEl.textContent = vol.toLocaleString() + ' L';
             flashElement(volEl);
 
-            // Update overview card too
-            document.getElementById('overviewLevel').textContent = currentLevel.toFixed(1) + '%';
-            document.getElementById('overviewLevel').style.color = col.hex;
+            // Update overview card level display
+            const overviewLevelEl = document.getElementById('overviewLevel');
+            if (overviewLevelEl) { overviewLevelEl.textContent = currentLevel.toFixed(1) + '%'; overviewLevelEl.style.color = col.hex; }
             const mapLevelEl = document.getElementById('mapLevel');
             if (mapLevelEl) mapLevelEl.textContent = currentLevel.toFixed(1) + '%';
 
@@ -2737,6 +3424,40 @@
             else if (currentLevel >= 80 || currentLevel <= 20) { badge.classList.add('warning'); alertText.textContent = 'WARNING'; }
             else { badge.classList.add('normal'); alertText.textContent = 'NORMAL'; }
 
+            // Alarm overlay on 3D panel
+            const overlay = document.getElementById('alarmOverlay');
+            const banner = document.getElementById('alarmBanner');
+            const dot = document.getElementById('alarmDot');
+            const panel = document.getElementById('threeContainer');
+            if (overlay && banner) {
+                const isCrit = currentLevel < 40;
+                const isWarn = currentLevel < 60 && currentLevel >= 40;
+                overlay.classList.toggle('active', isCrit);
+                banner.classList.toggle('active', isCrit);
+                if (dot) dot.classList.toggle('active', isCrit);
+                if (panel) panel.classList.toggle('alarming', isCrit);
+                if (isCrit) {
+                    banner.textContent = currentLevel <= 10
+                        ? '⚠  CRITICAL LOW LEVEL — IMMEDIATE ACTION REQUIRED  ⚠'
+                        : '⚠  LOW LEVEL ALARM — LEVEL BELOW 40%  ⚠';
+                }
+            }
+
+            // Update hero tank visual level
+            initHeroLiquid(currentLevel);
+            // Update hero card status
+            const heroCard = document.getElementById('heroCard');
+            if (heroCard) {
+                heroCard.className = `tank-card ${currentLevel < 40 ? 'crit' : currentLevel < 60 ? 'warn' : 'ok'}`;
+            }
+            const heroStatusEl = document.getElementById('heroStatus');
+            if (heroStatusEl) {
+                heroStatusEl.className = `tc-status ${currentLevel < 40 ? 'crit' : currentLevel < 60 ? 'warn' : 'ok'}`;
+                heroStatusEl.textContent = currentLevel < 40 ? 'ALARM' : currentLevel < 60 ? 'WARN' : 'LIVE';
+            }
+            const heroTempEl = document.getElementById('heroTemp');
+            if (heroTempEl) heroTempEl.textContent = temp + '°C';
+
             // Update chart
             if (trendChart) {
                 let liveVal = 0;
@@ -2753,6 +3474,80 @@
                 trendChart.data.labels.shift();
                 trendChart.update('none');
             }
+        }
+
+        // ═══════════════════ CUSTOM DATE RANGE ═══════════════════
+        function initDateInputs() {
+            const now = new Date();
+            const to = now.toISOString().slice(0, 16);
+            const from = new Date(now - 7 * 24 * 3600000).toISOString().slice(0, 16);
+            const f = document.getElementById('drFrom');
+            const t = document.getElementById('drTo');
+            if (f) f.value = from;
+            if (t) t.value = to;
+        }
+
+        function toggleDrPopover() {
+            const pop = document.getElementById('drPopover');
+            const btn = document.getElementById('drTrigger');
+            const isOpen = pop.classList.toggle('open');
+            btn.classList.toggle('open', isOpen);
+        }
+
+        function closeDrPopover() {
+            document.getElementById('drPopover').classList.remove('open');
+            document.getElementById('drTrigger').classList.remove('open');
+        }
+
+        // Close popover when clicking outside
+        document.addEventListener('click', function(e) {
+            const pop = document.getElementById('drPopover');
+            const btn = document.getElementById('drTrigger');
+            if (pop && !pop.contains(e.target) && btn && !btn.contains(e.target)) {
+                pop.classList.remove('open');
+                btn.classList.remove('open');
+            }
+        });
+
+        function applyCustomRange() {
+            const f = document.getElementById('drFrom');
+            const t = document.getElementById('drTo');
+            if (!f || !t || !f.value || !t.value) return;
+            const fromMs = new Date(f.value).getTime();
+            const toMs = new Date(t.value).getTime();
+            if (isNaN(fromMs) || isNaN(toMs) || fromMs >= toMs) return;
+
+            closeDrPopover();
+            document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+
+            const diffHours = (toMs - fromMs) / 3600000;
+            const points = 30;
+            const stepHours = diffHours / points;
+            const config = trendDataConfig[activeTrend];
+            const labels = [], data = [];
+            for (let i = 0; i <= points; i++) {
+                const d = new Date(fromMs + i * stepHours * 3600000);
+                const label = diffHours <= 48
+                    ? d.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' })
+                    : d.toLocaleDateString('en-GB', { month: 'short', day: 'numeric' });
+                labels.push(label);
+                data.push(config.genVal(points - i));
+            }
+
+            const rangeLabel = `${new Date(f.value).toLocaleDateString('en-GB', { month:'short', day:'numeric' })} – ${new Date(t.value).toLocaleDateString('en-GB', { month:'short', day:'numeric' })}`;
+            document.getElementById('trendTitle').textContent = 'Historical Trend — ' + config.title.split('(')[0].trim() + '(' + rangeLabel + ')';
+
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const accent = isDark ? config.color : (config.color === '#00d4aa' ? '#0d9488' : config.color === '#ff9f43' ? '#d97706' : '#2563eb');
+            trendChart.data.labels = labels;
+            trendChart.data.datasets[0].data = data;
+            trendChart.data.datasets[0].borderColor = accent;
+            trendChart.update();
+        }
+
+        function resetCustomRange() {
+            initDateInputs();
+            setTrendTimeframe(activePeriod || '7d');
         }
 
         // ═══════════════════ THEME TOGGLE ═══════════════════
@@ -2803,6 +3598,11 @@
                 trendChart.data.datasets[0].backgroundColor = newTheme === 'dark' ? config.fillDark : config.fillLight;
                 trendChart.data.datasets[0].pointHoverBackgroundColor = chartAccent;
                 trendChart.update('none');
+            }
+
+            // Update national map palette to match the selected theme.
+            if (nationalChart && typeof nationalChart.__getThemedOption === 'function') {
+                nationalChart.setOption(nationalChart.__getThemedOption(newTheme === 'dark'), true);
             }
         }
 

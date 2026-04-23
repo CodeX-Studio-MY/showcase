@@ -1,0 +1,43 @@
+================================================================================
+  LORIOT Raw Packet Log
+  Started: 2026-04-23 15:41:07
+================================================================================
+
+[2026-04-23 15:46:04]
+{
+  "cmd": "rx",
+  "seqno": 3,
+  "EUI": "0C9CC6FEFF1BEBEA",
+  "ts": 1776930363986,
+  "fcnt": 1,
+  "port": 2,
+  "freq": 923400000,
+  "rssi": -31,
+  "snr": 13.5,
+  "toa": 330,
+  "dr": "SF10 BW125 4/5",
+  "ack": false,
+  "bat": 255,
+  "offline": false,
+  "confirmed": false,
+  "devaddr": "313A31BA",
+  "data": "043894d341"
+}
+����������������������������������������������������������������������������������������������������������������������������������������������������������������
+
+
+[2026-04-23 16:05:18] {"cmd":"rx","seqno":5,"EUI":"0C9CC6FEFF1BEBEA","ts":1776931518990,"fcnt":8,"port":2,"freq":923400000,"rssi":-33,"snr":13.2,"toa":330,"dr":"SF10 BW125 4/5","ack":false,"bat":255,"offline":false,"confirmed":false,"devaddr":"302ACBFD","data":"0461ed1d42"}
+[2026-04-23 16:07:08] {"cmd":"rx","seqno":6,"EUI":"0C9CC6FEFF1BEBEA","ts":1776931628764,"fcnt":10,"port":2,"freq":923200000,"rssi":-32,"snr":12.8,"toa":330,"dr":"SF10 BW125 4/5","ack":false,"bat":255,"offline":false,"confirmed":false,"devaddr":"302ACBFD","data":"06008661fd42"}
+[2026-04-23 16:13:52] {"cmd":"rx","seqno":7,"EUI":"0C9CC6FEFF1BEBEA","ts":1776932032906,"fcnt":12,"port":2,"freq":923200000,"rssi":-29,"snr":13,"toa":330,"dr":"SF10 BW125 4/5","ack":false,"bat":255,"offline":false,"confirmed":false,"devaddr":"302ACBFD","data":"0600e5f4a441"}
+[2026-04-23 16:15:15] {"cmd":"rx","seqno":8,"EUI":"0C9CC6FEFF1BEBEA","ts":1776932115043,"fcnt":13,"port":2,"freq":923200000,"rssi":-30,"snr":13.5,"toa":330,"dr":"SF10 BW125 4/5","ack":false,"bat":255,"offline":false,"confirmed":false,"devaddr":"302ACBFD","data":"0600c23f9941"}
+[2026-04-23 16:25:04] {"cmd":"rx","seqno":9,"EUI":"0C9CC6FEFF1BEBEA","ts":1776932704761,"fcnt":15,"port":2,"freq":923200000,"rssi":-39,"snr":12,"toa":330,"dr":"SF10 BW125 4/5","ack":false,"bat":255,"offline":false,"confirmed":false,"devaddr":"302ACBFD","data":"0600bcd18d41"}
+[2026-04-23 16:39:28] {"cmd":"rx","seqno":10,"EUI":"0C9CC6FEFF1BEBEA","ts":1776933568141,"fcnt":2,"port":2,"freq":923200000,"rssi":-42,"snr":13.2,"toa":330,"dr":"SF10 BW125 4/5","ack":false,"bat":255,"offline":false,"confirmed":false,"devaddr":"31C0ED68","data":"060094278441"}
+[2026-04-23 16:43:18] {"cmd":"rx","seqno":11,"EUI":"0C9CC6FEFF1BEBEA","ts":1776933798437,"fcnt":3,"port":2,"freq":923200000,"rssi":-39,"snr":12.5,"toa":330,"dr":"SF10 BW125 4/5","ack":false,"bat":255,"offline":false,"confirmed":false,"devaddr":"31C0ED68","data":"0600e682c242"}
+[2026-04-23 17:10:04] {"cmd":"rx","seqno":12,"EUI":"0C9CC6FEFF1BEBEA","ts":1776935404808,"fcnt":5,"port":2,"freq":923400000,"rssi":-37,"snr":12.8,"toa":330,"dr":"SF10 BW125 4/5","ack":false,"bat":255,"offline":false,"confirmed":false,"devaddr":"3119F586","data":"0600e9658641"}
+[2026-04-23 17:15:04] {"cmd":"rx","seqno":13,"EUI":"0C9CC6FEFF1BEBEA","ts":1776935704848,"fcnt":6,"port":2,"freq":923400000,"rssi":-35,"snr":12,"toa":330,"dr":"SF10 BW125 4/5","ack":false,"bat":255,"offline":false,"confirmed":false,"devaddr":"3119F586","data":"06005d238341"}
+[2026-04-23 17:20:04] {"cmd":"rx","seqno":14,"EUI":"0C9CC6FEFF1BEBEA","ts":1776936004907,"fcnt":7,"port":2,"freq":923400000,"rssi":-38,"snr":13.8,"toa":330,"dr":"SF10 BW125 4/5","ack":false,"bat":255,"offline":false,"confirmed":false,"devaddr":"3119F586","data":"06008f398641"}
+[2026-04-23 17:55:05] {"cmd":"rx","seqno":15,"EUI":"0C9CC6FEFF1BEBEA","ts":1776938105205,"fcnt":14,"port":2,"freq":923200000,"rssi":-39,"snr":12.5,"toa":330,"dr":"SF10 BW125 4/5","ack":false,"bat":255,"offline":false,"confirmed":false,"devaddr":"3119F586","data":"060066838841"}
+[2026-04-23 18:10:05] {"cmd":"rx","seqno":16,"EUI":"0C9CC6FEFF1BEBEA","ts":1776939005317,"fcnt":17,"port":2,"freq":923400000,"rssi":-34,"snr":13.8,"toa":330,"dr":"SF10 BW125 4/5","ack":false,"bat":255,"offline":false,"confirmed":false,"devaddr":"3119F586","data":"0600c4628b41"}
+[2026-04-23 19:00:05] {"cmd":"rx","seqno":17,"EUI":"0C9CC6FEFF1BEBEA","ts":1776942005673,"fcnt":27,"port":2,"freq":923400000,"rssi":-34,"snr":13,"toa":330,"dr":"SF10 BW125 4/5","ack":false,"bat":255,"offline":false,"confirmed":false,"devaddr":"3119F586","data":"060040fe8741"}
+[2026-04-23 19:05:05] {"cmd":"rx","seqno":18,"EUI":"0C9CC6FEFF1BEBEA","ts":1776942305713,"fcnt":28,"port":2,"freq":923200000,"rssi":-36,"snr":12.8,"toa":330,"dr":"SF10 BW125 4/5","ack":false,"bat":255,"offline":false,"confirmed":false,"devaddr":"3119F586","data":"0600695f8641"}
+[2026-04-23 19:10:05] {"cmd":"rx","seqno":19,"EUI":"0C9CC6FEFF1BEBEA","ts":1776942605748,"fcnt":29,"port":2,"freq":923400000,"rssi":-35,"snr":13,"toa":330,"dr":"SF10 BW125 4/5","ack":false,"bat":255,"offline":false,"confirmed":false,"devaddr":"3119F586","data":"06006f648741"}

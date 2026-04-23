@@ -1,0 +1,52 @@
+================================================================================
+  LORIOT Decoded Data Log
+  Started: 2026-04-23 15:41:07
+================================================================================
+
+[2026-04-23 15:46:04]
+  Device EUI : 0C9CC6FEFF1BEBEA
+  fPort      : 2
+  fCnt       : 1
+  Frequency  : 923400000 Hz
+  RSSI       : -31 dBm
+  SNR        : 13.5 dB
+  Data Rate  : DRSF10 BW125 4/5
+  Raw Payload: 043894d341
+
+  --- Decoded Aircom Data ---
+  A1       : 26.4474
+©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+
+[2026-04-23 16:03:58]
+  Device EUI : 0C9CC6FEFF1BEBEA
+  fPort      : 2
+  fCnt       : 6
+  Frequency  : 923400000 Hz
+  RSSI       : -35 dBm
+  SNR        : 13.5 dB
+  Data Rate  : DRSF10 BW125 4/5
+  Raw Payload: 04a996a341
+
+  --- Decoded Aircom Data ---
+  A1       : 20.4486
+©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+
+[2026-04-23 16:05:18] EUI=0C9CC6FEFF1BEBEA fCnt=8 RSSI=-33 SNR=13.2 | {"A1": 39.4818}
+[2026-04-23 16:07:08] EUI=0C9CC6FEFF1BEBEA fCnt=10 RSSI=-32 SNR=12.8 | {"D1": 0, "D2": 0, "D3": 0, "D4": 0, "A1": 126.6905}
+[2026-04-23 16:12:48] SYSTEM | Connected (session #1)
+[2026-04-23 16:13:52] EUI=0C9CC6FEFF1BEBEA fCnt=12 RSSI=-29 SNR=13 | {"D1": 0, "D2": 0, "D3": 0, "D4": 0, "A1": 20.6196}
+[2026-04-23 16:15:15] EUI=0C9CC6FEFF1BEBEA fCnt=13 RSSI=-30 SNR=13.5 | {"D1": 0, "D2": 0, "D3": 0, "D4": 0, "A1": 19.1561}
+[2026-04-23 16:25:04] EUI=0C9CC6FEFF1BEBEA fCnt=15 RSSI=-39 SNR=12 | {"D1": 0, "D2": 0, "D3": 0, "D4": 0, "A1": 17.7274}
+[2026-04-23 16:39:28] EUI=0C9CC6FEFF1BEBEA fCnt=2 RSSI=-42 SNR=13.2 | {"D1": 0, "D2": 0, "D3": 0, "D4": 0, "A1": 16.5193}
+[2026-04-23 16:43:18] EUI=0C9CC6FEFF1BEBEA fCnt=3 RSSI=-39 SNR=12.5 | {"D1": 0, "D2": 0, "D3": 0, "D4": 0, "A1": 97.2557}
+[2026-04-23 17:10:04] EUI=0C9CC6FEFF1BEBEA fCnt=5 RSSI=-37 SNR=12.8 | {"D1": 0, "D2": 0, "D3": 0, "D4": 0, "A1": 16.7998}
+[2026-04-23 17:15:04] EUI=0C9CC6FEFF1BEBEA fCnt=6 RSSI=-35 SNR=12 | {"D1": 0, "D2": 0, "D3": 0, "D4": 0, "A1": 16.3923}
+[2026-04-23 17:20:04] EUI=0C9CC6FEFF1BEBEA fCnt=7 RSSI=-38 SNR=13.8 | {"D1": 0, "D2": 0, "D3": 0, "D4": 0, "A1": 16.7781}
+[2026-04-23 17:29:34] SYSTEM | Connection closed by server: code=1006 reason=
+[2026-04-23 17:29:34] SYSTEM | Reconnecting in 5s... (attempt #1, total RX: 8)
+[2026-04-23 17:29:40] SYSTEM | Connected (session #3)
+[2026-04-23 17:55:05] EUI=0C9CC6FEFF1BEBEA fCnt=14 RSSI=-39 SNR=12.5 | {"D1": 0, "D2": 0, "D3": 0, "D4": 0, "A1": 17.0642}
+[2026-04-23 18:10:05] EUI=0C9CC6FEFF1BEBEA fCnt=17 RSSI=-34 SNR=13.8 | {"D1": 0, "D2": 0, "D3": 0, "D4": 0, "A1": 17.4232}
+[2026-04-23 19:00:05] EUI=0C9CC6FEFF1BEBEA fCnt=27 RSSI=-34 SNR=13 | {"D1": 0, "D2": 0, "D3": 0, "D4": 0, "A1": 16.9991}
+[2026-04-23 19:05:05] EUI=0C9CC6FEFF1BEBEA fCnt=28 RSSI=-36 SNR=12.8 | {"D1": 0, "D2": 0, "D3": 0, "D4": 0, "A1": 16.7966}
+[2026-04-23 19:10:05] EUI=0C9CC6FEFF1BEBEA fCnt=29 RSSI=-35 SNR=13 | {"D1": 0, "D2": 0, "D3": 0, "D4": 0, "A1": 16.924}

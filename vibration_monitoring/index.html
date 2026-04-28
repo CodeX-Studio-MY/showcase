@@ -1,620 +1,1176 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vibration Monitoring & Diagnostic System</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-  <style>
-    :root {
-      --bg-primary: #0a0e1a;
-      --bg-card: #111827;
-      --bg-card-hover: #1a2235;
-      --border: #1e2a3a;
-      --accent-blue: #3b82f6;
-      --accent-cyan: #06b6d4;
-      --accent-green: #10b981;
-      --accent-orange: #f59e0b;
-      --accent-red: #ef4444;
-      --text-primary: #f1f5f9;
-      --text-secondary: #94a3b8;
-      --text-muted: #475569;
-      --shadow: 0 0 20px rgba(59, 130, 246, 0.08);
-      --radius: 12px;
-      --radius-sm: 8px;
-      --transition: 0.3s ease;
-    }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vibration Monitoring & Diagnostic System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <style>
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-card: #111827;
+            --bg-card-hover: #1a2235;
+            --border: #1e2a3a;
+            --accent-blue: #3b82f6;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-orange: #f59e0b;
+            --accent-red: #ef4444;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #475569;
+            --shadow: 0 0 20px rgba(59, 130, 246, 0.08);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --transition: 0.3s ease;
+        }
 
-    * { box-sizing: border-box; }
-    html, body { margin: 0; min-width: 1280px; background: radial-gradient(circle at top, #111d35 0%, var(--bg-primary) 45%); color: var(--text-primary); font-family: Inter, sans-serif; }
-    body.loading .loaded { opacity: 0; visibility: hidden; }
-    body.loading .skeleton { display: block; }
-    a { color: inherit; text-decoration: none; }
-    button, input { font: inherit; }
-    ::-webkit-scrollbar { width: 10px; height: 10px; }
-    ::-webkit-scrollbar-track { background: #0f172a; }
-    ::-webkit-scrollbar-thumb { background: #243147; border-radius: 999px; }
+        * {
+            box-sizing: border-box;
+        }
 
-    .topbar, .footer {
-      display: grid; align-items: center; padding: 0 20px; border-bottom: 1px solid rgba(255,255,255,0.04);
-      background: rgba(10, 14, 26, 0.95); backdrop-filter: blur(12px); position: sticky; z-index: 50;
-    }
-    .topbar { top: 0; grid-template-columns: 320px 1fr auto; height: 56px; }
-    .footer { position: relative; height: 32px; border-top: 1px solid rgba(255,255,255,0.04); border-bottom: 0; color: var(--text-muted); place-items: center; font-size: 12px; }
-    .brand, .top-actions, .nav-links, .crumbs { display: flex; align-items: center; gap: 14px; }
-    .brand-mark, .avatar, .company-badge {
-      width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-weight: 700;
-      background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan)); color: white;
-    }
-    .company-badge { width: 40px; height: 40px; }
-    .brand-title strong { display: block; font-size: 14px; }
-    .brand-title span, .crumbs, .top-actions { color: var(--text-secondary); font-size: 13px; }
-    .nav-links { justify-content: center; gap: 22px; }
-    .nav-links a { padding: 17px 0; border-bottom: 2px solid transparent; transition: var(--transition); }
-    .nav-links a.active, .nav-links a:hover { color: var(--text-primary); border-color: var(--accent-blue); }
-    .notif { position: relative; padding: 8px; border-radius: 10px; background: rgba(255,255,255,0.03); }
-    .notif::after {
-      content: "3"; position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; border-radius: 50%;
-      background: var(--accent-red); color: white; display: grid; place-items: center; font-size: 10px; font-weight: 700;
-    }
-    .clock { min-width: 92px; text-align: right; font-variant-numeric: tabular-nums; }
+        html,
+        body {
+            margin: 0;
+            min-width: 1280px;
+            background: radial-gradient(circle at top, #111d35 0%, var(--bg-primary) 45%);
+            color: var(--text-primary);
+            font-family: Inter, sans-serif;
+        }
 
-    .layout {
-      display: grid; grid-template-columns: 260px minmax(0, 1fr) 380px; gap: 18px; padding: 18px; min-height: calc(100vh - 88px);
-    }
-    .sidebar, .card {
-      background: rgba(17, 24, 39, 0.92); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow);
-    }
-    .sidebar { overflow: hidden; display: flex; flex-direction: column; }
-    .sidebar-head { padding: 18px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .sidebar-head h1 { margin: 0; font-size: 20px; }
-    .sidebar-head p { margin: 4px 0 0; color: var(--text-secondary); font-size: 12px; }
-    .search-wrap {
-      margin-top: 16px; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm);
-      display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03);
-    }
-    .search-wrap input { flex: 1; border: 0; outline: 0; background: transparent; color: var(--text-primary); }
-    .asset-list { overflow: auto; padding: 12px; display: grid; gap: 12px; }
-    .asset-item {
-      position: relative; padding: 14px 14px 14px 18px; border-radius: var(--radius-sm); border: 1px solid var(--border);
-      background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015)); cursor: pointer; transition: var(--transition);
-    }
-    .asset-item:hover, .card:hover { background: var(--bg-card-hover); }
-    .asset-item.active { border-color: rgba(59,130,246,0.35); box-shadow: inset 3px 0 0 var(--accent-blue), var(--shadow); }
-    .asset-item h3 { margin: 0 0 8px; font-size: 14px; }
-    .asset-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
-    .badge {
-      display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 999px;
-      font-size: 11px; font-weight: 600; border: 1px solid transparent;
-    }
-    .running, .normal { color: #d1fae5; background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.25); }
-    .warning, .watch { color: #fde68a; background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.25); }
-    .tripped, .anomaly { color: #fecaca; background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.25); }
-    .offline { color: #cbd5e1; background: rgba(148,163,184,0.12); border-color: rgba(148,163,184,0.25); }
-    .asset-time { color: var(--text-muted); font-size: 11px; }
+        body.loading .loaded {
+            opacity: 0;
+            visibility: hidden;
+        }
 
-    .center-col, .right-col { display: grid; gap: 18px; align-content: start; }
-    .center-col { grid-template-rows: minmax(340px, auto) minmax(260px, auto) minmax(260px, auto); }
-    .right-col { grid-template-rows: auto auto auto; }
-    .card { position: relative; overflow: hidden; transition: transform var(--transition), background var(--transition); }
-    .card-header {
-      display: flex; align-items: center; justify-content: space-between; padding: 16px 18px 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-    .card-title { display: flex; align-items: center; gap: 10px; }
-    .card-title h2, .card-title h3 { margin: 0; font-size: 16px; }
-    .card-subtitle { margin-top: 4px; color: var(--text-secondary); font-size: 12px; }
-    .expand-link, .view-link {
-      color: var(--accent-cyan); font-weight: 600; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;
-    }
-    .card-body { padding: 16px 18px 18px; }
-    .split { display: grid; grid-template-columns: minmax(360px, 48%) 1fr; gap: 18px; }
-    #pumpScene { height: 276px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: linear-gradient(180deg, #0b1222, #09111d); }
-    .viewer-toolbar { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
-    .chip-btn {
-      padding: 8px 10px; border-radius: 999px; border: 1px solid var(--border); background: rgba(255,255,255,0.03);
-      color: var(--text-secondary); cursor: pointer; transition: var(--transition);
-    }
-    .chip-btn.active, .chip-btn:hover { color: var(--text-primary); border-color: rgba(59,130,246,0.4); background: rgba(59,130,246,0.12); }
-    .detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 20px; }
-    .detail-row small { display: block; color: var(--text-muted); margin-bottom: 4px; }
-    .detail-row strong { font-size: 14px; }
-    #assetMap { height: 200px; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border); }
-    .location-meta { display: flex; justify-content: space-between; gap: 16px; margin-top: 12px; color: var(--text-secondary); font-size: 13px; }
-    .location-meta strong { display: block; color: var(--text-primary); font-size: 14px; margin-top: 4px; }
+        body.loading .skeleton {
+            display: block;
+        }
 
-    .logs-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    .logs-table th, .logs-table td { padding: 11px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left; vertical-align: top; }
-    .logs-table th { color: var(--text-secondary); font-weight: 600; }
-    .logs-table tbody tr { cursor: pointer; transition: var(--transition); }
-    .logs-table tbody tr:hover { background: rgba(59,130,246,0.08); }
-    .sev-info { color: var(--accent-green); }
-    .sev-warning { color: var(--accent-orange); }
-    .sev-critical { color: var(--accent-red); }
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
 
-    .pulse-icon {
-      width: 10px; height: 10px; border-radius: 50%; background: var(--accent-cyan); position: relative;
-      box-shadow: 0 0 0 rgba(6,182,212,0.6); animation: pulse 1.8s infinite;
-    }
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(6,182,212,0.55); }
-      70% { box-shadow: 0 0 0 12px rgba(6,182,212,0); }
-      100% { box-shadow: 0 0 0 0 rgba(6,182,212,0); }
-    }
+        button,
+        input {
+            font: inherit;
+        }
 
-    .mini-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-    .mini-card {
-      border: 1px solid var(--border); border-left: 4px solid var(--accent-green); border-radius: var(--radius-sm);
-      padding: 12px; background: rgba(255,255,255,0.03);
-    }
-    .mini-card.warning-border { border-left-color: var(--accent-orange); }
-    .mini-card.alarm-border { border-left-color: var(--accent-red); }
-    .mini-card .value { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-    .mini-card .label { color: var(--text-secondary); font-size: 12px; margin-bottom: 10px; }
-    .progress-track { height: 6px; border-radius: 999px; background: rgba(148,163,184,0.14); overflow: hidden; }
-    .progress-bar { height: 100%; border-radius: inherit; }
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
 
-    .ai-report {
-      border: 1px solid rgba(59,130,246,0.18); border-radius: var(--radius-sm); padding: 14px;
-      background: linear-gradient(180deg, rgba(59,130,246,0.08), rgba(255,255,255,0.02));
-    }
-    .ai-report p { margin: 0 0 12px; line-height: 1.55; color: var(--text-secondary); font-size: 13px; }
-    .ai-report strong { color: var(--text-primary); }
-    .ai-meta { display: grid; grid-template-columns: 74px 1fr; gap: 14px; align-items: center; }
-    .confidence {
-      width: 74px; height: 74px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700;
-      background: conic-gradient(var(--accent-cyan) 313.2deg, rgba(148,163,184,0.14) 0deg);
-      position: relative;
-    }
-    .confidence::before {
-      content: ""; position: absolute; inset: 8px; border-radius: 50%; background: var(--bg-card);
-    }
-    .confidence span { position: relative; z-index: 1; }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
 
-    .sparkline-list { display: grid; gap: 10px; }
-    .sparkline-row {
-      display: grid; grid-template-columns: 70px 1fr 68px; gap: 10px; align-items: center; padding: 8px 10px;
-      border-radius: var(--radius-sm); border: 1px solid var(--border); cursor: pointer; transition: var(--transition);
-      background: rgba(255,255,255,0.03);
-    }
-    .sparkline-row:hover { background: rgba(59,130,246,0.08); }
-    .sparkline-row canvas { width: 100%; height: 40px; }
-    .sparkline-row small { color: var(--text-secondary); }
-    .sparkline-row strong { text-align: right; font-size: 12px; }
+        ::-webkit-scrollbar-thumb {
+            background: #243147;
+            border-radius: 999px;
+        }
 
-    .skeleton {
-      display: none; min-height: 120px; border-radius: var(--radius-sm); overflow: hidden;
-      background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 40%, rgba(255,255,255,0.04) 55%);
-      background-size: 200% 100%; animation: shimmer 1.2s infinite;
-    }
-    @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
-    .card.loaded { opacity: 0; transform: translateY(14px); animation: cardIn 0.5s forwards; }
-    .layout > *:nth-child(1) { animation-delay: 0.05s; }
-    .layout > *:nth-child(2) { animation-delay: 0.1s; }
-    .layout > *:nth-child(3) { animation-delay: 0.15s; }
-    @keyframes cardIn { to { opacity: 1; transform: translateY(0); } }
+        .topbar,
+        .footer {
+            display: grid;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            background: rgba(10, 14, 26, 0.95);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            z-index: 50;
+        }
 
-    .map-marker {
-      width: 18px; height: 18px; border-radius: 50%; background: var(--accent-blue); border: 3px solid rgba(255,255,255,0.75);
-      box-shadow: 0 0 0 rgba(59,130,246,0.45); animation: mapPulse 1.8s infinite;
-    }
-    @keyframes mapPulse {
-      0% { box-shadow: 0 0 0 0 rgba(59,130,246,0.55); }
-      80% { box-shadow: 0 0 0 16px rgba(59,130,246,0); }
-      100% { box-shadow: 0 0 0 0 rgba(59,130,246,0); }
-    }
+        .topbar {
+            top: 0;
+            grid-template-columns: 320px 1fr auto;
+            height: 56px;
+        }
 
-    .status-line { display: inline-flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 13px; }
-    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-green); }
+        .footer {
+            position: relative;
+            height: 32px;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            border-bottom: 0;
+            color: var(--text-muted);
+            place-items: center;
+            font-size: 12px;
+        }
 
-    @media print {
-      :root { --bg-primary: #fff; --bg-card: #fff; --bg-card-hover: #fff; --border: #ddd; --text-primary: #111; --text-secondary: #444; --text-muted: #666; }
-      html, body { min-width: auto; background: #fff; color: #111; }
-      .topbar, .footer, .sidebar, .card { background: #fff !important; box-shadow: none !important; }
-    }
-  </style>
+        .brand,
+        .top-actions,
+        .nav-links,
+        .crumbs {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-mark,
+        .avatar,
+        .company-badge {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+            color: white;
+        }
+
+        .company-badge {
+            width: 40px;
+            height: 40px;
+        }
+
+        .brand-title strong {
+            display: block;
+            font-size: 14px;
+        }
+
+        .brand-title span,
+        .crumbs,
+        .top-actions {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .nav-links {
+            justify-content: center;
+            gap: 22px;
+        }
+
+        .nav-links a {
+            padding: 17px 0;
+            border-bottom: 2px solid transparent;
+            transition: var(--transition);
+        }
+
+        .nav-links a.active,
+        .nav-links a:hover {
+            color: var(--text-primary);
+            border-color: var(--accent-blue);
+        }
+
+        .notif {
+            position: relative;
+            padding: 8px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .notif::after {
+            content: "3";
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-red);
+            color: white;
+            display: grid;
+            place-items: center;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .clock {
+            min-width: 92px;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 260px minmax(0, 1fr) 380px;
+            gap: 18px;
+            padding: 18px;
+            min-height: calc(100vh - 88px);
+        }
+
+        .sidebar,
+        .card {
+            background: rgba(17, 24, 39, 0.92);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .sidebar {
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-head {
+            padding: 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar-head h1 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .sidebar-head p {
+            margin: 4px 0 0;
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
+        .search-wrap {
+            margin-top: 16px;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .search-wrap input {
+            flex: 1;
+            border: 0;
+            outline: 0;
+            background: transparent;
+            color: var(--text-primary);
+        }
+
+        .asset-list {
+            overflow: auto;
+            padding: 12px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .asset-item {
+            position: relative;
+            padding: 14px 14px 14px 18px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.015));
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .asset-item:hover,
+        .card:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .asset-item.active {
+            border-color: rgba(59, 130, 246, 0.35);
+            box-shadow: inset 3px 0 0 var(--accent-blue), var(--shadow);
+        }
+
+        .asset-item h3 {
+            margin: 0 0 8px;
+            font-size: 14px;
+        }
+
+        .asset-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+            border: 1px solid transparent;
+        }
+
+        .running,
+        .normal {
+            color: #d1fae5;
+            background: rgba(16, 185, 129, 0.12);
+            border-color: rgba(16, 185, 129, 0.25);
+        }
+
+        .warning,
+        .watch {
+            color: #fde68a;
+            background: rgba(245, 158, 11, 0.12);
+            border-color: rgba(245, 158, 11, 0.25);
+        }
+
+        .tripped,
+        .anomaly {
+            color: #fecaca;
+            background: rgba(239, 68, 68, 0.12);
+            border-color: rgba(239, 68, 68, 0.25);
+        }
+
+        .offline {
+            color: #cbd5e1;
+            background: rgba(148, 163, 184, 0.12);
+            border-color: rgba(148, 163, 184, 0.25);
+        }
+
+        .asset-time {
+            color: var(--text-muted);
+            font-size: 11px;
+        }
+
+        .center-col,
+        .right-col {
+            display: grid;
+            gap: 18px;
+            align-content: start;
+        }
+
+        .center-col {
+            grid-template-rows: minmax(340px, auto) minmax(260px, auto) minmax(260px, auto);
+        }
+
+        .right-col {
+            grid-template-rows: auto auto auto;
+        }
+
+        .card {
+            position: relative;
+            overflow: hidden;
+            transition: transform var(--transition), background var(--transition);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 18px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title h2,
+        .card-title h3 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .card-subtitle {
+            margin-top: 4px;
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
+        .expand-link,
+        .view-link {
+            color: var(--accent-cyan);
+            font-weight: 600;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .card-body {
+            padding: 16px 18px 18px;
+        }
+
+        .split {
+            display: grid;
+            grid-template-columns: minmax(360px, 48%) 1fr;
+            gap: 18px;
+        }
+
+        #pumpScene {
+            height: 276px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: linear-gradient(180deg, #0b1222, #09111d);
+        }
+
+        .viewer-toolbar {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .chip-btn {
+            padding: 8px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .chip-btn.active,
+        .chip-btn:hover {
+            color: var(--text-primary);
+            border-color: rgba(59, 130, 246, 0.4);
+            background: rgba(59, 130, 246, 0.12);
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px 20px;
+        }
+
+        .detail-row small {
+            display: block;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .detail-row strong {
+            font-size: 14px;
+        }
+
+        #assetMap {
+            height: 200px;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .location-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            margin-top: 12px;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .location-meta strong {
+            display: block;
+            color: var(--text-primary);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .logs-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .logs-table th,
+        .logs-table td {
+            padding: 11px 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .logs-table th {
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .logs-table tbody tr {
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .logs-table tbody tr:hover {
+            background: rgba(59, 130, 246, 0.08);
+        }
+
+        .sev-info {
+            color: var(--accent-green);
+        }
+
+        .sev-warning {
+            color: var(--accent-orange);
+        }
+
+        .sev-critical {
+            color: var(--accent-red);
+        }
+
+        .pulse-icon {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            position: relative;
+            box-shadow: 0 0 0 rgba(6, 182, 212, 0.6);
+            animation: pulse 1.8s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.55);
+            }
+
+            70% {
+                box-shadow: 0 0 0 12px rgba(6, 182, 212, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(6, 182, 212, 0);
+            }
+        }
+
+        .mini-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .mini-card {
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--accent-green);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .mini-card.warning-border {
+            border-left-color: var(--accent-orange);
+        }
+
+        .mini-card.alarm-border {
+            border-left-color: var(--accent-red);
+        }
+
+        .mini-card .value {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .mini-card .label {
+            color: var(--text-secondary);
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .progress-track {
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.14);
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: inherit;
+        }
+
+        .ai-report {
+            border: 1px solid rgba(59, 130, 246, 0.18);
+            border-radius: var(--radius-sm);
+            padding: 14px;
+            background: linear-gradient(180deg, rgba(59, 130, 246, 0.08), rgba(255, 255, 255, 0.02));
+        }
+
+        .ai-report p {
+            margin: 0 0 12px;
+            line-height: 1.55;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .ai-report strong {
+            color: var(--text-primary);
+        }
+
+        .ai-meta {
+            display: grid;
+            grid-template-columns: 74px 1fr;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .confidence {
+            width: 74px;
+            height: 74px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-size: 13px;
+            font-weight: 700;
+            background: conic-gradient(var(--accent-cyan) 313.2deg, rgba(148, 163, 184, 0.14) 0deg);
+            position: relative;
+        }
+
+        .confidence::before {
+            content: "";
+            position: absolute;
+            inset: 8px;
+            border-radius: 50%;
+            background: var(--bg-card);
+        }
+
+        .confidence span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .sparkline-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .sparkline-row {
+            display: grid;
+            grid-template-columns: 70px 1fr 68px;
+            gap: 10px;
+            align-items: center;
+            padding: 8px 10px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .sparkline-row:hover {
+            background: rgba(59, 130, 246, 0.08);
+        }
+
+        .sparkline-row canvas {
+            width: 100%;
+            height: 40px;
+        }
+
+        .sparkline-row small {
+            color: var(--text-secondary);
+        }
+
+        .sparkline-row strong {
+            text-align: right;
+            font-size: 12px;
+        }
+
+        .skeleton {
+            display: none;
+            min-height: 120px;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.04) 25%, rgba(255, 255, 255, 0.08) 40%, rgba(255, 255, 255, 0.04) 55%);
+            background-size: 200% 100%;
+            animation: shimmer 1.2s infinite;
+        }
+
+        @keyframes shimmer {
+            from {
+                background-position: 200% 0;
+            }
+
+            to {
+                background-position: -200% 0;
+            }
+        }
+
+        .card.loaded {
+            opacity: 0;
+            transform: translateY(14px);
+            animation: cardIn 0.5s forwards;
+        }
+
+        .layout>*:nth-child(1) {
+            animation-delay: 0.05s;
+        }
+
+        .layout>*:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .layout>*:nth-child(3) {
+            animation-delay: 0.15s;
+        }
+
+        @keyframes cardIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .map-marker {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            border: 3px solid rgba(255, 255, 255, 0.75);
+            box-shadow: 0 0 0 rgba(59, 130, 246, 0.45);
+            animation: mapPulse 1.8s infinite;
+        }
+
+        @keyframes mapPulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.55);
+            }
+
+            80% {
+                box-shadow: 0 0 0 16px rgba(59, 130, 246, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+            }
+        }
+
+        .status-line {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+        }
+
+        @media print {
+            :root {
+                --bg-primary: #fff;
+                --bg-card: #fff;
+                --bg-card-hover: #fff;
+                --border: #ddd;
+                --text-primary: #111;
+                --text-secondary: #444;
+                --text-muted: #666;
+            }
+
+            html,
+            body {
+                min-width: auto;
+                background: #fff;
+                color: #111;
+            }
+
+            .topbar,
+            .footer,
+            .sidebar,
+            .card {
+                background: #fff !important;
+                box-shadow: none !important;
+            }
+        }
+    </style>
 </head>
+
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <div class="brand-mark">SE</div>
-      <div class="brand-title">
-        <strong>Vibration Monitoring &amp; Diagnostic System</strong>
-      </div>
-    </div>
-    <nav class="nav-links">
-      <a class="active" href="index.html">Dashboard</a>
-      <a href="asset-detail.html">Asset Detail</a>
-      <a href="diagnostics.html">Diagnostics</a>
-      <a href="trends.html">Trends</a>
-    </nav>
-    <div class="top-actions">
-      <div class="crumbs">Dashboard &gt; Asset Overview</div>
-      <div class="notif">🔔</div>
-      <div class="clock" id="clock"></div>
-      <div class="avatar">TH</div>
-    </div>
-  </header>
-
-  <main class="layout">
-    <aside class="sidebar loaded">
-      <div class="sidebar-head">
-        <div style="display:flex; align-items:center; gap:12px;">
-          <div class="company-badge">SE</div>
-          <div>
-            <h1>Asset Monitor</h1>
-            <p>Industrial condition intelligence</p>
-          </div>
-        </div>
-        <div class="search-wrap">
-          <span>🔎</span>
-          <input id="assetSearch" type="text" placeholder="Search assets" />
-          <span style="color:var(--text-muted)">⛭</span>
-        </div>
-      </div>
-      <div class="asset-list" id="assetList"></div>
-    </aside>
-
-    <section class="center-col">
-      <article class="card loaded">
-        <div class="card-header">
-          <div class="card-title">
-            <div>
-              <h2>Asset Detail</h2>
-              <div class="card-subtitle">Selected equipment context and digital twin preview</div>
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-mark">SE</div>
+            <div class="brand-title">
+                <strong>Vibration Monitoring &amp; Diagnostic System</strong>
             </div>
-          </div>
-          <a class="expand-link" href="asset-detail.html">Expand ↗</a>
         </div>
-        <div class="card-body">
-          <div class="split">
-            <div>
-              <div class="skeleton" style="height:276px;"></div>
-              <div id="pumpScene" class="loaded"></div>
-              <div class="viewer-toolbar loaded">
-                <button id="rotateToggle" class="chip-btn active">Auto Rotate</button>
-                <button id="alarmFocus" class="chip-btn">Alarm Focus</button>
-              </div>
+        <nav class="nav-links">
+            <a class="active" href="index.html">Dashboard</a>
+            <a href="asset-detail.html">Asset Detail</a>
+            <a href="diagnostics.html">Diagnostics</a>
+            <a href="trends.html">Trends</a>
+        </nav>
+        <div class="top-actions">
+            <div class="crumbs">Dashboard &gt; Asset Overview</div>
+            <div class="notif">🔔</div>
+            <div class="clock" id="clock"></div>
+            <div class="avatar">TH</div>
+        </div>
+    </header>
+
+    <main class="layout">
+        <aside class="sidebar loaded">
+            <div class="sidebar-head">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div class="company-badge">SE</div>
+                    <div>
+                        <h1>Asset Monitor</h1>
+                        <p>Industrial condition intelligence</p>
+                    </div>
+                </div>
+                <div class="search-wrap">
+                    <span>🔎</span>
+                    <input id="assetSearch" type="text" placeholder="Search assets" />
+                    <span style="color:var(--text-muted)">⛭</span>
+                </div>
             </div>
-            <div class="loaded">
-              <div class="detail-grid" id="assetDetailGrid"></div>
-            </div>
-          </div>
-        </div>
-      </article>
+            <div class="asset-list" id="assetList"></div>
+        </aside>
 
-      <article class="card loaded">
-        <div class="card-header">
-          <div class="card-title">
-            <div>
-              <h2>Location</h2>
-              <div class="card-subtitle">Site telemetry gateway and asset location</div>
-            </div>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="skeleton" style="height:200px;"></div>
-          <div id="assetMap" class="loaded"></div>
-          <div class="location-meta loaded">
-            <div><span>Site</span><strong id="siteLabel">PPTSB Refinery, Pasir Gudang</strong></div>
-            <div><span>Gateway</span><strong id="gatewayLabel">4G LoRaWAN - Signal: -67 dBm</strong></div>
-          </div>
-        </div>
-      </article>
+        <section class="center-col">
+            <article class="card loaded">
+                <div class="card-header">
+                    <div class="card-title">
+                        <div>
+                            <h2>Asset Detail</h2>
+                            <div class="card-subtitle">Selected equipment context and digital twin preview</div>
+                        </div>
+                    </div>
+                    <a class="expand-link" href="asset-detail.html">Expand ↗</a>
+                </div>
+                <div class="card-body">
+                    <div class="split">
+                        <div>
+                            <div class="skeleton" style="height:276px;"></div>
+                            <div id="pumpScene" class="loaded"></div>
+                            <div class="viewer-toolbar loaded">
+                                <button id="rotateToggle" class="chip-btn active">Auto Rotate</button>
+                                <button id="alarmFocus" class="chip-btn">Alarm Focus</button>
+                            </div>
+                        </div>
+                        <div class="loaded">
+                            <div class="detail-grid" id="assetDetailGrid"></div>
+                        </div>
+                    </div>
+                </div>
+            </article>
 
-      <article class="card loaded">
-        <div class="card-header">
-          <div class="card-title">
-            <div>
-              <h2>Detection Logs</h2>
-              <div class="card-subtitle">Recent AI detections and maintenance intelligence</div>
-            </div>
-          </div>
-          <a class="view-link" href="diagnostics.html">View All Logs ↗</a>
-        </div>
-        <div class="card-body">
-          <div class="skeleton" style="height:210px;"></div>
-          <table class="logs-table loaded">
-            <thead>
-              <tr>
-                <th>Timestamp</th>
-                <th>Severity</th>
-                <th>Detection</th>
-                <th>Description</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="logBody"></tbody>
-          </table>
-        </div>
-      </article>
-    </section>
+            <article class="card loaded">
+                <div class="card-header">
+                    <div class="card-title">
+                        <div>
+                            <h2>Location</h2>
+                            <div class="card-subtitle">Site telemetry gateway and asset location</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="skeleton" style="height:200px;"></div>
+                    <div id="assetMap" class="loaded"></div>
+                    <div class="location-meta loaded">
+                        <div><span>Site</span><strong id="siteLabel">PPTSB Refinery, Pasir Gudang</strong></div>
+                        <div><span>Gateway</span><strong id="gatewayLabel">4G LoRaWAN - Signal: -67 dBm</strong></div>
+                    </div>
+                </div>
+            </article>
 
-    <section class="right-col">
-      <article class="card loaded">
-        <div class="card-header">
-          <div class="card-title">
-            <span class="pulse-icon"></span>
-            <div>
-              <h3>Vibration Indicators</h3>
-              <div class="card-subtitle">Connected condition indicators</div>
-            </div>
-          </div>
-          <a class="expand-link" href="diagnostics.html">Expand ↗</a>
-        </div>
-        <div class="card-body">
-          <div class="skeleton" style="height:250px;"></div>
-          <div class="mini-grid loaded" id="indicatorGrid"></div>
-        </div>
-      </article>
+            <article class="card loaded">
+                <div class="card-header">
+                    <div class="card-title">
+                        <div>
+                            <h2>Detection Logs</h2>
+                            <div class="card-subtitle">Recent AI detections and maintenance intelligence</div>
+                        </div>
+                    </div>
+                    <a class="view-link" href="diagnostics.html">View All Logs ↗</a>
+                </div>
+                <div class="card-body">
+                    <div class="skeleton" style="height:210px;"></div>
+                    <table class="logs-table loaded">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Severity</th>
+                                <th>Detection</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logBody"></tbody>
+                    </table>
+                </div>
+            </article>
+        </section>
 
-      <article class="card loaded">
-        <div class="card-header">
-          <div class="card-title">
-            <div>
-              <h3>AI Diagnostic Summary</h3>
-              <div class="card-subtitle">Inference generated from vibration trend context</div>
-            </div>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="skeleton" style="height:210px;"></div>
-          <div class="ai-report loaded">
-            <div class="ai-meta">
-              <div class="confidence"><span id="confidenceValue">87%</span></div>
-              <div>
-                <p><strong>Primary Concern:</strong> <span id="primaryConcern"></span></p>
-                <p><strong>Recommended Action:</strong> <span id="recommendedAction"></span></p>
-              </div>
-            </div>
-            <p><strong>Secondary Watch:</strong> <span id="secondaryWatch"></span></p>
-            <div class="status-line"><span class="status-dot"></span><span id="analysisUpdated"></span></div>
-          </div>
-        </div>
-      </article>
+        <section class="right-col">
+            <article class="card loaded">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span class="pulse-icon"></span>
+                        <div>
+                            <h3>Vibration Indicators</h3>
+                            <div class="card-subtitle">Connected condition indicators</div>
+                        </div>
+                    </div>
+                    <a class="expand-link" href="diagnostics.html">Expand ↗</a>
+                </div>
+                <div class="card-body">
+                    <div class="skeleton" style="height:250px;"></div>
+                    <div class="mini-grid loaded" id="indicatorGrid"></div>
+                </div>
+            </article>
 
-      <article class="card loaded">
-        <div class="card-header">
-          <div class="card-title">
-            <div>
-              <h3>Quick Trend Sparklines</h3>
-              <div class="card-subtitle">Last 7 days overview</div>
-            </div>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="skeleton" style="height:290px;"></div>
-          <div class="sparkline-list loaded" id="sparklineList"></div>
-        </div>
-      </article>
-    </section>
-  </main>
+            <article class="card loaded">
+                <div class="card-header">
+                    <div class="card-title">
+                        <div>
+                            <h3>AI Diagnostic Summary</h3>
+                            <div class="card-subtitle">Inference generated from vibration trend context</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="skeleton" style="height:210px;"></div>
+                    <div class="ai-report loaded">
+                        <div class="ai-meta">
+                            <div class="confidence"><span id="confidenceValue">87%</span></div>
+                            <div>
+                                <p><strong>Primary Concern:</strong> <span id="primaryConcern"></span></p>
+                                <p><strong>Recommended Action:</strong> <span id="recommendedAction"></span></p>
+                            </div>
+                        </div>
+                        <p><strong>Secondary Watch:</strong> <span id="secondaryWatch"></span></p>
+                        <div class="status-line"><span class="status-dot"></span><span id="analysisUpdated"></span></div>
+                    </div>
+                </div>
+            </article>
 
-  <footer class="footer">CodeX Studio - Custom IoT Solutions | codexstudio.com.my</footer>
+            <article class="card loaded">
+                <div class="card-header">
+                    <div class="card-title">
+                        <div>
+                            <h3>Quick Trend Sparklines</h3>
+                            <div class="card-subtitle">Last 7 days overview</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="skeleton" style="height:290px;"></div>
+                    <div class="sparkline-list loaded" id="sparklineList"></div>
+                </div>
+            </article>
+        </section>
+    </main>
 
-  <script src="spectrum-generator.js"></script>
-  <script type="module">
-    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.module.js";
-    import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/controls/OrbitControls.js";
+    <footer class="footer">CodeX Studio - Custom IoT Solutions | codexstudio.com.my</footer>
 
-    const assets = [
-      { icon: "🛢️", assetTag: "P-101A", name: "Crude Transfer Pump A", manufacturer: "Sulzer", type: "Centrifugal Pump", model: "AHLSTAR A32-200", serial: "SU-P101A-2022-1845", ratedSpeed: "2960 RPM", ratedPower: "75 kW", installDate: "2022-06-14", maintenanceContract: "Quarterly PdM route", zoneClassification: "Zone 2", status: "Running", prediction: "Normal", risk: "normal", machineProfile: "centrifugal_pump", faultType: "imbalance", pattern: "normal", gateway: "-64 dBm", site: "Crude Distillation Unit", area: "Pump Alley 1", train: "Train A", lastSeenOffsetMinutes: 1, lat: 1.4838, lng: 103.8988, recommendedAction: "Keep the unit on standard route inspection and confirm seal flush pressure remains stable." },
-      { icon: "🧰", assetTag: "P-101B", name: "Crude Transfer Pump B", manufacturer: "Sulzer", type: "Centrifugal Pump", model: "AHLSTAR A32-200", serial: "SU-P101B-2022-1846", ratedSpeed: "2960 RPM", ratedPower: "75 kW", installDate: "2022-06-16", maintenanceContract: "Quarterly PdM route", zoneClassification: "Zone 2", status: "Running", prediction: "Watch", risk: "warning", machineProfile: "centrifugal_pump", faultType: "imbalance", pattern: "degrading", gateway: "-66 dBm", site: "Crude Distillation Unit", area: "Pump Alley 1", train: "Train B", lastSeenOffsetMinutes: 2, lat: 1.4841, lng: 103.8992, recommendedAction: "Plan a balancing check during the next maintenance window and confirm suction recirculation remains within design." },
-      { icon: "🌀", assetTag: "PCP-221", name: "Polymer Dosing Pump 1", manufacturer: "SEEPEX", type: "Progressive Cavity Pump", model: "BN 10-6L", serial: "SP-PCP221-2024-0081", ratedSpeed: "300 RPM", ratedPower: "5.5 kW", installDate: "2024-01-22", maintenanceContract: "Monthly lubrication and condition review", zoneClassification: "Zone 1", status: "Running", prediction: "Watch", risk: "warning", machineProfile: "progressive_cavity_pump", faultType: "universal_joint", pattern: "degrading", gateway: "-62 dBm", site: "Polymer Make-up Unit", area: "Chemical Injection Skid", train: "Dosing Train 1", lastSeenOffsetMinutes: 1, lat: 1.4866, lng: 103.9024, recommendedAction: "Inspect rotor-stator wear and verify the universal joint grease condition before the next batch run." },
-      { icon: "🏭", assetTag: "PCP-222", name: "Polymer Dosing Pump 2", manufacturer: "SEEPEX", type: "Progressive Cavity Pump", model: "BN 17-6L", serial: "SP-PCP222-2023-0147", ratedSpeed: "270 RPM", ratedPower: "7.5 kW", installDate: "2023-03-08", maintenanceContract: "Monthly lubrication and condition review", zoneClassification: "Zone 1", status: "Running", prediction: "Normal", risk: "normal", machineProfile: "progressive_cavity_pump", faultType: "universal_joint", pattern: "normal", gateway: "-61 dBm", site: "Polymer Make-up Unit", area: "Chemical Injection Skid", train: "Dosing Train 2", lastSeenOffsetMinutes: 1, lat: 1.4864, lng: 103.9021, recommendedAction: "Maintain the current route-based inspection and keep spare stator inventory available." },
-      { icon: "⚙️", assetTag: "C-301", name: "Instrument Air Compressor 1", manufacturer: "Howden", type: "Reciprocating Compressor", model: "HD-12", serial: "HD-C301-2023-0172", ratedSpeed: "1480 RPM", ratedPower: "18.5 kW", installDate: "2022-03-11", maintenanceContract: "OEM service every 4000 hours", zoneClassification: "Safe Area", status: "Running", prediction: "Normal", risk: "normal", machineProfile: "compressor", faultType: "misalignment", pattern: "normal", gateway: "-72 dBm", site: "Utility Air House", area: "Compressor Bay A", train: "IA Header A", lastSeenOffsetMinutes: 3, lat: 1.4819, lng: 103.8967, recommendedAction: "Continue routine monitoring and verify intercooler drain performance during operator rounds." },
-      { icon: "🔄", assetTag: "C-302", name: "Instrument Air Compressor 2", manufacturer: "Howden", type: "Reciprocating Compressor", model: "HD-12", serial: "HD-C302-2023-0173", ratedSpeed: "1480 RPM", ratedPower: "18.5 kW", installDate: "2022-03-12", maintenanceContract: "OEM service every 4000 hours", zoneClassification: "Safe Area", status: "Running", prediction: "Watch", risk: "warning", machineProfile: "compressor", faultType: "misalignment", pattern: "degrading", gateway: "-69 dBm", site: "Utility Air House", area: "Compressor Bay B", train: "IA Header B", lastSeenOffsetMinutes: 2, lat: 1.4821, lng: 103.8969, recommendedAction: "Check coupling alignment, hold-down bolt torque, and pulsation bottle supports at the next outage." },
-      { icon: "🔩", assetTag: "M-411", name: "Cooling Tower Fan Motor 3", manufacturer: "WEG", type: "Induction Motor", model: "W22 200L", serial: "WEG-M411-2019-0418", ratedSpeed: "1485 RPM", ratedPower: "30 kW", installDate: "2021-09-20", maintenanceContract: "Semi-annual motor testing", zoneClassification: "Safe Area", status: "Running", prediction: "Normal", risk: "normal", machineProfile: "electric_motor", faultType: "electrical", pattern: "normal", gateway: "-63 dBm", site: "North Utility Block", area: "Cooling Tower Cell 3", train: "CTF-3", lastSeenOffsetMinutes: 1, lat: 1.4888, lng: 103.9042, recommendedAction: "No corrective action required; continue standard route vibration and MCC thermal scan." },
-      { icon: "⚡", assetTag: "M-412", name: "Cooling Tower Fan Motor 4", manufacturer: "ABB", type: "Induction Motor", model: "M3BP 225", serial: "ABB-M412-2020-2231", ratedSpeed: "1490 RPM", ratedPower: "45 kW", installDate: "2020-06-14", maintenanceContract: "Semi-annual motor testing", zoneClassification: "Safe Area", status: "Offline", prediction: "Offline", risk: "offline", machineProfile: "electric_motor", faultType: "electrical", pattern: "normal", gateway: "-80 dBm", site: "North Utility Block", area: "Cooling Tower Cell 4", train: "CTF-4", lastSeenOffsetMinutes: 67, lat: 1.4891, lng: 103.9045, recommendedAction: "Telemetry is unavailable. Check power isolation status and restore the wireless node before diagnosis." },
-      { icon: "🛠️", assetTag: "FWP-502", name: "Firewater Pump 2", manufacturer: "Flowserve", type: "Firewater Pump", model: "FWP-220", serial: "FS-FWP502-2018-5428", ratedSpeed: "1780 RPM", ratedPower: "90 kW", installDate: "2018-07-09", maintenanceContract: "Monthly standby run and PdM review", zoneClassification: "Safe Area", status: "Tripped", prediction: "Anomaly Detected", risk: "alarm", machineProfile: "centrifugal_pump", faultType: "imbalance", pattern: "critical", gateway: "-74 dBm", site: "Firewater Building", area: "Pump House 2", train: "Emergency Service", lastSeenOffsetMinutes: 11, lat: 1.4798, lng: 103.8941, recommendedAction: "Inspect coupling, bearing housing, and pump rotor balance immediately before returning the standby train to service." },
-      { icon: "🌀", assetTag: "VP-110A", name: "Vacuum Pump Skid A", manufacturer: "Busch", type: "Vacuum Pump", model: "R5 RA 1000", serial: "BUS-VP110A-2021-3011", ratedSpeed: "1750 RPM", ratedPower: "55 kW", installDate: "2021-11-02", maintenanceContract: "Quarterly oil analysis and vibration route", zoneClassification: "Safe Area", status: "Running", prediction: "Watch", risk: "warning", machineProfile: "compressor", faultType: "misalignment", pattern: "degrading", gateway: "-70 dBm", site: "Vacuum Package Area", area: "Skid A", train: "Vacuum Header A", lastSeenOffsetMinutes: 4, lat: 1.4809, lng: 103.9072, recommendedAction: "Inspect the flexible coupling and confirm baseplate soft foot after the next production campaign." },
-      { icon: "🛢️", assetTag: "BFP-801", name: "Boiler Feed Pump 1", manufacturer: "KSB", type: "Boiler Feed Pump", model: "HGC 4/8", serial: "KSB-BFP801-2021-1209", ratedSpeed: "2980 RPM", ratedPower: "110 kW", installDate: "2021-11-28", maintenanceContract: "Critical rotating equipment program", zoneClassification: "Safe Area", status: "Running", prediction: "Watch", risk: "warning", machineProfile: "centrifugal_pump", faultType: "bearing_inner_race", pattern: "degrading", gateway: "-68 dBm", site: "Boiler House", area: "Feedwater Bay", train: "BFP Train 1", lastSeenOffsetMinutes: 2, lat: 1.4776, lng: 103.9016, recommendedAction: "Review bearing lubrication quality and prepare an inspection scope for the DE bearing during the next controlled stop." },
-      { icon: "⚙️", assetTag: "GM-610", name: "Granulation Conveyor Gear Motor", manufacturer: "SEW-Eurodrive", type: "Gear Motor", model: "KA97 DRN180", serial: "SEW-GM610-2023-0944", ratedSpeed: "1470 RPM", ratedPower: "22 kW", installDate: "2023-05-19", maintenanceContract: "Monthly route with gearbox oil sampling", zoneClassification: "Safe Area", status: "Running", prediction: "Normal", risk: "normal", machineProfile: "electric_motor", faultType: "electrical", pattern: "normal", gateway: "-65 dBm", site: "Bagging and Loading", area: "Granulation Line 2", train: "Conveyor CV-610", lastSeenOffsetMinutes: 1, lat: 1.4903, lng: 103.9094, recommendedAction: "Maintain the current inspection interval and keep gearbox oil sampling on schedule." }
-    ];
+    <script src="spectrum-generator.js"></script>
+    <script type="module">
+        import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.module.js";
+        import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/controls/OrbitControls.js";
 
-    const detailFields = [
-      { label: "Asset Tag", getValue: (asset) => asset.assetTag },
-      { label: "Asset Name", getValue: (asset) => asset.name },
-      { label: "Train / Service", getValue: (asset) => asset.train },
-      { label: "Manufacturer", getValue: (asset) => asset.manufacturer },
-      { label: "Equipment Type", getValue: (asset) => asset.type },
-      { label: "Model Number", getValue: (asset) => asset.model },
-      { label: "Serial Number", getValue: (asset) => asset.serial },
-      { label: "Rated Speed", getValue: (asset) => asset.ratedSpeed },
-      { label: "Rated Power", getValue: (asset) => asset.ratedPower },
-      { label: "Installation Date", getValue: (asset) => asset.installDate },
-      { label: "Maintenance Strategy", getValue: (asset) => asset.maintenanceContract },
-      { label: "Zone Classification", getValue: (asset) => asset.zoneClassification }
-    ];
+        const assets = [
+            { icon: "🛢️", assetTag: "P-101A", name: "Crude Transfer Pump A", manufacturer: "Sulzer", type: "Centrifugal Pump", model: "AHLSTAR A32-200", serial: "SU-P101A-2022-1845", ratedSpeed: "2960 RPM", ratedPower: "75 kW", installDate: "2022-06-14", maintenanceContract: "Quarterly PdM route", zoneClassification: "Zone 2", status: "Running", prediction: "Normal", risk: "normal", machineProfile: "centrifugal_pump", faultType: "imbalance", pattern: "normal", gateway: "-64 dBm", site: "Crude Distillation Unit", area: "Pump Alley 1", train: "Train A", lastSeenOffsetMinutes: 1, lat: 1.4838, lng: 103.8988, recommendedAction: "Keep the unit on standard route inspection and confirm seal flush pressure remains stable." },
+            { icon: "🧰", assetTag: "P-101B", name: "Crude Transfer Pump B", manufacturer: "Sulzer", type: "Centrifugal Pump", model: "AHLSTAR A32-200", serial: "SU-P101B-2022-1846", ratedSpeed: "2960 RPM", ratedPower: "75 kW", installDate: "2022-06-16", maintenanceContract: "Quarterly PdM route", zoneClassification: "Zone 2", status: "Running", prediction: "Watch", risk: "warning", machineProfile: "centrifugal_pump", faultType: "imbalance", pattern: "degrading", gateway: "-66 dBm", site: "Crude Distillation Unit", area: "Pump Alley 1", train: "Train B", lastSeenOffsetMinutes: 2, lat: 1.4841, lng: 103.8992, recommendedAction: "Plan a balancing check during the next maintenance window and confirm suction recirculation remains within design." },
+            { icon: "🌀", assetTag: "PCP-221", name: "Polymer Dosing Pump 1", manufacturer: "SEEPEX", type: "Progressive Cavity Pump", model: "BN 10-6L", serial: "SP-PCP221-2024-0081", ratedSpeed: "300 RPM", ratedPower: "5.5 kW", installDate: "2024-01-22", maintenanceContract: "Monthly lubrication and condition review", zoneClassification: "Zone 1", status: "Running", prediction: "Watch", risk: "warning", machineProfile: "progressive_cavity_pump", faultType: "universal_joint", pattern: "degrading", gateway: "-62 dBm", site: "Polymer Make-up Unit", area: "Chemical Injection Skid", train: "Dosing Train 1", lastSeenOffsetMinutes: 1, lat: 1.4866, lng: 103.9024, recommendedAction: "Inspect rotor-stator wear and verify the universal joint grease condition before the next batch run." },
+            { icon: "🏭", assetTag: "PCP-222", name: "Polymer Dosing Pump 2", manufacturer: "SEEPEX", type: "Progressive Cavity Pump", model: "BN 17-6L", serial: "SP-PCP222-2023-0147", ratedSpeed: "270 RPM", ratedPower: "7.5 kW", installDate: "2023-03-08", maintenanceContract: "Monthly lubrication and condition review", zoneClassification: "Zone 1", status: "Running", prediction: "Normal", risk: "normal", machineProfile: "progressive_cavity_pump", faultType: "universal_joint", pattern: "normal", gateway: "-61 dBm", site: "Polymer Make-up Unit", area: "Chemical Injection Skid", train: "Dosing Train 2", lastSeenOffsetMinutes: 1, lat: 1.4864, lng: 103.9021, recommendedAction: "Maintain the current route-based inspection and keep spare stator inventory available." },
+            { icon: "⚙️", assetTag: "C-301", name: "Instrument Air Compressor 1", manufacturer: "Howden", type: "Reciprocating Compressor", model: "HD-12", serial: "HD-C301-2023-0172", ratedSpeed: "1480 RPM", ratedPower: "18.5 kW", installDate: "2022-03-11", maintenanceContract: "OEM service every 4000 hours", zoneClassification: "Safe Area", status: "Running", prediction: "Normal", risk: "normal", machineProfile: "compressor", faultType: "misalignment", pattern: "normal", gateway: "-72 dBm", site: "Utility Air House", area: "Compressor Bay A", train: "IA Header A", lastSeenOffsetMinutes: 3, lat: 1.4819, lng: 103.8967, recommendedAction: "Continue routine monitoring and verify intercooler drain performance during operator rounds." },
+            { icon: "🔄", assetTag: "C-302", name: "Instrument Air Compressor 2", manufacturer: "Howden", type: "Reciprocating Compressor", model: "HD-12", serial: "HD-C302-2023-0173", ratedSpeed: "1480 RPM", ratedPower: "18.5 kW", installDate: "2022-03-12", maintenanceContract: "OEM service every 4000 hours", zoneClassification: "Safe Area", status: "Running", prediction: "Watch", risk: "warning", machineProfile: "compressor", faultType: "misalignment", pattern: "degrading", gateway: "-69 dBm", site: "Utility Air House", area: "Compressor Bay B", train: "IA Header B", lastSeenOffsetMinutes: 2, lat: 1.4821, lng: 103.8969, recommendedAction: "Check coupling alignment, hold-down bolt torque, and pulsation bottle supports at the next outage." },
+            { icon: "🔩", assetTag: "M-411", name: "Cooling Tower Fan Motor 3", manufacturer: "WEG", type: "Induction Motor", model: "W22 200L", serial: "WEG-M411-2019-0418", ratedSpeed: "1485 RPM", ratedPower: "30 kW", installDate: "2021-09-20", maintenanceContract: "Semi-annual motor testing", zoneClassification: "Safe Area", status: "Running", prediction: "Normal", risk: "normal", machineProfile: "electric_motor", faultType: "electrical", pattern: "normal", gateway: "-63 dBm", site: "North Utility Block", area: "Cooling Tower Cell 3", train: "CTF-3", lastSeenOffsetMinutes: 1, lat: 1.4888, lng: 103.9042, recommendedAction: "No corrective action required; continue standard route vibration and MCC thermal scan." },
+            { icon: "⚡", assetTag: "M-412", name: "Cooling Tower Fan Motor 4", manufacturer: "ABB", type: "Induction Motor", model: "M3BP 225", serial: "ABB-M412-2020-2231", ratedSpeed: "1490 RPM", ratedPower: "45 kW", installDate: "2020-06-14", maintenanceContract: "Semi-annual motor testing", zoneClassification: "Safe Area", status: "Offline", prediction: "Offline", risk: "offline", machineProfile: "electric_motor", faultType: "electrical", pattern: "normal", gateway: "-80 dBm", site: "North Utility Block", area: "Cooling Tower Cell 4", train: "CTF-4", lastSeenOffsetMinutes: 67, lat: 1.4891, lng: 103.9045, recommendedAction: "Telemetry is unavailable. Check power isolation status and restore the wireless node before diagnosis." },
+            { icon: "🛠️", assetTag: "FWP-502", name: "Firewater Pump 2", manufacturer: "Flowserve", type: "Firewater Pump", model: "FWP-220", serial: "FS-FWP502-2018-5428", ratedSpeed: "1780 RPM", ratedPower: "90 kW", installDate: "2018-07-09", maintenanceContract: "Monthly standby run and PdM review", zoneClassification: "Safe Area", status: "Tripped", prediction: "Anomaly Detected", risk: "alarm", machineProfile: "centrifugal_pump", faultType: "imbalance", pattern: "critical", gateway: "-74 dBm", site: "Firewater Building", area: "Pump House 2", train: "Emergency Service", lastSeenOffsetMinutes: 11, lat: 1.4798, lng: 103.8941, recommendedAction: "Inspect coupling, bearing housing, and pump rotor balance immediately before returning the standby train to service." },
+            { icon: "🌀", assetTag: "VP-110A", name: "Vacuum Pump Skid A", manufacturer: "Busch", type: "Vacuum Pump", model: "R5 RA 1000", serial: "BUS-VP110A-2021-3011", ratedSpeed: "1750 RPM", ratedPower: "55 kW", installDate: "2021-11-02", maintenanceContract: "Quarterly oil analysis and vibration route", zoneClassification: "Safe Area", status: "Running", prediction: "Watch", risk: "warning", machineProfile: "compressor", faultType: "misalignment", pattern: "degrading", gateway: "-70 dBm", site: "Vacuum Package Area", area: "Skid A", train: "Vacuum Header A", lastSeenOffsetMinutes: 4, lat: 1.4809, lng: 103.9072, recommendedAction: "Inspect the flexible coupling and confirm baseplate soft foot after the next production campaign." },
+            { icon: "🛢️", assetTag: "BFP-801", name: "Boiler Feed Pump 1", manufacturer: "KSB", type: "Boiler Feed Pump", model: "HGC 4/8", serial: "KSB-BFP801-2021-1209", ratedSpeed: "2980 RPM", ratedPower: "110 kW", installDate: "2021-11-28", maintenanceContract: "Critical rotating equipment program", zoneClassification: "Safe Area", status: "Running", prediction: "Watch", risk: "warning", machineProfile: "centrifugal_pump", faultType: "bearing_inner_race", pattern: "degrading", gateway: "-68 dBm", site: "Boiler House", area: "Feedwater Bay", train: "BFP Train 1", lastSeenOffsetMinutes: 2, lat: 1.4776, lng: 103.9016, recommendedAction: "Review bearing lubrication quality and prepare an inspection scope for the DE bearing during the next controlled stop." },
+            { icon: "⚙️", assetTag: "GM-610", name: "Granulation Conveyor Gear Motor", manufacturer: "SEW-Eurodrive", type: "Gear Motor", model: "KA97 DRN180", serial: "SEW-GM610-2023-0944", ratedSpeed: "1470 RPM", ratedPower: "22 kW", installDate: "2023-05-19", maintenanceContract: "Monthly route with gearbox oil sampling", zoneClassification: "Safe Area", status: "Running", prediction: "Normal", risk: "normal", machineProfile: "electric_motor", faultType: "electrical", pattern: "normal", gateway: "-65 dBm", site: "Bagging and Loading", area: "Granulation Line 2", train: "Conveyor CV-610", lastSeenOffsetMinutes: 1, lat: 1.4903, lng: 103.9094, recommendedAction: "Maintain the current inspection interval and keep gearbox oil sampling on schedule." }
+        ];
 
-    const faultIndicatorMap = {
-      imbalance: "1x",
-      misalignment: "2x",
-      mechanical_looseness: "multix",
-      bearing_outer_race: "bpfo",
-      bearing_inner_race: "bpfi",
-      electrical: "2lf",
-      pump_cavitation: "iso_rms",
-      universal_joint: "1x"
-    };
+        const detailFields = [
+            { label: "Asset Tag", getValue: (asset) => asset.assetTag },
+            { label: "Asset Name", getValue: (asset) => asset.name },
+            { label: "Train / Service", getValue: (asset) => asset.train },
+            { label: "Manufacturer", getValue: (asset) => asset.manufacturer },
+            { label: "Equipment Type", getValue: (asset) => asset.type },
+            { label: "Model Number", getValue: (asset) => asset.model },
+            { label: "Serial Number", getValue: (asset) => asset.serial },
+            { label: "Rated Speed", getValue: (asset) => asset.ratedSpeed },
+            { label: "Rated Power", getValue: (asset) => asset.ratedPower },
+            { label: "Installation Date", getValue: (asset) => asset.installDate },
+            { label: "Maintenance Strategy", getValue: (asset) => asset.maintenanceContract },
+            { label: "Zone Classification", getValue: (asset) => asset.zoneClassification }
+        ];
 
-    function ratedRpmFromText(value) {
-      const match = String(value).match(/(\d+(?:\.\d+)?)/);
-      return match ? Number(match[1]) : 300;
-    }
+        const faultIndicatorMap = {
+            imbalance: "1x",
+            misalignment: "2x",
+            mechanical_looseness: "multix",
+            bearing_outer_race: "bpfo",
+            bearing_inner_race: "bpfi",
+            electrical: "2lf",
+            pump_cavitation: "iso_rms",
+            universal_joint: "1x"
+        };
 
-    function machineProfileForAsset(asset) {
-      if (asset.machineProfile) return asset.machineProfile;
-      if (asset.type.toLowerCase().includes("compressor")) return "compressor";
-      if (asset.type.toLowerCase().includes("motor")) return "electric_motor";
-      if (asset.type.toLowerCase().includes("centrifugal")) return "centrifugal_pump";
-      return "progressive_cavity_pump";
-    }
+        function ratedRpmFromText(value) {
+            const match = String(value).match(/(\d+(?:\.\d+)?)/);
+            return match ? Number(match[1]) : 300;
+        }
 
-    function faultTypeForAsset(asset, profile) {
-      if (asset.faultType) return asset.faultType;
-      if (profile === "electric_motor") return "electrical";
-      if (asset.name.toLowerCase().includes("seepex")) return "universal_joint";
-      if (profile === "compressor") return "misalignment";
-      return "imbalance";
-    }
+        function machineProfileForAsset(asset) {
+            if (asset.machineProfile) return asset.machineProfile;
+            if (asset.type.toLowerCase().includes("compressor")) return "compressor";
+            if (asset.type.toLowerCase().includes("motor")) return "electric_motor";
+            if (asset.type.toLowerCase().includes("centrifugal")) return "centrifugal_pump";
+            return "progressive_cavity_pump";
+        }
 
-    function patternForAsset(asset) {
-      if (asset.pattern) return asset.pattern;
-      if (asset.risk === "alarm") return "critical";
-      if (asset.risk === "warning") return "degrading";
-      return "normal";
-    }
+        function faultTypeForAsset(asset, profile) {
+            if (asset.faultType) return asset.faultType;
+            if (profile === "electric_motor") return "electrical";
+            if (asset.name.toLowerCase().includes("seepex")) return "universal_joint";
+            if (profile === "compressor") return "misalignment";
+            return "imbalance";
+        }
 
-    function buildAssetTelemetry(asset) {
-      const profile = machineProfileForAsset(asset);
-      const generator = window.SpectrumGenerator.create({
-        machineProfile: profile,
-        ratedRPM: ratedRpmFromText(asset.ratedSpeed),
-        lineFrequency: 50,
-        resolution: 512,
-        frequencyRange: [0, 1000]
-      });
-      const endTime = new Date(Date.now() - (asset.lastSeenOffsetMinutes || 0) * 60 * 1000);
-      const startTime = new Date(endTime.getTime() - (28 - 1) * 6 * 60 * 60 * 1000);
-      const history = generator.generateSpectraRange({
-        startTime,
-        endTime,
-        interval: 6 * 60 * 60,
-        pattern: patternForAsset(asset),
-        faultType: faultTypeForAsset(asset, profile),
-        seed: asset.serial
-      }).spectra;
-      return {
-        generator,
-        history,
-        current: history[history.length - 1],
-        thresholds: generator.getIndicatorThresholds(),
-        faultType: faultTypeForAsset(asset, profile)
-      };
-    }
+        function patternForAsset(asset) {
+            if (asset.pattern) return asset.pattern;
+            if (asset.risk === "alarm") return "critical";
+            if (asset.risk === "warning") return "degrading";
+            return "normal";
+        }
 
-    assets.forEach((asset) => {
-      asset.telemetry = buildAssetTelemetry(asset);
-      asset.updated = formatRelativeTime(asset.telemetry.current.timestamp);
-    });
+        function buildAssetTelemetry(asset) {
+            const profile = machineProfileForAsset(asset);
+            const generator = window.SpectrumGenerator.create({
+                machineProfile: profile,
+                ratedRPM: ratedRpmFromText(asset.ratedSpeed),
+                lineFrequency: 50,
+                resolution: 512,
+                frequencyRange: [0, 1000]
+            });
+            const endTime = new Date(Date.now() - (asset.lastSeenOffsetMinutes || 0) * 60 * 1000);
+            const startTime = new Date(endTime.getTime() - (28 - 1) * 6 * 60 * 60 * 1000);
+            const history = generator.generateSpectraRange({
+                startTime,
+                endTime,
+                interval: 6 * 60 * 60,
+                pattern: patternForAsset(asset),
+                faultType: faultTypeForAsset(asset, profile),
+                seed: asset.serial
+            }).spectra;
+            return {
+                generator,
+                history,
+                current: history[history.length - 1],
+                thresholds: generator.getIndicatorThresholds(),
+                faultType: faultTypeForAsset(asset, profile)
+            };
+        }
 
-    const sparkState = {};
-    let selectedAssetIndex = 0;
-    let autoRotate = true;
-    let alarmFocus = false;
-    let map;
-    let marker;
-    let sparkCharts = [];
+        assets.forEach((asset) => {
+            asset.telemetry = buildAssetTelemetry(asset);
+            asset.updated = formatRelativeTime(asset.telemetry.current.timestamp);
+        });
 
-    const assetList = document.getElementById("assetList");
-    const assetSearch = document.getElementById("assetSearch");
-    const assetDetailGrid = document.getElementById("assetDetailGrid");
-    const logBody = document.getElementById("logBody");
-    const indicatorGrid = document.getElementById("indicatorGrid");
-    const sparklineList = document.getElementById("sparklineList");
+        const sparkState = {};
+        let selectedAssetIndex = 0;
+        let autoRotate = true;
+        let alarmFocus = false;
+        let map;
+        let marker;
+        let sparkCharts = [];
 
-    function updateClock() {
-      document.getElementById("clock").textContent = new Date().toLocaleTimeString("en-GB", { hour12: false });
-    }
-    updateClock();
-    setInterval(updateClock, 1000);
+        const assetList = document.getElementById("assetList");
+        const assetSearch = document.getElementById("assetSearch");
+        const assetDetailGrid = document.getElementById("assetDetailGrid");
+        const logBody = document.getElementById("logBody");
+        const indicatorGrid = document.getElementById("indicatorGrid");
+        const sparklineList = document.getElementById("sparklineList");
 
-    function badgeClass(text) {
-      const v = text.toLowerCase();
-      return v.includes("running") ? "running" : v.includes("warning") ? "warning" : v.includes("tripped") ? "tripped" : v.includes("offline") || v.includes("lost") ? "offline" : v.includes("watch") ? "watch" : v.includes("anomaly") ? "anomaly" : "normal";
-    }
+        function updateClock() {
+            document.getElementById("clock").textContent = new Date().toLocaleTimeString("en-GB", { hour12: false });
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
 
-    function formatRelativeTime(timestamp, now = new Date()) {
-      const deltaSeconds = Math.max(0, Math.round((now.getTime() - new Date(timestamp).getTime()) / 1000));
-      if (deltaSeconds < 45) return "Just now";
-      if (deltaSeconds < 3600) return `${Math.round(deltaSeconds / 60)} min ago`;
-      if (deltaSeconds < 86400) return `${Math.round(deltaSeconds / 3600)} hr ago`;
-      return `${Math.round(deltaSeconds / 86400)} day ago`;
-    }
+        function badgeClass(text) {
+            const v = text.toLowerCase();
+            return v.includes("running") ? "running" : v.includes("warning") ? "warning" : v.includes("tripped") ? "tripped" : v.includes("offline") || v.includes("lost") ? "offline" : v.includes("watch") ? "watch" : v.includes("anomaly") ? "anomaly" : "normal";
+        }
 
-    function searchHaystack(asset) {
-      return [asset.assetTag, asset.name, asset.manufacturer, asset.type, asset.site, asset.area, asset.train].join(" ").toLowerCase();
-    }
+        function formatRelativeTime(timestamp, now = new Date()) {
+            const deltaSeconds = Math.max(0, Math.round((now.getTime() - new Date(timestamp).getTime()) / 1000));
+            if (deltaSeconds < 45) return "Just now";
+            if (deltaSeconds < 3600) return `${Math.round(deltaSeconds / 60)} min ago`;
+            if (deltaSeconds < 86400) return `${Math.round(deltaSeconds / 3600)} hr ago`;
+            return `${Math.round(deltaSeconds / 86400)} day ago`;
+        }
 
-    function formatCoordinate(value, positiveLabel, negativeLabel) {
-      const suffix = value >= 0 ? positiveLabel : negativeLabel;
-      return `${Math.abs(value).toFixed(4)}° ${suffix}`;
-    }
+        function searchHaystack(asset) {
+            return [asset.assetTag, asset.name, asset.manufacturer, asset.type, asset.site, asset.area, asset.train].join(" ").toLowerCase();
+        }
 
-    function recommendedActionForAsset(asset, current) {
-      if (asset.status === "Offline") return asset.recommendedAction;
-      if (current.aiFlag === "critical") return `Immediate action required. ${asset.recommendedAction}`;
-      if (current.aiFlag === "warning" || current.aiFlag === "watch") return `Plan intervention at the next safe window. ${asset.recommendedAction}`;
-      return asset.recommendedAction;
-    }
+        function formatCoordinate(value, positiveLabel, negativeLabel) {
+            const suffix = value >= 0 ? positiveLabel : negativeLabel;
+            return `${Math.abs(value).toFixed(4)}° ${suffix}`;
+        }
 
-    function syncAssetStateFromTelemetry(asset) {
-      if (asset.status === "Offline") {
-        asset.prediction = "Offline";
-        return;
-      }
-      const { current } = asset.telemetry;
-      asset.prediction = current.aiFlag === "critical" ? "Anomaly Detected" : current.aiFlag ? "Watch" : "Normal";
-      if (current.aiFlag === "critical") asset.risk = "alarm";
-      else if (current.aiFlag) asset.risk = "warning";
-      else asset.risk = "normal";
-      asset.updated = formatRelativeTime(current.timestamp);
-    }
+        function recommendedActionForAsset(asset, current) {
+            if (asset.status === "Offline") return asset.recommendedAction;
+            if (current.aiFlag === "critical") return `Immediate action required. ${asset.recommendedAction}`;
+            if (current.aiFlag === "warning" || current.aiFlag === "watch") return `Plan intervention at the next safe window. ${asset.recommendedAction}`;
+            return asset.recommendedAction;
+        }
 
-    function nudgeValue(currentValue, drift, min, max, digits = 2) {
-      const next = Math.max(min, Math.min(max, currentValue + drift));
-      return +next.toFixed(digits);
-    }
+        function syncAssetStateFromTelemetry(asset) {
+            if (asset.status === "Offline") {
+                asset.prediction = "Offline";
+                return;
+            }
+            const { current } = asset.telemetry;
+            asset.prediction = current.aiFlag === "critical" ? "Anomaly Detected" : current.aiFlag ? "Watch" : "Normal";
+            if (current.aiFlag === "critical") asset.risk = "alarm";
+            else if (current.aiFlag) asset.risk = "warning";
+            else asset.risk = "normal";
+            asset.updated = formatRelativeTime(current.timestamp);
+        }
 
-    function updateAssetTelemetry(asset) {
-      if (asset.status === "Offline") {
-        asset.updated = formatRelativeTime(asset.telemetry.current.timestamp);
-        return;
-      }
-      const telemetry = asset.telemetry;
-      const current = telemetry.current;
-      const thresholds = telemetry.thresholds;
-      const primaryIndicator = faultIndicatorMap[telemetry.faultType] || "1x";
-      const baseDrift = asset.risk === "alarm" ? 0.08 : asset.risk === "warning" ? 0.05 : 0.02;
+        function nudgeValue(currentValue, drift, min, max, digits = 2) {
+            const next = Math.max(min, Math.min(max, currentValue + drift));
+            return +next.toFixed(digits);
+        }
 
-      ["1x", "2x", "3x", "subx", "multix", "2lf", "bpfi", "iso_rms"].forEach((key) => {
-        const limit = (thresholds[key] || [current.indicators[key], current.indicators[key] * 1.2])[1];
-        const dominance = key === primaryIndicator ? 1.8 : 1;
-        const swing = (Math.random() - 0.38) * baseDrift * dominance;
-        const cap = limit * (asset.risk === "alarm" ? 1.2 : asset.risk === "warning" ? 1.05 : 0.92);
-        current.indicators[key] = nudgeValue(current.indicators[key], swing, 0.03, cap);
-      });
-      current.indicators.temperature = nudgeValue(
-        current.indicators.temperature,
-        (Math.random() - 0.35) * (asset.risk === "alarm" ? 1.3 : asset.risk === "warning" ? 0.7 : 0.3),
-        48,
-        asset.risk === "alarm" ? 84 : 72,
-        1
-      );
-      current.timestamp = new Date(Date.now() - (asset.lastSeenOffsetMinutes || 0) * 60 * 1000);
-      current.iso10816Zone = current.indicators.iso_rms > thresholds.iso_rms[1] ? "D" : current.indicators.iso_rms > thresholds.iso_rms[0] ? "C" : current.indicators.iso_rms > 1.4 ? "B" : "A";
-      telemetry.history[telemetry.history.length - 1] = current;
-      syncAssetStateFromTelemetry(asset);
-    }
+        function updateAssetTelemetry(asset) {
+            if (asset.status === "Offline") {
+                asset.updated = formatRelativeTime(asset.telemetry.current.timestamp);
+                return;
+            }
+            const telemetry = asset.telemetry;
+            const current = telemetry.current;
+            const thresholds = telemetry.thresholds;
+            const primaryIndicator = faultIndicatorMap[telemetry.faultType] || "1x";
+            const baseDrift = asset.risk === "alarm" ? 0.08 : asset.risk === "warning" ? 0.05 : 0.02;
 
-    assets.forEach(syncAssetStateFromTelemetry);
+            ["1x", "2x", "3x", "subx", "multix", "2lf", "bpfi", "iso_rms"].forEach((key) => {
+                const limit = (thresholds[key] || [current.indicators[key], current.indicators[key] * 1.2])[1];
+                const dominance = key === primaryIndicator ? 1.8 : 1;
+                const swing = (Math.random() - 0.38) * baseDrift * dominance;
+                const cap = limit * (asset.risk === "alarm" ? 1.2 : asset.risk === "warning" ? 1.05 : 0.92);
+                current.indicators[key] = nudgeValue(current.indicators[key], swing, 0.03, cap);
+            });
+            current.indicators.temperature = nudgeValue(
+                current.indicators.temperature,
+                (Math.random() - 0.35) * (asset.risk === "alarm" ? 1.3 : asset.risk === "warning" ? 0.7 : 0.3),
+                48,
+                asset.risk === "alarm" ? 84 : 72,
+                1
+            );
+            current.timestamp = new Date(Date.now() - (asset.lastSeenOffsetMinutes || 0) * 60 * 1000);
+            current.iso10816Zone = current.indicators.iso_rms > thresholds.iso_rms[1] ? "D" : current.indicators.iso_rms > thresholds.iso_rms[0] ? "C" : current.indicators.iso_rms > 1.4 ? "B" : "A";
+            telemetry.history[telemetry.history.length - 1] = current;
+            syncAssetStateFromTelemetry(asset);
+        }
 
-    function renderAssetList(filter = "") {
-      const query = filter.trim().toLowerCase();
-      assetList.innerHTML = "";
-      let matches = 0;
-      assets.forEach((asset, index) => {
-        if (query && !searchHaystack(asset).includes(query)) return;
-        matches += 1;
-        const item = document.createElement("div");
-        item.className = `asset-item ${index === selectedAssetIndex ? "active" : ""}`;
-        item.innerHTML = `
+        assets.forEach(syncAssetStateFromTelemetry);
+
+        function renderAssetList(filter = "") {
+            const query = filter.trim().toLowerCase();
+            assetList.innerHTML = "";
+            let matches = 0;
+            assets.forEach((asset, index) => {
+                if (query && !searchHaystack(asset).includes(query)) return;
+                matches += 1;
+                const item = document.createElement("div");
+                item.className = `asset-item ${index === selectedAssetIndex ? "active" : ""}`;
+                item.innerHTML = `
           <div style="display:flex; align-items:flex-start; gap:10px;">
             <div style="font-size:22px;">${asset.icon}</div>
             <div>
@@ -628,56 +1184,56 @@
             </div>
           </div>
         `;
-        item.addEventListener("click", () => {
-          selectedAssetIndex = index;
-          renderAssetList(assetSearch.value);
-          renderDetails();
-        });
-        assetList.appendChild(item);
-      });
-      if (!matches) {
-        assetList.innerHTML = `<div class="asset-item"><h3>No assets found</h3><div class="asset-time">Try searching by asset tag, equipment type, manufacturer, or process area.</div></div>`;
-      }
-    }
-    assetSearch.addEventListener("input", (event) => renderAssetList(event.target.value));
+                item.addEventListener("click", () => {
+                    selectedAssetIndex = index;
+                    renderAssetList(assetSearch.value);
+                    renderDetails();
+                });
+                assetList.appendChild(item);
+            });
+            if (!matches) {
+                assetList.innerHTML = `<div class="asset-item"><h3>No assets found</h3><div class="asset-time">Try searching by asset tag, equipment type, manufacturer, or process area.</div></div>`;
+            }
+        }
+        assetSearch.addEventListener("input", (event) => renderAssetList(event.target.value));
 
-    function renderDetails() {
-      const asset = assets[selectedAssetIndex];
-      const telemetry = asset.telemetry;
-      const current = telemetry.current;
-      const thresholds = telemetry.thresholds;
-      const indicatorCards = [
-        { key: "1x", label: "Imbalance", value: current.indicators["1x"], unit: "mm/s", max: thresholds["1x"][1], desc: "Fundamental" },
-        { key: "2x", label: "Misalignment", value: current.indicators["2x"], unit: "mm/s", max: thresholds["2x"][1], desc: "Second Harmonic" },
-        { key: "3x", label: "Coupling/Looseness", value: current.indicators["3x"], unit: "mm/s", max: thresholds["3x"][1], desc: "Third Harmonic" },
-        { key: "subx", label: "Oil Whirl/Looseness", value: current.indicators.subx, unit: "mm/s", max: thresholds.subx[1], desc: "Sub-synchronous" },
-        { key: "multix", label: "Mech. Looseness", value: current.indicators.multix, unit: "mm/s", max: thresholds.multix[1], desc: "Multiple Harmonics" },
-        { key: "2lf", label: "Electrical", value: current.indicators["2lf"], unit: "mm/s", max: thresholds["2lf"][1], desc: "2x Line Freq" },
-        { key: "iso_rms", label: `Zone ${current.iso10816Zone}`, value: current.indicators.iso_rms, unit: "mm/s RMS", max: thresholds.iso_rms[1], desc: "ISO 10816 Overall" }
-      ];
-      const recentFlags = telemetry.history.filter((item) => item.aiFlag).slice(-8).reverse();
-      const logs = recentFlags.length ? recentFlags : telemetry.history.filter((_, index) => index % 4 === 0).slice(-8).reverse();
+        function renderDetails() {
+            const asset = assets[selectedAssetIndex];
+            const telemetry = asset.telemetry;
+            const current = telemetry.current;
+            const thresholds = telemetry.thresholds;
+            const indicatorCards = [
+                { key: "1x", label: "Imbalance", value: current.indicators["1x"], unit: "mm/s", max: thresholds["1x"][1], desc: "Fundamental" },
+                { key: "2x", label: "Misalignment", value: current.indicators["2x"], unit: "mm/s", max: thresholds["2x"][1], desc: "Second Harmonic" },
+                { key: "3x", label: "Coupling/Looseness", value: current.indicators["3x"], unit: "mm/s", max: thresholds["3x"][1], desc: "Third Harmonic" },
+                { key: "subx", label: "Oil Whirl/Looseness", value: current.indicators.subx, unit: "mm/s", max: thresholds.subx[1], desc: "Sub-synchronous" },
+                { key: "multix", label: "Mech. Looseness", value: current.indicators.multix, unit: "mm/s", max: thresholds.multix[1], desc: "Multiple Harmonics" },
+                { key: "2lf", label: "Electrical", value: current.indicators["2lf"], unit: "mm/s", max: thresholds["2lf"][1], desc: "2x Line Freq" },
+                { key: "iso_rms", label: `Zone ${current.iso10816Zone}`, value: current.indicators.iso_rms, unit: "mm/s RMS", max: thresholds.iso_rms[1], desc: "ISO 10816 Overall" }
+            ];
+            const recentFlags = telemetry.history.filter((item) => item.aiFlag).slice(-8).reverse();
+            const logs = recentFlags.length ? recentFlags : telemetry.history.filter((_, index) => index % 4 === 0).slice(-8).reverse();
 
-      assetDetailGrid.innerHTML = detailFields.map(({ label, getValue }) => `
+            assetDetailGrid.innerHTML = detailFields.map(({ label, getValue }) => `
         <div class="detail-row">
           <small>${label}</small>
           <strong>${getValue(asset)}</strong>
         </div>
       `).join("");
-      document.getElementById("siteLabel").textContent = `${asset.site} - ${asset.area}`;
-      document.getElementById("gatewayLabel").textContent = `4G LoRaWAN - Signal: ${asset.gateway}`;
-      document.getElementById("primaryConcern").textContent = current.aiNote;
-      document.getElementById("recommendedAction").textContent = recommendedActionForAsset(asset, current);
-      document.getElementById("secondaryWatch").textContent = `2x: ${current.indicators["2x"].toFixed(2)} mm/s, BPFI: ${current.indicators.bpfi.toFixed(2)} mm/s, Temperature: ${current.indicators.temperature.toFixed(1)} C.`;
-      document.getElementById("analysisUpdated").textContent = `Analysis updated: ${current.timestamp.toISOString().slice(0, 19).replace("T", " ")}`;
-      document.getElementById("confidenceValue").textContent = current.aiFlag === "critical" ? "92%" : current.aiFlag ? "87%" : "95%";
-      document.querySelector(".status-dot").style.background = current.aiFlag === "critical" ? "var(--accent-red)" : current.aiFlag ? "var(--accent-orange)" : "var(--accent-green)";
+            document.getElementById("siteLabel").textContent = `${asset.site} - ${asset.area}`;
+            document.getElementById("gatewayLabel").textContent = `4G LoRaWAN - Signal: ${asset.gateway}`;
+            document.getElementById("primaryConcern").textContent = current.aiNote;
+            document.getElementById("recommendedAction").textContent = recommendedActionForAsset(asset, current);
+            document.getElementById("secondaryWatch").textContent = `2x: ${current.indicators["2x"].toFixed(2)} mm/s, BPFI: ${current.indicators.bpfi.toFixed(2)} mm/s, Temperature: ${current.indicators.temperature.toFixed(1)} C.`;
+            document.getElementById("analysisUpdated").textContent = `Analysis updated: ${current.timestamp.toISOString().slice(0, 19).replace("T", " ")}`;
+            document.getElementById("confidenceValue").textContent = current.aiFlag === "critical" ? "92%" : current.aiFlag ? "87%" : "95%";
+            document.querySelector(".status-dot").style.background = current.aiFlag === "critical" ? "var(--accent-red)" : current.aiFlag ? "var(--accent-orange)" : "var(--accent-green)";
 
-      logBody.innerHTML = logs.map((entry) => {
-        const severity = telemetry.generator.buildLogSeverity(entry.aiFlag);
-        const label = severity === "critical" ? "🔴 Critical" : severity === "warning" ? "⚠️ Warning" : "✅ Info";
-        const status = severity === "critical" ? "Acknowledged" : severity === "warning" ? "Active" : "Resolved";
-        return `
+            logBody.innerHTML = logs.map((entry) => {
+                const severity = telemetry.generator.buildLogSeverity(entry.aiFlag);
+                const label = severity === "critical" ? "🔴 Critical" : severity === "warning" ? "⚠️ Warning" : "✅ Info";
+                const status = severity === "critical" ? "Acknowledged" : severity === "warning" ? "Active" : "Resolved";
+                return `
         <tr onclick="document.getElementById('sparklineList').scrollIntoView({behavior:'smooth'})">
           <td>${entry.timestamp.toISOString().slice(0, 19).replace("T", " ")}</td>
           <td class="sev-${severity}">${label}</td>
@@ -686,14 +1242,14 @@
           <td>${status}</td>
         </tr>
       `;
-      }).join("");
+            }).join("");
 
-      indicatorGrid.innerHTML = indicatorCards.map((indicator) => {
-        const pct = Math.min(100, (indicator.value / indicator.max) * 100);
-        const status = pct >= 100 ? "alarm" : pct >= 70 ? "warning" : "normal";
-        const statusClass = status === "warning" ? "warning-border" : status === "alarm" ? "alarm-border" : "";
-        const color = status === "warning" ? "var(--accent-orange)" : status === "alarm" ? "var(--accent-red)" : "var(--accent-green)";
-        return `
+            indicatorGrid.innerHTML = indicatorCards.map((indicator) => {
+                const pct = Math.min(100, (indicator.value / indicator.max) * 100);
+                const status = pct >= 100 ? "alarm" : pct >= 70 ? "warning" : "normal";
+                const statusClass = status === "warning" ? "warning-border" : status === "alarm" ? "alarm-border" : "";
+                const color = status === "warning" ? "var(--accent-orange)" : status === "alarm" ? "var(--accent-red)" : "var(--accent-green)";
+                return `
           <div class="mini-card ${statusClass}">
             <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
               <div>
@@ -706,190 +1262,191 @@
             <div class="progress-track"><div class="progress-bar" style="width:${pct}%; background:${color};"></div></div>
           </div>
         `;
-      }).join("");
+            }).join("");
 
-      if (marker) {
-        marker.setLatLng([asset.lat, asset.lng]);
-        marker.bindPopup(`<strong>${asset.assetTag} - ${asset.name}</strong><br/>${asset.site}<br/>${asset.area}<br/>${formatCoordinate(asset.lat, "N", "S")}, ${formatCoordinate(asset.lng, "E", "W")}`);
-        map.flyTo([asset.lat, asset.lng], 14, { duration: 0.8 });
-      }
-      pumpHead.material.emissiveIntensity = asset.risk === "alarm" ? 1.6 : asset.risk === "warning" ? 0.5 : 0.08;
-      renderSparklines(telemetry, indicatorCards);
-    }
+            if (marker) {
+                marker.setLatLng([asset.lat, asset.lng]);
+                marker.bindPopup(`<strong>${asset.assetTag} - ${asset.name}</strong><br/>${asset.site}<br/>${asset.area}<br/>${formatCoordinate(asset.lat, "N", "S")}, ${formatCoordinate(asset.lng, "E", "W")}`);
+                map.flyTo([asset.lat, asset.lng], 14, { duration: 0.8 });
+            }
+            pumpHead.material.emissiveIntensity = asset.risk === "alarm" ? 1.6 : asset.risk === "warning" ? 0.5 : 0.08;
+            renderSparklines(telemetry, indicatorCards);
+        }
 
-    function sparkColor(key) {
-      return key === "iso_rms" ? "#f59e0b" : key === "1x" ? "#3b82f6" : "#10b981";
-    }
+        function sparkColor(key) {
+            return key === "iso_rms" ? "#f59e0b" : key === "1x" ? "#3b82f6" : "#10b981";
+        }
 
-    function renderSparklines(telemetry, indicators) {
-      sparkCharts.forEach((chart) => chart.destroy());
-      sparkCharts = [];
-      sparklineList.innerHTML = indicators.map((indicator) => `
+        function renderSparklines(telemetry, indicators) {
+            sparkCharts.forEach((chart) => chart.destroy());
+            sparkCharts = [];
+            sparklineList.innerHTML = indicators.map((indicator) => `
         <a class="sparkline-row" href="trends.html">
           <div><small>${indicator.key}</small><div style="font-weight:700;">${indicator.label}</div></div>
           <canvas id="spark-${indicator.key}"></canvas>
           <strong>${indicator.value.toFixed(1)} ${indicator.unit.replace(" RMS", "")}</strong>
         </a>
       `).join("");
-      indicators.forEach((indicator) => {
-        const series = telemetry.history.map((item) => {
-          if (indicator.key === "iso_rms") return item.indicators.iso_rms;
-          return item.indicators[indicator.key];
-        });
-        sparkState[indicator.key] = series;
-        sparkCharts.push(new Chart(document.getElementById(`spark-${indicator.key}`), {
-          type: "line",
-          data: { labels: series.map((_, i) => i), datasets: [{ data: series, borderColor: sparkColor(indicator.key), borderWidth: 2, pointRadius: 0, fill: false, tension: 0.35 }] },
-          options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false }, tooltip: { enabled: false } },
-              scales: { x: { display: false }, y: { display: false } }
-          }
-        }));
-      });
-    }
+            indicators.forEach((indicator) => {
+                const series = telemetry.history.map((item) => {
+                    if (indicator.key === "iso_rms") return item.indicators.iso_rms;
+                    return item.indicators[indicator.key];
+                });
+                sparkState[indicator.key] = series;
+                sparkCharts.push(new Chart(document.getElementById(`spark-${indicator.key}`), {
+                    type: "line",
+                    data: { labels: series.map((_, i) => i), datasets: [{ data: series, borderColor: sparkColor(indicator.key), borderWidth: 2, pointRadius: 0, fill: false, tension: 0.35 }] },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                        scales: { x: { display: false }, y: { display: false } }
+                    }
+                }));
+            });
+        }
 
-    function initMap() {
-      map = L.map("assetMap", { zoomControl: false, attributionControl: false }).setView([1.4833, 103.9], 12);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
-      const icon = L.divIcon({ className: "", html: '<div class="map-marker"></div>', iconSize: [18, 18], iconAnchor: [9, 9] });
-      marker = L.marker([1.4833, 103.9], { icon }).addTo(map);
-      renderDetails();
-      setTimeout(() => map.invalidateSize(), 650);
-    }
+        function initMap() {
+            map = L.map("assetMap", { zoomControl: false, attributionControl: false }).setView([1.4833, 103.9], 12);
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
+            const icon = L.divIcon({ className: "", html: '<div class="map-marker"></div>', iconSize: [18, 18], iconAnchor: [9, 9] });
+            marker = L.marker([1.4833, 103.9], { icon }).addTo(map);
+            renderDetails();
+            setTimeout(() => map.invalidateSize(), 650);
+        }
 
-    const sceneWrap = document.getElementById("pumpScene");
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
-    sceneWrap.appendChild(renderer.domElement);
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
-    camera.position.set(6.2, 3.2, 7.2);
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.minDistance = 4;
-    controls.maxDistance = 14;
-
-    const hemi = new THREE.HemisphereLight(0x6ea8ff, 0x08111d, 1.1);
-    const dir = new THREE.DirectionalLight(0xffffff, 1.4);
-    dir.position.set(6, 8, 5);
-    scene.add(hemi, dir);
-
-    const grid = new THREE.GridHelper(18, 18, 0x1e3a8a, 0x1e293b);
-    grid.position.y = -1.1;
-    scene.add(grid);
-
-    const group = new THREE.Group();
-    const darkMat = new THREE.MeshStandardMaterial({ color: 0x2d3748, metalness: 0.45, roughness: 0.38 });
-    const midMat = new THREE.MeshStandardMaterial({ color: 0x7c8aa8, metalness: 0.3, roughness: 0.45 });
-    const blueMat = new THREE.MeshStandardMaterial({ color: 0x2563eb, metalness: 0.5, roughness: 0.28, emissive: 0x220000 });
-    const baseMat = new THREE.MeshStandardMaterial({ color: 0x1f2937, metalness: 0.18, roughness: 0.78 });
-
-    const baseplate = new THREE.Mesh(new THREE.BoxGeometry(7.2, 0.35, 2.7), baseMat);
-    baseplate.receiveShadow = true;
-    baseplate.position.y = -0.9;
-    group.add(baseplate);
-
-    const motor = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.9, 2.6, 36), darkMat);
-    motor.rotation.z = Math.PI / 2;
-    motor.position.x = -1.8;
-    motor.castShadow = true;
-    group.add(motor);
-
-    const coupling = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.9, 24), midMat);
-    coupling.rotation.z = Math.PI / 2;
-    coupling.position.x = -0.1;
-    coupling.castShadow = true;
-    group.add(coupling);
-
-    const couplingGuard = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 1.1, 24, 1, true), new THREE.MeshBasicMaterial({ color: 0x7dd3fc, wireframe: true, transparent: true, opacity: 0.45 }));
-    couplingGuard.rotation.z = Math.PI / 2;
-    couplingGuard.position.x = -0.1;
-    group.add(couplingGuard);
-
-    const suction = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 2.4, 30), blueMat);
-    suction.rotation.z = Math.PI / 2;
-    suction.position.x = 1.9;
-    suction.castShadow = true;
-    group.add(suction);
-
-    const discharge = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 1.15, 20), blueMat);
-    discharge.position.set(2.95, 0.68, 0);
-    discharge.castShadow = true;
-    group.add(discharge);
-
-    const inlet = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.95, 20), midMat);
-    inlet.rotation.x = Math.PI / 2;
-    inlet.position.set(1.15, -0.1, -0.95);
-    inlet.castShadow = true;
-    group.add(inlet);
-
-    const feet = [-2.6, -1, 1.1, 2.7].map((x) => {
-      const foot = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.28, 0.62), baseMat);
-      foot.position.set(x, -0.55, 0.82 * (x < 0 ? -1 : 1) * 0 + 0);
-      return foot;
-    });
-    feet.forEach((foot, idx) => {
-      foot.position.z = idx % 2 === 0 ? -0.85 : 0.85;
-      foot.castShadow = true;
-      group.add(foot);
-    });
-    const accentRing = new THREE.Mesh(new THREE.TorusGeometry(0.95, 0.05, 16, 60), new THREE.MeshBasicMaterial({ color: 0xef4444, transparent: true, opacity: 0.15 }));
-    accentRing.rotation.y = Math.PI / 2;
-    accentRing.position.set(2.95, 0.2, 0);
-    group.add(accentRing);
-
-    const pumpHead = suction;
-    scene.add(group);
-
-    function resizeScene() {
-      const { clientWidth, clientHeight } = sceneWrap;
-      renderer.setSize(clientWidth, clientHeight);
-      camera.aspect = clientWidth / clientHeight;
-      camera.updateProjectionMatrix();
-    }
-    window.addEventListener("resize", () => {
-      resizeScene();
-      if (map) map.invalidateSize();
-    });
-    resizeScene();
-
-    document.getElementById("rotateToggle").addEventListener("click", (event) => {
-      autoRotate = !autoRotate;
-      event.currentTarget.classList.toggle("active", autoRotate);
-    });
-    document.getElementById("alarmFocus").addEventListener("click", (event) => {
-      alarmFocus = !alarmFocus;
-      event.currentTarget.classList.toggle("active", alarmFocus);
-      if (alarmFocus) {
-        camera.position.set(4.2, 2.2, 4.1);
-        controls.target.set(2.4, 0, 0);
-      } else {
+        const sceneWrap = document.getElementById("pumpScene");
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        sceneWrap.appendChild(renderer.domElement);
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
         camera.position.set(6.2, 3.2, 7.2);
-        controls.target.set(0.5, 0, 0);
-      }
-    });
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.minDistance = 4;
+        controls.maxDistance = 14;
 
-    function animate() {
-      requestAnimationFrame(animate);
-      if (autoRotate) group.rotation.y += 0.003;
-      const t = performance.now() * 0.0015;
-      accentRing.material.opacity = 0.12 + Math.sin(t * 2.8) * 0.08 + pumpHead.material.emissiveIntensity * 0.08;
-      controls.update();
-      renderer.render(scene, camera);
-    }
-    animate();
+        const hemi = new THREE.HemisphereLight(0x6ea8ff, 0x08111d, 1.1);
+        const dir = new THREE.DirectionalLight(0xffffff, 1.4);
+        dir.position.set(6, 8, 5);
+        scene.add(hemi, dir);
 
-    renderAssetList();
-    initMap();
+        const grid = new THREE.GridHelper(18, 18, 0x1e3a8a, 0x1e293b);
+        grid.position.y = -1.1;
+        scene.add(grid);
 
-    setInterval(() => {
-      assets.forEach(updateAssetTelemetry);
-      renderAssetList(assetSearch.value);
-      renderDetails();
-    }, 5000);
+        const group = new THREE.Group();
+        const darkMat = new THREE.MeshStandardMaterial({ color: 0x2d3748, metalness: 0.45, roughness: 0.38 });
+        const midMat = new THREE.MeshStandardMaterial({ color: 0x7c8aa8, metalness: 0.3, roughness: 0.45 });
+        const blueMat = new THREE.MeshStandardMaterial({ color: 0x2563eb, metalness: 0.5, roughness: 0.28, emissive: 0x220000 });
+        const baseMat = new THREE.MeshStandardMaterial({ color: 0x1f2937, metalness: 0.18, roughness: 0.78 });
 
-  </script>
+        const baseplate = new THREE.Mesh(new THREE.BoxGeometry(7.2, 0.35, 2.7), baseMat);
+        baseplate.receiveShadow = true;
+        baseplate.position.y = -0.9;
+        group.add(baseplate);
+
+        const motor = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.9, 2.6, 36), darkMat);
+        motor.rotation.z = Math.PI / 2;
+        motor.position.x = -1.8;
+        motor.castShadow = true;
+        group.add(motor);
+
+        const coupling = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.9, 24), midMat);
+        coupling.rotation.z = Math.PI / 2;
+        coupling.position.x = -0.1;
+        coupling.castShadow = true;
+        group.add(coupling);
+
+        const couplingGuard = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 1.1, 24, 1, true), new THREE.MeshBasicMaterial({ color: 0x7dd3fc, wireframe: true, transparent: true, opacity: 0.45 }));
+        couplingGuard.rotation.z = Math.PI / 2;
+        couplingGuard.position.x = -0.1;
+        group.add(couplingGuard);
+
+        const suction = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 2.4, 30), blueMat);
+        suction.rotation.z = Math.PI / 2;
+        suction.position.x = 1.9;
+        suction.castShadow = true;
+        group.add(suction);
+
+        const discharge = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 1.15, 20), blueMat);
+        discharge.position.set(2.95, 0.68, 0);
+        discharge.castShadow = true;
+        group.add(discharge);
+
+        const inlet = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.95, 20), midMat);
+        inlet.rotation.x = Math.PI / 2;
+        inlet.position.set(1.15, -0.1, -0.95);
+        inlet.castShadow = true;
+        group.add(inlet);
+
+        const feet = [-2.6, -1, 1.1, 2.7].map((x) => {
+            const foot = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.28, 0.62), baseMat);
+            foot.position.set(x, -0.55, 0.82 * (x < 0 ? -1 : 1) * 0 + 0);
+            return foot;
+        });
+        feet.forEach((foot, idx) => {
+            foot.position.z = idx % 2 === 0 ? -0.85 : 0.85;
+            foot.castShadow = true;
+            group.add(foot);
+        });
+        const accentRing = new THREE.Mesh(new THREE.TorusGeometry(0.95, 0.05, 16, 60), new THREE.MeshBasicMaterial({ color: 0xef4444, transparent: true, opacity: 0.15 }));
+        accentRing.rotation.y = Math.PI / 2;
+        accentRing.position.set(2.95, 0.2, 0);
+        group.add(accentRing);
+
+        const pumpHead = suction;
+        scene.add(group);
+
+        function resizeScene() {
+            const { clientWidth, clientHeight } = sceneWrap;
+            renderer.setSize(clientWidth, clientHeight);
+            camera.aspect = clientWidth / clientHeight;
+            camera.updateProjectionMatrix();
+        }
+        window.addEventListener("resize", () => {
+            resizeScene();
+            if (map) map.invalidateSize();
+        });
+        resizeScene();
+
+        document.getElementById("rotateToggle").addEventListener("click", (event) => {
+            autoRotate = !autoRotate;
+            event.currentTarget.classList.toggle("active", autoRotate);
+        });
+        document.getElementById("alarmFocus").addEventListener("click", (event) => {
+            alarmFocus = !alarmFocus;
+            event.currentTarget.classList.toggle("active", alarmFocus);
+            if (alarmFocus) {
+                camera.position.set(4.2, 2.2, 4.1);
+                controls.target.set(2.4, 0, 0);
+            } else {
+                camera.position.set(6.2, 3.2, 7.2);
+                controls.target.set(0.5, 0, 0);
+            }
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (autoRotate) group.rotation.y += 0.003;
+            const t = performance.now() * 0.0015;
+            accentRing.material.opacity = 0.12 + Math.sin(t * 2.8) * 0.08 + pumpHead.material.emissiveIntensity * 0.08;
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        renderAssetList();
+        initMap();
+
+        setInterval(() => {
+            assets.forEach(updateAssetTelemetry);
+            renderAssetList(assetSearch.value);
+            renderDetails();
+        }, 5000);
+
+    </script>
 </body>
+
 </html>

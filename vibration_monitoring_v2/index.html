@@ -1,0 +1,2438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Vibration Monitoring & Diagnostic System — SEEPEX BN 10-6L</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  /* ============================================================
+     GLOBAL THEME
+     ============================================================ */
+  :root {
+    --bg-0: #0a0e1a;
+    --bg-1: #111827;
+    --bg-2: #1f2937;
+    --bg-3: #2a3447;
+    --line: rgba(255,255,255,0.08);
+    --line-2: rgba(255,255,255,0.14);
+    --text: #e5e7eb;
+    --text-dim: #9ca3af;
+    --text-faint: #6b7280;
+    --blue: #3b82f6;
+    --cyan: #06b6d4;
+    --green: #10b981;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --violet: #8b5cf6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    background: radial-gradient(ellipse at 30% 20%, #16213a 0%, #0a0e1a 55%, #05070d 100%);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, sans-serif;
+    font-size: 13px;
+    overflow-x: auto;
+    overflow-y: auto;
+    min-width: 1440px;
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(59,130,246,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(59,130,246,0.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ============================================================
+     TOP BAR
+     ============================================================ */
+  .topbar {
+    position: relative; z-index: 10;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    background: linear-gradient(180deg, rgba(17,24,39,0.95), rgba(10,14,26,0.7));
+    border-bottom: 1px solid var(--line);
+    backdrop-filter: blur(10px);
+  }
+  .brand {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .brand-mark {
+    width: 36px; height: 36px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, var(--blue), var(--cyan));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 14px; letter-spacing: 1px;
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(59,130,246,0.4);
+  }
+  .brand-title {
+    font-size: 14px; font-weight: 600;
+    line-height: 1.1;
+  }
+  .brand-sub {
+    font-size: 10px; color: var(--text-dim); letter-spacing: 1.5px; text-transform: uppercase;
+  }
+  .top-divider { width: 1px; height: 28px; background: var(--line); margin: 0 20px; }
+  .breadcrumb {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--text-dim);
+  }
+  .breadcrumb b { color: var(--text); font-weight: 500; }
+  .top-spacer { flex: 1; }
+  .top-actions { display: flex; align-items: center; gap: 18px; }
+  .clock {
+    font-variant-numeric: tabular-nums;
+    font-size: 12px; color: var(--text-dim);
+    display: flex; gap: 10px; align-items: center;
+  }
+  .clock .live-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 1.6s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.4); }
+  }
+  .icon-btn {
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--text-dim);
+    position: relative;
+    transition: 0.2s;
+  }
+  .icon-btn:hover { color: var(--text); background: rgba(59,130,246,0.1); border-color: var(--blue); }
+  .icon-btn .badge {
+    position: absolute; top: -4px; right: -4px;
+    background: var(--red);
+    color: #fff;
+    font-size: 9px; font-weight: 700;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid var(--bg-0);
+  }
+  .avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8b5cf6, #ec4899);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: #fff;
+    cursor: pointer;
+  }
+
+  /* ============================================================
+     MAIN GRID
+     ============================================================ */
+  .main {
+    position: relative; z-index: 1;
+    padding: 16px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* Hero (60vh) */
+  .hero {
+    height: calc(60vh - 36px);
+    min-height: 480px;
+    display: grid;
+    grid-template-columns: 65% 35%;
+    gap: 16px;
+  }
+  .panel {
+    background: linear-gradient(180deg, rgba(17,24,39,0.85), rgba(15,20,32,0.85));
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+    position: relative;
+  }
+  .panel::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(59,130,246,0.5), transparent);
+  }
+  .panel-head {
+    height: 42px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--line);
+    background: rgba(0,0,0,0.2);
+  }
+  .panel-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+  .panel-title i { width: 14px; height: 14px; color: var(--cyan); }
+  .panel-tools { display: flex; gap: 6px; align-items: center; }
+  .chip {
+    height: 24px;
+    padding: 0 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-size: 10px;
+    color: var(--text-dim);
+    display: flex; align-items: center; gap: 5px;
+    cursor: pointer;
+    transition: 0.15s;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .chip:hover { color: var(--text); border-color: var(--blue); }
+  .chip.active { color: var(--blue); border-color: var(--blue); background: rgba(59,130,246,0.1); }
+
+  /* 3D scene container */
+  #pumpScene {
+    position: relative;
+    width: 100%; height: calc(100% - 42px);
+    background:
+      radial-gradient(ellipse at 50% 80%, rgba(59,130,246,0.08), transparent 60%),
+      linear-gradient(180deg, #0c1220 0%, #060912 100%);
+  }
+  #pumpScene canvas { display: block; }
+  .scene-overlay {
+    position: absolute; inset: 0;
+    pointer-events: none;
+  }
+  .scene-overlay > * { pointer-events: auto; }
+  .scene-controls {
+    position: absolute; top: 12px; right: 12px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .scene-controls .chip { background: rgba(10,14,26,0.85); }
+  .scene-legend {
+    position: absolute; left: 12px; bottom: 12px;
+    background: rgba(10,14,26,0.85);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 10px;
+    min-width: 160px;
+  }
+  .scene-legend h5 {
+    font-size: 9px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-dim); margin-bottom: 6px; font-weight: 600;
+  }
+  .legend-row { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .scene-stats {
+    position: absolute; left: 12px; top: 12px;
+    background: rgba(10,14,26,0.85);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 10px;
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+  }
+  .scene-stats span { color: var(--green); font-weight: 600; }
+  .css-label {
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(10,14,26,0.85);
+    border: 1px solid var(--cyan);
+    border-radius: 4px;
+    padding: 2px 6px;
+    pointer-events: none;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    box-shadow: 0 0 10px rgba(6,182,212,0.4);
+  }
+  .sensor-tooltip {
+    position: absolute;
+    background: rgba(10,14,26,0.97);
+    border: 1px solid var(--cyan);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 11px;
+    pointer-events: none;
+    z-index: 100;
+    min-width: 180px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+    display: none;
+  }
+  .sensor-tooltip h4 {
+    font-size: 11px; font-weight: 700; color: var(--cyan);
+    margin-bottom: 6px;
+  }
+  .sensor-tooltip .row {
+    display: flex; justify-content: space-between;
+    padding: 2px 0;
+    color: var(--text-dim);
+  }
+  .sensor-tooltip .row b { color: var(--text); font-weight: 600; }
+
+  /* Indicator rail */
+  .rail {
+    height: 100%;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .rail::-webkit-scrollbar { width: 6px; }
+  .rail::-webkit-scrollbar-thumb { background: var(--bg-3); border-radius: 3px; }
+  .rail-section {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .rail-header {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 0 2px 4px;
+    border-bottom: 1px solid var(--line);
+  }
+  .rail-header i { width: 12px; height: 12px; color: var(--cyan); }
+
+  /* Severity gauge */
+  .severity-card {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px;
+    position: relative;
+  }
+  .severity-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .severity-value {
+    font-size: 38px; font-weight: 700; color: var(--text);
+    line-height: 1; font-variant-numeric: tabular-nums;
+  }
+  .severity-unit {
+    font-size: 12px; color: var(--text-dim); margin-left: 4px; font-weight: 400;
+  }
+  .severity-zone {
+    width: 38px; height: 38px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 800;
+    background: rgba(245,158,11,0.15);
+    border: 1px solid var(--amber);
+    color: var(--amber);
+  }
+  .gauge-wrap {
+    margin-top: 10px;
+    height: 70px;
+    position: relative;
+  }
+  .gauge-svg { width: 100%; height: 100%; }
+  .severity-meta {
+    margin-top: 8px;
+    display: flex; justify-content: space-between;
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+  .severity-meta b { color: var(--text); }
+
+  /* Compact metric cards */
+  .metric-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .metric-card {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 10px;
+    position: relative;
+    transition: 0.2s;
+  }
+  .metric-card:hover { border-color: var(--blue); transform: translateY(-1px); }
+  .metric-top {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 4px;
+  }
+  .metric-label {
+    font-size: 10px; font-weight: 600; color: var(--text-dim);
+    letter-spacing: 0.5px;
+  }
+  .metric-status {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px currentColor;
+  }
+  .metric-value-row {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .metric-value {
+    font-size: 16px; font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+  }
+  .metric-delta {
+    font-size: 9px; color: var(--green);
+    font-weight: 600;
+  }
+  .metric-delta.up { color: var(--amber); }
+  .metric-delta.down { color: var(--green); }
+  .metric-bar {
+    height: 3px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 4px;
+    position: relative;
+  }
+  .metric-bar-fill {
+    position: absolute; left: 0; top: 0; height: 100%;
+    background: linear-gradient(90deg, var(--green), var(--amber), var(--red));
+    border-radius: 2px;
+    transition: width 0.6s ease;
+  }
+  .metric-spark {
+    height: 22px; margin-top: 4px;
+    width: 100%;
+    display: block;
+  }
+
+  /* Mid section */
+  .mid {
+    height: calc(50vh - 16px);
+    min-height: 360px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  #waterfallScene {
+    width: 100%;
+    height: calc(100% - 42px);
+    background: linear-gradient(180deg, #0c1220, #060912);
+    position: relative;
+  }
+  #spectrogramWrap {
+    width: 100%;
+    height: calc(100% - 42px);
+    position: relative;
+    padding: 16px 50px 30px 50px;
+  }
+  #spectrogramCanvas { display: block; width: 100%; height: 100%; cursor: crosshair; border-radius: 4px; }
+  .spec-axis-label {
+    position: absolute;
+    font-size: 9px;
+    color: var(--text-dim);
+    pointer-events: none;
+  }
+  .spec-freq-label {
+    position: absolute;
+    right: 6px;
+    transform: translateY(-50%);
+    font-size: 9px;
+    color: var(--text-dim);
+    background: rgba(10,14,26,0.7);
+    padding: 1px 4px;
+    border-radius: 3px;
+    pointer-events: none;
+  }
+
+  /* Bottom diagnostic */
+  .ai-card {
+    padding: 18px 22px;
+    display: grid;
+    grid-template-columns: 130px 1fr 1fr;
+    gap: 24px;
+    align-items: center;
+  }
+  .confidence-ring {
+    width: 110px; height: 110px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    background: conic-gradient(var(--green) 0%, var(--green) 87%, rgba(255,255,255,0.06) 87%, rgba(255,255,255,0.06) 100%);
+  }
+  .confidence-ring::before {
+    content: '';
+    position: absolute; inset: 8px;
+    border-radius: 50%;
+    background: var(--bg-1);
+  }
+  .confidence-ring-inner {
+    position: relative; z-index: 1;
+    text-align: center;
+  }
+  .confidence-ring-inner .v { font-size: 26px; font-weight: 700; color: var(--text); }
+  .confidence-ring-inner .l { font-size: 9px; text-transform: uppercase; color: var(--text-dim); letter-spacing: 1px; }
+  .ai-content h3 {
+    font-size: 10px; text-transform: uppercase;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  .ai-content .primary {
+    font-size: 15px; font-weight: 600; color: var(--text);
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+  .ai-content .primary .severity-pill {
+    display: inline-block;
+    background: rgba(245,158,11,0.15);
+    border: 1px solid var(--amber);
+    color: var(--amber);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    margin-right: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    vertical-align: middle;
+  }
+  .ai-action {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+  .ai-action b { color: var(--text); }
+  .ai-meta {
+    display: flex; gap: 16px;
+    margin-top: 10px;
+    font-size: 10px;
+    color: var(--text-faint);
+    align-items: center;
+  }
+  .ai-meta .pulse-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 1.6s infinite;
+    display: inline-block;
+    margin-right: 6px;
+  }
+  .secondary-watch {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .sw-row { display: flex; align-items: center; justify-content: space-between; }
+  .sw-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+  .sw-val { font-size: 13px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+  .sw-mini-bar { width: 100px; height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; margin-left: 10px; }
+  .sw-mini-bar-fill { height: 100%; border-radius: 2px; transition: width 0.5s; }
+
+  .sparkline-strip {
+    border-top: 1px solid var(--line);
+    padding: 14px 22px;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 16px;
+  }
+  .spark-item {
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .spark-item-top {
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .spark-item-label {
+    font-size: 9px; color: var(--text-dim);
+    text-transform: uppercase; letter-spacing: 1px; font-weight: 600;
+  }
+  .spark-item-val {
+    font-size: 12px; font-weight: 700; color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .spark-canvas { width: 100%; height: 28px; display: block; }
+
+  /* Side panel for sensor focus */
+  .side-panel {
+    position: fixed;
+    top: 0; right: 0;
+    width: 420px;
+    height: 100vh;
+    background: linear-gradient(180deg, rgba(17,24,39,0.98), rgba(10,14,26,0.98));
+    border-left: 1px solid var(--line-2);
+    z-index: 50;
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+    backdrop-filter: blur(20px);
+    box-shadow: -10px 0 40px rgba(0,0,0,0.5);
+    display: flex; flex-direction: column;
+  }
+  .side-panel.open { transform: translateX(0); }
+  .sp-head {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .sp-head h2 {
+    font-size: 16px; font-weight: 700; color: var(--text);
+  }
+  .sp-head h2 small { display: block; font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+  .sp-close {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--text-dim);
+  }
+  .sp-close:hover { color: var(--red); border-color: var(--red); }
+  .sp-body { padding: 16px 20px; overflow-y: auto; flex: 1; }
+  .sp-section { margin-bottom: 20px; }
+  .sp-section-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-dim); margin-bottom: 8px; font-weight: 700;}
+  .sp-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .sp-stat { background: rgba(0,0,0,0.3); border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+  .sp-stat .l { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+  .sp-stat .v { font-size: 18px; font-weight: 700; color: var(--text); margin-top: 4px; }
+  .sp-chart-wrap { background: rgba(0,0,0,0.3); border: 1px solid var(--line); border-radius: 8px; padding: 10px; height: 160px; }
+
+  /* Tachometer */
+  .tach {
+    position: absolute;
+    bottom: 20px; right: 20px;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background:
+      conic-gradient(from -90deg, var(--cyan) 0deg, var(--cyan) 232deg, rgba(255,255,255,0.08) 232deg);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 30px rgba(6,182,212,0.3);
+  }
+  .tach::before {
+    content: '';
+    position: absolute; inset: 8px;
+    background: radial-gradient(circle, #0c1220, #050810);
+    border-radius: 50%;
+    border: 1px solid var(--line);
+  }
+  .tach-inner { position: relative; z-index: 1; text-align: center; }
+  .tach-val { font-size: 26px; font-weight: 700; color: var(--cyan); font-variant-numeric: tabular-nums; }
+  .tach-unit { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-dim); }
+  .tach-label { font-size: 8px; color: var(--text-faint); margin-top: 2px; letter-spacing: 0.5px; }
+
+  /* Misc */
+  .severity-pill-static {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .pill-warn { background: rgba(245,158,11,0.15); color: var(--amber); border: 1px solid rgba(245,158,11,0.4); }
+  .pill-ok { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.4); }
+  .pill-crit { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.4); }
+
+  /* Loading curtain */
+  #loader {
+    position: fixed; inset: 0;
+    background: var(--bg-0);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 999;
+    transition: opacity 0.6s;
+    flex-direction: column;
+    gap: 16px;
+  }
+  #loader.hide { opacity: 0; pointer-events: none; }
+  .loader-spin {
+    width: 48px; height: 48px;
+    border: 3px solid rgba(59,130,246,0.2);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loader-txt { color: var(--text-dim); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="loader-spin"></div>
+  <div class="loader-txt">Initializing Diagnostic System</div>
+</div>
+
+<!-- =================== TOP BAR =================== -->
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark">SE</div>
+    <div>
+      <div class="brand-title">Vibration Monitoring & Diagnostic System</div>
+      <div class="brand-sub">SmartEdge · v4.2.1</div>
+    </div>
+  </div>
+  <div class="top-divider"></div>
+  <div class="breadcrumb">
+    <i data-lucide="factory" style="width:13px;height:13px"></i>
+    <span>Plant 02</span>
+    <i data-lucide="chevron-right" style="width:11px;height:11px"></i>
+    <span>Process Hall B</span>
+    <i data-lucide="chevron-right" style="width:11px;height:11px"></i>
+    <b>SEEPEX BN 10-6L · PCP-204</b>
+  </div>
+  <div class="top-spacer"></div>
+  <div class="top-actions">
+    <div class="clock">
+      <span class="live-dot"></span>
+      <span id="clockTxt">--:--:--</span>
+    </div>
+    <div class="icon-btn"><i data-lucide="search" style="width:15px;height:15px"></i></div>
+    <div class="icon-btn"><i data-lucide="settings" style="width:15px;height:15px"></i></div>
+    <div class="icon-btn">
+      <i data-lucide="bell" style="width:15px;height:15px"></i>
+      <span class="badge">3</span>
+    </div>
+    <div class="avatar">TH</div>
+  </div>
+</div>
+
+<!-- =================== MAIN =================== -->
+<div class="main">
+
+  <!-- =================== HERO =================== -->
+  <div class="hero">
+
+    <!-- 3D Pump Panel -->
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">
+          <i data-lucide="box"></i>
+          <span>Asset 3D Twin · SEEPEX BN 10-6L Progressive Cavity Pump</span>
+        </div>
+        <div class="panel-tools">
+          <div class="chip" id="btnRotate"><i data-lucide="refresh-cw" style="width:11px;height:11px"></i>Auto-rotate</div>
+          <div class="chip" id="btnLabels"><i data-lucide="tag" style="width:11px;height:11px"></i>Labels</div>
+          <div class="chip" id="btnWire"><i data-lucide="grid-3x3" style="width:11px;height:11px"></i>Wireframe</div>
+          <div class="chip" id="btnAlarm"><i data-lucide="alert-triangle" style="width:11px;height:11px"></i>Alarm Focus</div>
+        </div>
+      </div>
+      <div id="pumpScene">
+        <div class="scene-overlay">
+          <div class="scene-stats">
+            FPS: <span id="fpsCounter">60</span> · Sensors: <span>4/4</span> · Latency: <span>12ms</span>
+          </div>
+          <div class="scene-legend">
+            <h5>Sensor Status</h5>
+            <div class="legend-row"><span class="legend-dot" style="background:var(--green)"></span><span>Normal</span></div>
+            <div class="legend-row"><span class="legend-dot" style="background:var(--amber)"></span><span>Watch</span></div>
+            <div class="legend-row"><span class="legend-dot" style="background:var(--red)"></span><span>Alarm</span></div>
+          </div>
+          <div class="tach">
+            <div class="tach-inner">
+              <div class="tach-val" id="tachVal">465</div>
+              <div class="tach-unit">RPM</div>
+              <div class="tach-label">Shaft Speed</div>
+            </div>
+          </div>
+        </div>
+        <div class="sensor-tooltip" id="sensorTip"></div>
+      </div>
+    </div>
+
+    <!-- Indicator Rail -->
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">
+          <i data-lucide="activity"></i>
+          <span>Live Diagnostic Indicators</span>
+        </div>
+        <div class="panel-tools">
+          <div class="chip active">All Sensors</div>
+          <div class="chip"><i data-lucide="download" style="width:11px;height:11px"></i></div>
+        </div>
+      </div>
+      <div class="rail">
+
+        <div class="rail-section">
+          <div class="rail-header">
+            <span><i data-lucide="gauge"></i>&nbsp; Overall Severity (ISO 10816)</span>
+            <span class="severity-pill-static pill-warn">Zone B</span>
+          </div>
+          <div class="severity-card">
+            <div class="severity-top">
+              <div>
+                <span class="severity-value" id="rmsValue">2.84</span><span class="severity-unit">mm/s RMS</span>
+              </div>
+              <div class="severity-zone" id="rmsZone">B</div>
+            </div>
+            <div class="gauge-wrap">
+              <svg class="gauge-svg" viewBox="0 0 200 100" preserveAspectRatio="xMidYMid meet">
+                <!-- Zone arcs -->
+                <path d="M 20 90 A 80 80 0 0 1 64.4 28.6" stroke="#10b981" stroke-width="10" fill="none" stroke-linecap="round"/>
+                <path d="M 70 25 A 80 80 0 0 1 130 25" stroke="#f59e0b" stroke-width="10" fill="none" stroke-linecap="butt"/>
+                <path d="M 135.6 28.6 A 80 80 0 0 1 180 90" stroke="#ef4444" stroke-width="10" fill="none" stroke-linecap="round"/>
+                <!-- Zone labels -->
+                <text x="25" y="80" fill="#9ca3af" font-size="9" font-family="Inter">A</text>
+                <text x="68" y="22" fill="#9ca3af" font-size="9" font-family="Inter">B</text>
+                <text x="128" y="22" fill="#9ca3af" font-size="9" font-family="Inter">C</text>
+                <text x="170" y="80" fill="#9ca3af" font-size="9" font-family="Inter">D</text>
+                <!-- Needle -->
+                <line id="gaugeNeedle" x1="100" y1="90" x2="100" y2="20" stroke="#fff" stroke-width="2" stroke-linecap="round" transform="rotate(-30 100 90)"/>
+                <circle cx="100" cy="90" r="6" fill="#1f2937" stroke="#fff" stroke-width="2"/>
+              </svg>
+            </div>
+            <div class="severity-meta">
+              <span>Zone A: <b style="color:#10b981">&lt; 1.8</b></span>
+              <span>Zone B: <b style="color:#f59e0b">1.8–4.5</b></span>
+              <span>Zone C: <b style="color:#ef4444">&gt; 4.5</b></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="rail-section">
+          <div class="rail-header">
+            <span><i data-lucide="waves"></i>&nbsp; Shaft Harmonics</span>
+            <span style="color:var(--text-faint)">@ 5.0 Hz</span>
+          </div>
+          <div class="metric-grid" id="harmonicsGrid"></div>
+        </div>
+
+        <div class="rail-section">
+          <div class="rail-header">
+            <span><i data-lucide="cog"></i>&nbsp; Bearing Frequencies (6310)</span>
+            <span style="color:var(--text-faint)">300 RPM</span>
+          </div>
+          <div class="metric-grid" id="bearingGrid"></div>
+        </div>
+
+        <div class="rail-section">
+          <div class="rail-header">
+            <span><i data-lucide="thermometer"></i>&nbsp; Temperature & Electrical</span>
+          </div>
+          <div class="metric-grid" id="tempGrid"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== MID =================== -->
+  <div class="mid">
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">
+          <i data-lucide="layers-3"></i>
+          <span>3D Waterfall Spectrum · 24h Trend</span>
+        </div>
+        <div class="panel-tools">
+          <div class="chip" data-view="iso">ISO</div>
+          <div class="chip" data-view="top">Top</div>
+          <div class="chip" data-view="side">Side</div>
+          <div class="chip" data-view="front">Front</div>
+          <div class="chip active" data-view="reset">Reset</div>
+        </div>
+      </div>
+      <div id="waterfallScene"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">
+          <i data-lucide="grid-2x2"></i>
+          <span>Spectrogram · Frequency vs Time</span>
+        </div>
+        <div class="panel-tools">
+          <div class="chip"><span style="width:8px;height:8px;background:linear-gradient(90deg,#3b82f6,#10b981,#f59e0b,#ef4444);display:inline-block;border-radius:2px"></span>Amplitude (mm/s)</div>
+        </div>
+      </div>
+      <div id="spectrogramWrap">
+        <canvas id="spectrogramCanvas"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== AI DIAGNOSTIC =================== -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">
+        <i data-lucide="brain-circuit"></i>
+        <span>AI Diagnostic Summary</span>
+      </div>
+      <div class="panel-tools">
+        <div class="chip active"><i data-lucide="sparkles" style="width:11px;height:11px"></i>SmartEdge ML v3.4</div>
+        <div class="chip"><i data-lucide="file-text" style="width:11px;height:11px"></i>Full Report</div>
+        <div class="chip"><i data-lucide="calendar-plus" style="width:11px;height:11px"></i>Schedule</div>
+      </div>
+    </div>
+    <div class="ai-card">
+      <div class="confidence-ring">
+        <div class="confidence-ring-inner">
+          <div class="v">87<small style="font-size:14px">%</small></div>
+          <div class="l">Confidence</div>
+        </div>
+      </div>
+      <div class="ai-content">
+        <h3>Primary Concern</h3>
+        <div class="primary">
+          <span class="severity-pill">WATCH</span>
+          Developing imbalance &mdash; 1× amplitude trending upward (+18% over 24h).
+        </div>
+        <h3>Recommended Action</h3>
+        <div class="ai-action">
+          <b>Schedule dynamic balancing</b> within next maintenance window. Verify suction recirculation and inspect rotor/stator clearance. Re-baseline after correction.
+        </div>
+        <div class="ai-meta">
+          <span><span class="pulse-dot"></span>Last analysis: <b style="color:var(--text)" id="aiTimestamp">just now</b></span>
+          <span>Model: PCP-Imbalance-v3.4</span>
+          <span>Training: 41,200 samples</span>
+        </div>
+      </div>
+      <div class="secondary-watch">
+        <h3 style="font-size:10px;text-transform:uppercase;color:var(--text-dim);letter-spacing:1px;margin-bottom:4px;font-weight:600">Secondary Watch</h3>
+        <div class="sw-row">
+          <span class="sw-label">2× Harmonic</span>
+          <span class="sw-val">1.12 mm/s</span>
+          <div class="sw-mini-bar"><div class="sw-mini-bar-fill" style="width:42%;background:var(--green)"></div></div>
+        </div>
+        <div class="sw-row">
+          <span class="sw-label">BPFI</span>
+          <span class="sw-val">0.84 mm/s</span>
+          <div class="sw-mini-bar"><div class="sw-mini-bar-fill" style="width:38%;background:var(--green)"></div></div>
+        </div>
+        <div class="sw-row">
+          <span class="sw-label">Bearing Temp</span>
+          <span class="sw-val">62.4 &deg;C</span>
+          <div class="sw-mini-bar"><div class="sw-mini-bar-fill" style="width:54%;background:var(--amber)"></div></div>
+        </div>
+        <div class="sw-row">
+          <span class="sw-label">2LF Electrical</span>
+          <span class="sw-val">0.48 mm/s</span>
+          <div class="sw-mini-bar"><div class="sw-mini-bar-fill" style="width:28%;background:var(--green)"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="sparkline-strip" id="sparkStrip"></div>
+  </div>
+
+</div>
+
+<!-- =================== SIDE PANEL =================== -->
+<div class="side-panel" id="sidePanel">
+  <div class="sp-head">
+    <h2 id="spTitle">Sensor S1<small id="spSub">DE Bearing · Radial Horizontal</small></h2>
+    <div class="sp-close" id="spClose"><i data-lucide="x" style="width:16px;height:16px"></i></div>
+  </div>
+  <div class="sp-body">
+    <div class="sp-section">
+      <div class="sp-section-title">Live Readings</div>
+      <div class="sp-stats">
+        <div class="sp-stat"><div class="l">RMS</div><div class="v" id="spRMS">2.84 mm/s</div></div>
+        <div class="sp-stat"><div class="l">Peak</div><div class="v" id="spPeak">8.21 mm/s</div></div>
+        <div class="sp-stat"><div class="l">Crest Factor</div><div class="v" id="spCrest">2.89</div></div>
+        <div class="sp-stat"><div class="l">Temperature</div><div class="v" id="spTemp">62.4 &deg;C</div></div>
+      </div>
+    </div>
+    <div class="sp-section">
+      <div class="sp-section-title">FFT Spectrum (0–500 Hz)</div>
+      <div class="sp-chart-wrap"><canvas id="spFFT"></canvas></div>
+    </div>
+    <div class="sp-section">
+      <div class="sp-section-title">Time Waveform (1.0 s)</div>
+      <div class="sp-chart-wrap"><canvas id="spWave"></canvas></div>
+    </div>
+    <div class="sp-section">
+      <div class="sp-section-title">Sensor Info</div>
+      <div style="background:rgba(0,0,0,0.3);border:1px solid var(--line);border-radius:8px;padding:12px;font-size:11px;line-height:1.7;color:var(--text-dim)">
+        <div><span style="color:var(--text-faint)">Model:</span> <b style="color:var(--text)" id="spModel">Monitran MTN/2285ITC</b></div>
+        <div><span style="color:var(--text-faint)">Range:</span> <b style="color:var(--text)">±50 g · 0.5–10 kHz</b></div>
+        <div><span style="color:var(--text-faint)">Sampling:</span> <b style="color:var(--text)">25.6 kSPS</b></div>
+        <div><span style="color:var(--text-faint)">Last Calibration:</span> <b style="color:var(--text)">2026-02-14</b></div>
+        <div><span style="color:var(--text-faint)">Status:</span> <span class="severity-pill-static pill-ok">Online</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== THREE.JS IMPORT MAP =================== -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.152.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.152.0/examples/jsm/"
+  }
+}
+</script>
+
+<!-- =================== MAIN MODULE =================== -->
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+/* ============================================================
+   SECTION 1: SYNTHETIC SPECTRUM GENERATOR (IIFE)
+   ============================================================ */
+const SpectrumGen = (() => {
+  const RPM = 300;
+  const f1x = RPM / 60; // 5 Hz
+  const LF = 50;        // line frequency
+  // Bearing 6310: pre-computed defect frequencies for ~300 RPM
+  const BPFO = 89.4;
+  const BPFI = 130.6;
+  const BSF  = 58.7;
+  const FTF  = 2.0;
+
+  function gaussian(x, mu, sigma, amp) {
+    return amp * Math.exp(-Math.pow((x - mu) / sigma, 2));
+  }
+
+  // Generate one spectrum (256 bins, 0-1000 Hz)
+  function spectrum(sensorId, ageHours) {
+    const N = 256;
+    const fmax = 1000;
+    const arr = new Float32Array(N);
+    // base noise floor
+    for (let i = 0; i < N; i++) {
+      const f = (i / N) * fmax;
+      arr[i] = 0.02 + Math.random() * 0.04 + 0.05 / (1 + f * 0.05);
+    }
+    // imbalance fault progressing over 24h. ageHours=0 => oldest, 23 => newest
+    const progress = (24 - ageHours) / 24; // 0..1 newer => higher
+    const sensorFactor = { S1: 1.0, S2: 0.6, S3: 0.7, S4: 0.35 }[sensorId] || 1;
+
+    // 1x dominant (imbalance) - grows over time on S1
+    const oneX = (0.6 + progress * 1.4) * sensorFactor;
+    // 2x, 3x harmonics
+    const twoX = (0.35 + progress * 0.4) * sensorFactor;
+    const threeX = (0.18 + progress * 0.15) * sensorFactor;
+    // sub-synchronous
+    const subX = 0.12 * sensorFactor;
+    // 50Hz line freq, 100Hz 2LF (S2 motor electrical)
+    const lf2x = sensorId === 'S2' ? 0.55 : 0.22;
+    // bearing frequencies
+    const bpfo = (0.25 + progress * 0.15) * sensorFactor;
+    const bpfi = (0.4 + progress * 0.25) * sensorFactor;
+    // gearbox MultiX (S3)
+    const multi = sensorId === 'S3' ? 0.45 : 0.15;
+
+    for (let i = 0; i < N; i++) {
+      const f = (i / N) * fmax;
+      arr[i] += gaussian(f, f1x, 0.6, oneX);
+      arr[i] += gaussian(f, f1x * 2, 0.6, twoX);
+      arr[i] += gaussian(f, f1x * 3, 0.6, threeX);
+      arr[i] += gaussian(f, f1x * 0.45, 0.5, subX);
+      arr[i] += gaussian(f, LF, 0.8, 0.3);
+      arr[i] += gaussian(f, 2 * LF, 0.8, lf2x);
+      arr[i] += gaussian(f, BPFO, 1.2, bpfo);
+      arr[i] += gaussian(f, BPFI, 1.4, bpfi);
+      arr[i] += gaussian(f, BSF, 1.0, 0.2);
+      // MultiX harmonics
+      for (let h = 4; h <= 8; h++) {
+        arr[i] += gaussian(f, f1x * h, 0.7, multi * 0.4);
+      }
+      // sidebands around BPFI
+      arr[i] += gaussian(f, BPFI - f1x, 0.8, bpfi * 0.5);
+      arr[i] += gaussian(f, BPFI + f1x, 0.8, bpfi * 0.5);
+    }
+    return arr;
+  }
+
+  // 48 spectra spanning 24h for each sensor
+  function generateAll() {
+    const out = {};
+    ['S1', 'S2', 'S3', 'S4'].forEach(s => {
+      out[s] = [];
+      for (let t = 0; t < 48; t++) {
+        const ageHours = (47 - t) * 0.5;
+        out[s].push(spectrum(s, ageHours));
+      }
+    });
+    return out;
+  }
+
+  function timeWaveform(N=512, dominant=5, amp=2.5) {
+    const arr = new Float32Array(N);
+    for (let i = 0; i < N; i++) {
+      const t = i / N;
+      arr[i] = amp * Math.sin(2 * Math.PI * dominant * t)
+             + 0.4 * Math.sin(2 * Math.PI * dominant * 2 * t + 1)
+             + 0.2 * Math.sin(2 * Math.PI * dominant * 3 * t + 2)
+             + (Math.random() - 0.5) * 0.3;
+    }
+    return arr;
+  }
+
+  return { generateAll, spectrum, timeWaveform, RPM, f1x, LF, BPFO, BPFI, BSF, FTF };
+})();
+
+const SPECTRA = SpectrumGen.generateAll();
+const NUM_BINS = 256;
+const FMAX = 1000;
+const NUM_TIMES = 48;
+
+/* ============================================================
+   SECTION 2: PUMP 3D SCENE
+   ============================================================ */
+const PumpScene = (() => {
+  const container = document.getElementById('pumpScene');
+  const tipEl = document.getElementById('sensorTip');
+
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(0x060912, 8, 22);
+
+  const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+  camera.position.set(7, 4.5, 7);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  container.appendChild(renderer.domElement);
+
+  const labelRenderer = new CSS2DRenderer();
+  labelRenderer.domElement.style.position = 'absolute';
+  labelRenderer.domElement.style.top = '0';
+  labelRenderer.domElement.style.left = '0';
+  labelRenderer.domElement.style.pointerEvents = 'none';
+  container.appendChild(labelRenderer.domElement);
+
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.minDistance = 4;
+  controls.maxDistance = 16;
+  controls.maxPolarAngle = Math.PI / 2 - 0.05;
+  controls.target.set(0, 1.0, 0);
+  controls.autoRotate = true;
+  controls.autoRotateSpeed = 0.6;
+
+  // Lighting
+  const ambient = new THREE.AmbientLight(0x4a5878, 0.6);
+  scene.add(ambient);
+  const keyLight = new THREE.DirectionalLight(0xffffff, 1.1);
+  keyLight.position.set(5, 8, 4);
+  keyLight.castShadow = true;
+  keyLight.shadow.mapSize.set(1024, 1024);
+  keyLight.shadow.camera.left = -8; keyLight.shadow.camera.right = 8;
+  keyLight.shadow.camera.top = 8; keyLight.shadow.camera.bottom = -8;
+  scene.add(keyLight);
+  const fillLight = new THREE.DirectionalLight(0x6b8cff, 0.4);
+  fillLight.position.set(-5, 3, -2);
+  scene.add(fillLight);
+  const rimLight = new THREE.DirectionalLight(0x06b6d4, 0.7);
+  rimLight.position.set(-3, 4, -6);
+  scene.add(rimLight);
+
+  // Floor
+  const floorGeo = new THREE.PlaneGeometry(30, 30);
+  const floorMat = new THREE.MeshStandardMaterial({ color: 0x0a0e1a, roughness: 0.9, metalness: 0.1 });
+  const floor = new THREE.Mesh(floorGeo, floorMat);
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = 0;
+  floor.receiveShadow = true;
+  scene.add(floor);
+
+  const grid = new THREE.GridHelper(20, 30, 0x1f2937, 0x161d2e);
+  grid.position.y = 0.001;
+  scene.add(grid);
+
+  /* -------------------------------------------------------
+     Build SEEPEX BN 10-6L Pump Model
+     ------------------------------------------------------- */
+  const pumpGroup = new THREE.Group();
+  scene.add(pumpGroup);
+
+  const matMotor    = new THREE.MeshStandardMaterial({ color: 0x2f3646, metalness: 0.5, roughness: 0.45 });
+  const matPump     = new THREE.MeshStandardMaterial({ color: 0x2563eb, metalness: 0.35, roughness: 0.55, emissive: 0x000000 });
+  const matStainless = new THREE.MeshStandardMaterial({ color: 0x9ca3af, metalness: 0.7, roughness: 0.3 });
+  const matBase     = new THREE.MeshStandardMaterial({ color: 0x1f2937, metalness: 0.4, roughness: 0.7 });
+  const matBolt     = new THREE.MeshStandardMaterial({ color: 0x6b7280, metalness: 0.8, roughness: 0.4 });
+  const matDarkAccent = new THREE.MeshStandardMaterial({ color: 0x1a1f2e, metalness: 0.6, roughness: 0.5 });
+  const matJunction = new THREE.MeshStandardMaterial({ color: 0x111827, metalness: 0.7, roughness: 0.4 });
+
+  // ---- Baseplate ----
+  const baseplate = new THREE.Mesh(new THREE.BoxGeometry(7, 0.18, 1.7), matBase);
+  baseplate.position.set(0, 0.1, 0);
+  baseplate.castShadow = true; baseplate.receiveShadow = true;
+  pumpGroup.add(baseplate);
+  // I-beam stiffeners under baseplate
+  const beamGeo = new THREE.BoxGeometry(7, 0.22, 0.1);
+  for (let z of [-0.6, 0.6]) {
+    const beam = new THREE.Mesh(beamGeo, matDarkAccent);
+    beam.position.set(0, 0.0, z);
+    beam.castShadow = true; pumpGroup.add(beam);
+  }
+  // Anchor feet + bolts
+  const footGeo = new THREE.BoxGeometry(0.4, 0.05, 0.4);
+  const boltGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.12, 12);
+  for (let x of [-3.2, 3.2]) {
+    for (let z of [-0.7, 0.7]) {
+      const foot = new THREE.Mesh(footGeo, matBase);
+      foot.position.set(x, 0.025, z);
+      pumpGroup.add(foot);
+      const bolt = new THREE.Mesh(boltGeo, matBolt);
+      bolt.position.set(x, 0.25, z);
+      pumpGroup.add(bolt);
+    }
+  }
+
+  // ---- WEG Motor (left) ----
+  const motorGroup = new THREE.Group();
+  motorGroup.position.set(-2.4, 1.05, 0);
+  pumpGroup.add(motorGroup);
+
+  // Motor body with fins
+  const motorBody = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 1.7, 32), matMotor);
+  motorBody.rotation.z = Math.PI / 2;
+  motorBody.castShadow = true;
+  motorGroup.add(motorBody);
+  // Cooling fins
+  for (let i = 0; i < 18; i++) {
+    const fin = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.08, 0.04), matMotor);
+    const a = (i / 18) * Math.PI * 2;
+    fin.position.set(0, Math.sin(a) * 0.65, Math.cos(a) * 0.65);
+    fin.rotation.x = a;
+    motorGroup.add(fin);
+  }
+  // Motor end caps
+  const endCapL = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.2, 32), matDarkAccent);
+  endCapL.rotation.z = Math.PI / 2;
+  endCapL.position.x = -0.85;
+  motorGroup.add(endCapL);
+  const endCapR = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.15, 32), matDarkAccent);
+  endCapR.rotation.z = Math.PI / 2;
+  endCapR.position.x = 0.85;
+  motorGroup.add(endCapR);
+  // Cooling fan housing
+  const fanHousing = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 0.35, 24), matDarkAccent);
+  fanHousing.rotation.z = Math.PI / 2;
+  fanHousing.position.x = -1.05;
+  motorGroup.add(fanHousing);
+  // Junction box on motor top
+  const jbox = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.35, 0.45), matJunction);
+  jbox.position.set(-0.1, 0.7, 0);
+  jbox.castShadow = true;
+  motorGroup.add(jbox);
+
+  // ---- Coupling + Guard ----
+  const couplingGroup = new THREE.Group();
+  couplingGroup.position.set(-1.1, 1.05, 0);
+  pumpGroup.add(couplingGroup);
+  // Shaft going through
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 1.2, 16), matStainless);
+  shaft.rotation.z = Math.PI / 2;
+  couplingGroup.add(shaft);
+  // Coupling hubs
+  const hubL = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.25, 20), matStainless);
+  hubL.rotation.z = Math.PI / 2; hubL.position.x = -0.25; couplingGroup.add(hubL);
+  const hubR = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.25, 20), matStainless);
+  hubR.rotation.z = Math.PI / 2; hubR.position.x = 0.25; couplingGroup.add(hubR);
+  // Wireframe transparent guard
+  const guardMat = new THREE.MeshStandardMaterial({ color: 0xfbbf24, metalness: 0.2, roughness: 0.6, transparent: true, opacity: 0.18, wireframe: false, side: THREE.DoubleSide });
+  const guardWireMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24, wireframe: true, transparent: true, opacity: 0.5 });
+  const guardGeo = new THREE.CylinderGeometry(0.4, 0.4, 1.2, 20, 1, true);
+  const guard = new THREE.Mesh(guardGeo, guardMat);
+  guard.rotation.z = Math.PI / 2;
+  couplingGroup.add(guard);
+  const guardWire = new THREE.Mesh(guardGeo, guardWireMat);
+  guardWire.rotation.z = Math.PI / 2;
+  couplingGroup.add(guardWire);
+
+  // ---- Gearbox / Bearing housing ----
+  const gearboxGroup = new THREE.Group();
+  gearboxGroup.position.set(-0.4, 1.05, 0);
+  pumpGroup.add(gearboxGroup);
+  const gearbox = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.85, 0.7), matPump);
+  gearbox.castShadow = true;
+  gearboxGroup.add(gearbox);
+  // Top breather
+  const breather = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.18, 12), matStainless);
+  breather.position.y = 0.5;
+  gearboxGroup.add(breather);
+  // Inspection port
+  const port = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.06, 16), matStainless);
+  port.rotation.x = Math.PI / 2;
+  port.position.z = 0.35;
+  gearboxGroup.add(port);
+
+  // ---- Stator tube (long blue cylindrical body) ----
+  const statorGroup = new THREE.Group();
+  statorGroup.position.set(1.4, 1.05, 0);
+  pumpGroup.add(statorGroup);
+  const stator = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 3.0, 32), matPump);
+  stator.rotation.z = Math.PI / 2;
+  stator.castShadow = true;
+  statorGroup.add(stator);
+  // Tie rods around stator
+  for (let i = 0; i < 4; i++) {
+    const a = (i / 4) * Math.PI * 2 + Math.PI / 4;
+    const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 3.0, 8), matStainless);
+    rod.rotation.z = Math.PI / 2;
+    rod.position.set(0, Math.sin(a) * 0.48, Math.cos(a) * 0.48);
+    statorGroup.add(rod);
+    // End nuts
+    const nutL = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.1, 6), matBolt);
+    nutL.rotation.z = Math.PI / 2;
+    nutL.position.set(-1.5, Math.sin(a) * 0.48, Math.cos(a) * 0.48);
+    statorGroup.add(nutL);
+    const nutR = nutL.clone();
+    nutR.position.x = 1.5;
+    statorGroup.add(nutR);
+  }
+  // End flanges
+  const flangeL = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.1, 24), matStainless);
+  flangeL.rotation.z = Math.PI / 2; flangeL.position.x = -1.5; statorGroup.add(flangeL);
+  const flangeR = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.1, 24), matStainless);
+  flangeR.rotation.z = Math.PI / 2; flangeR.position.x = 1.5; statorGroup.add(flangeR);
+
+  // ---- Suction port (bottom-front) ----
+  const suctionGroup = new THREE.Group();
+  suctionGroup.position.set(0.0, 0.65, 0.5);
+  pumpGroup.add(suctionGroup);
+  const suction = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.6, 20), matPump);
+  suctionGroup.add(suction);
+  const suctionFlange = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.08, 20), matStainless);
+  suctionFlange.position.y = -0.32;
+  suctionGroup.add(suctionFlange);
+  // Flange bolts
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * Math.PI * 2;
+    const b = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.12, 6), matBolt);
+    b.position.set(Math.cos(a) * 0.27, -0.32, Math.sin(a) * 0.27);
+    suctionGroup.add(b);
+  }
+
+  // ---- Discharge flange (top-right) ----
+  const dischargeGroup = new THREE.Group();
+  dischargeGroup.position.set(2.95, 1.5, 0);
+  pumpGroup.add(dischargeGroup);
+  const discharge = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.7, 20), matPump);
+  dischargeGroup.add(discharge);
+  const dischargeFlange = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.36, 0.09, 24), matStainless);
+  dischargeFlange.position.y = 0.38;
+  dischargeGroup.add(dischargeFlange);
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2;
+    const b = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.028, 0.13, 6), matBolt);
+    b.position.set(Math.cos(a) * 0.31, 0.38, Math.sin(a) * 0.31);
+    dischargeGroup.add(b);
+  }
+  // Connect stator to discharge with elbow
+  const elbow = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.5, 20), matPump);
+  elbow.rotation.z = Math.PI / 2;
+  elbow.position.set(2.7, 1.05, 0);
+  pumpGroup.add(elbow);
+
+  // Animated rotating shaft (tracking the actual RPM)
+  const innerShaft = shaft;
+
+  /* -------------------------------------------------------
+     Sensors
+     ------------------------------------------------------- */
+  const SENSORS = [
+    { id: 'S1', name: 'Pump DE Bearing',     desc: 'Radial Horizontal · Monitran MTN/2285ITC', pos: [-0.7, 1.55, 0.3],  status: 'watch',  cableTo: [3.4, 0.2, 0.7] },
+    { id: 'S2', name: 'Motor NDE',           desc: 'Radial + RTD · Combined accel/temp',       pos: [-3.3, 1.65, 0],    status: 'normal', cableTo: [3.4, 0.2, 0.7] },
+    { id: 'S3', name: 'Gearbox Housing',     desc: 'Axial · IMI 603C01',                       pos: [-0.4, 1.7, 0],     status: 'normal', cableTo: [3.4, 0.2, 0.7] },
+    { id: 'S4', name: 'Baseplate Reference', desc: 'Reference accel · Wilcoxon 786A',          pos: [-2.9, 0.22, 0.6],  status: 'normal', cableTo: [3.4, 0.2, 0.7] },
+  ];
+
+  const sensorMeshes = [];
+  const sensorRaycastTargets = [];
+  const cableParticles = [];
+
+  // Gateway box at corner of baseplate
+  const gateway = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.4, 0.3), matJunction);
+  gateway.position.set(3.4, 0.4, 0.7);
+  gateway.castShadow = true;
+  pumpGroup.add(gateway);
+  // LEDs on gateway
+  const gwLed1 = new THREE.Mesh(new THREE.SphereGeometry(0.025, 8, 8), new THREE.MeshBasicMaterial({ color: 0x10b981 }));
+  gwLed1.position.set(3.4, 0.55, 0.86);
+  pumpGroup.add(gwLed1);
+  const gwLed2 = new THREE.Mesh(new THREE.SphereGeometry(0.025, 8, 8), new THREE.MeshBasicMaterial({ color: 0x06b6d4 }));
+  gwLed2.position.set(3.4, 0.45, 0.86);
+  pumpGroup.add(gwLed2);
+  // Gateway label
+  const gwLabel = document.createElement('div');
+  gwLabel.className = 'css-label';
+  gwLabel.style.borderColor = '#10b981';
+  gwLabel.style.fontSize = '9px';
+  gwLabel.textContent = 'IoT GATEWAY';
+  const gwLabelObj = new CSS2DObject(gwLabel);
+  gwLabelObj.position.set(3.4, 0.78, 0.7);
+  pumpGroup.add(gwLabelObj);
+
+  const STATUS_COLOR = { normal: 0x10b981, watch: 0xf59e0b, alarm: 0xef4444 };
+
+  function makeCableCurve(from, to) {
+    const start = new THREE.Vector3(...from);
+    const end = new THREE.Vector3(...to);
+    // Curl path with sag
+    const mid1 = start.clone().lerp(end, 0.33);
+    mid1.y = Math.max(0.3, start.y - 0.4);
+    mid1.z += 0.15;
+    const mid2 = start.clone().lerp(end, 0.66);
+    mid2.y = Math.max(0.25, end.y + 0.15);
+    return new THREE.CatmullRomCurve3([start, mid1, mid2, end]);
+  }
+
+  SENSORS.forEach(sd => {
+    const grp = new THREE.Group();
+    grp.position.set(...sd.pos);
+    pumpGroup.add(grp);
+
+    // Puck body (dark anodized)
+    const puck = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.09, 0.09, 0.18, 18),
+      new THREE.MeshStandardMaterial({ color: 0x111827, metalness: 0.7, roughness: 0.35 })
+    );
+    puck.castShadow = true;
+    grp.add(puck);
+    // Top ring
+    const ring = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.092, 0.092, 0.02, 18),
+      new THREE.MeshStandardMaterial({ color: 0x374151, metalness: 0.8, roughness: 0.3 })
+    );
+    ring.position.y = 0.09;
+    grp.add(ring);
+    // LED
+    const ledColor = STATUS_COLOR[sd.status];
+    const ledMat = new THREE.MeshBasicMaterial({ color: ledColor });
+    const led = new THREE.Mesh(new THREE.SphereGeometry(0.035, 12, 12), ledMat);
+    led.position.y = 0.115;
+    grp.add(led);
+    // Glow halo
+    const haloMat = new THREE.MeshBasicMaterial({ color: ledColor, transparent: true, opacity: 0.4 });
+    const halo = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 12), haloMat);
+    halo.position.y = 0.115;
+    grp.add(halo);
+
+    // Cable connector base
+    const conn = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.025, 0.025, 0.08, 8),
+      matStainless
+    );
+    conn.position.set(0.07, -0.05, 0);
+    conn.rotation.z = Math.PI / 2;
+    grp.add(conn);
+
+    // CSS2D label
+    const labelEl = document.createElement('div');
+    labelEl.className = 'css-label';
+    labelEl.textContent = sd.id;
+    labelEl.style.borderColor = `#${ledColor.toString(16).padStart(6, '0')}`;
+    const labelObj = new CSS2DObject(labelEl);
+    labelObj.position.set(0, 0.32, 0);
+    grp.add(labelObj);
+
+    // Cable path
+    const cableStart = [sd.pos[0] + 0.12, sd.pos[1] - 0.05, sd.pos[2]];
+    const curve = makeCableCurve(cableStart, sd.cableTo);
+    const cableGeo = new THREE.TubeGeometry(curve, 40, 0.018, 8, false);
+    const cableMat = new THREE.MeshStandardMaterial({ color: 0x1f2937, metalness: 0.3, roughness: 0.6 });
+    const cable = new THREE.Mesh(cableGeo, cableMat);
+    pumpGroup.add(cable);
+
+    // Particles along cable
+    const partGeo = new THREE.SphereGeometry(0.025, 8, 8);
+    const partMat = new THREE.MeshBasicMaterial({ color: 0x06b6d4, transparent: true, opacity: 0.9 });
+    const particle = new THREE.Mesh(partGeo, partMat);
+    pumpGroup.add(particle);
+    cableParticles.push({ mesh: particle, curve, t: Math.random(), speed: 0.0035 });
+
+    sd.mesh = grp; sd.led = led; sd.halo = halo; sd.labelEl = labelEl; sd.labelObj = labelObj; sd.cable = cable;
+    sensorMeshes.push(sd);
+    sensorRaycastTargets.push(puck);
+    puck.userData.sensorId = sd.id;
+    halo.userData.sensorId = sd.id;
+    led.userData.sensorId = sd.id;
+  });
+
+  /* -------------------------------------------------------
+     Frequency / Vertical reference markers above pump
+     ------------------------------------------------------- */
+  function addAxisMarker(x, y, z, color, text) {
+    const mat = new THREE.MeshBasicMaterial({ color });
+    const dot = new THREE.Mesh(new THREE.SphereGeometry(0.03, 8, 8), mat);
+    dot.position.set(x, y, z);
+    pumpGroup.add(dot);
+  }
+
+  /* -------------------------------------------------------
+     Raycaster (hover + click)
+     ------------------------------------------------------- */
+  const raycaster = new THREE.Raycaster();
+  const mouse = new THREE.Vector2();
+
+  function onMouseMove(ev) {
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((ev.clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    const hits = raycaster.intersectObjects(sensorRaycastTargets, false);
+    if (hits.length) {
+      const sid = hits[0].object.userData.sensorId;
+      const sd = sensorMeshes.find(s => s.id === sid);
+      const live = LiveData.getSensor(sid);
+      tipEl.style.display = 'block';
+      tipEl.style.left = (ev.clientX - rect.left + 14) + 'px';
+      tipEl.style.top  = (ev.clientY - rect.top + 14) + 'px';
+      tipEl.innerHTML = `
+        <h4>${sd.id} · ${sd.name}</h4>
+        <div class="row"><span>${sd.desc}</span></div>
+        <div class="row"><span>RMS</span><b>${live.rms.toFixed(2)} mm/s</b></div>
+        <div class="row"><span>Temperature</span><b>${live.temp.toFixed(1)} &deg;C</b></div>
+        <div class="row"><span>Status</span><b style="color:${sd.status==='normal'?'#10b981':sd.status==='watch'?'#f59e0b':'#ef4444'};text-transform:uppercase">${sd.status}</b></div>
+      `;
+      container.style.cursor = 'pointer';
+    } else {
+      tipEl.style.display = 'none';
+      container.style.cursor = 'grab';
+    }
+  }
+
+  function onClick(ev) {
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((ev.clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    const hits = raycaster.intersectObjects(sensorRaycastTargets, false);
+    if (hits.length) {
+      const sid = hits[0].object.userData.sensorId;
+      flyToSensor(sid);
+      SidePanel.open(sid);
+    }
+  }
+  renderer.domElement.addEventListener('mousemove', onMouseMove);
+  renderer.domElement.addEventListener('click', onClick);
+
+  /* -------------------------------------------------------
+     Camera transitions
+     ------------------------------------------------------- */
+  let camAnim = null;
+  function flyTo(targetPos, lookAt, duration = 1000) {
+    const startPos = camera.position.clone();
+    const startTar = controls.target.clone();
+    const startTime = performance.now();
+    controls.autoRotate = false;
+    camAnim = (now) => {
+      const t = Math.min((now - startTime) / duration, 1);
+      const e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; // cubic ease in-out
+      camera.position.lerpVectors(startPos, targetPos, e);
+      controls.target.lerpVectors(startTar, lookAt, e);
+      if (t >= 1) camAnim = null;
+    };
+  }
+
+  function flyToSensor(sid) {
+    const sd = sensorMeshes.find(s => s.id === sid);
+    if (!sd) return;
+    const p = new THREE.Vector3(...sd.pos);
+    const offset = new THREE.Vector3(1.6, 0.9, 1.6);
+    flyTo(p.clone().add(offset), p.clone(), 1000);
+  }
+
+  function resetView() {
+    flyTo(new THREE.Vector3(7, 4.5, 7), new THREE.Vector3(0, 1.0, 0), 1000);
+    setTimeout(() => { controls.autoRotate = state.autoRotate; }, 1100);
+  }
+
+  /* -------------------------------------------------------
+     State / toggles
+     ------------------------------------------------------- */
+  const state = { autoRotate: true, wireframe: false, labels: true, alarm: false };
+
+  function setWireframe(on) {
+    pumpGroup.traverse(o => {
+      if (o.isMesh && o.material && 'wireframe' in o.material && o !== guardWire) {
+        o.material.wireframe = on;
+      }
+    });
+  }
+  function setLabels(on) {
+    sensorMeshes.forEach(s => { s.labelEl.style.display = on ? 'block' : 'none'; });
+    gwLabel.style.display = on ? 'block' : 'none';
+  }
+  function setAlarmFocus(on) {
+    if (on) {
+      // Promote S1 to alarm temporarily
+      sensorMeshes[0].status = 'alarm';
+      updateSensorVisuals();
+      flyToSensor('S1');
+      matPump.emissive.setHex(0x441111);
+    } else {
+      sensorMeshes[0].status = 'watch';
+      updateSensorVisuals();
+      matPump.emissive.setHex(0x000000);
+      resetView();
+    }
+  }
+  function updateSensorVisuals() {
+    sensorMeshes.forEach(sd => {
+      const c = STATUS_COLOR[sd.status];
+      sd.led.material.color.setHex(c);
+      sd.halo.material.color.setHex(c);
+      sd.labelEl.style.borderColor = `#${c.toString(16).padStart(6, '0')}`;
+    });
+  }
+
+  /* -------------------------------------------------------
+     Animation loop
+     ------------------------------------------------------- */
+  let lastTime = performance.now();
+  let fps = 60, frames = 0, fpsTime = lastTime;
+  let shaftAngle = 0;
+
+  function animate(now = performance.now()) {
+    requestAnimationFrame(animate);
+    const dt = (now - lastTime) / 1000;
+    lastTime = now;
+
+    if (camAnim) camAnim(now);
+    controls.update();
+
+    // Shaft rotation 465 RPM = 7.75 rev/s
+    shaftAngle += dt * 7.75 * Math.PI * 2;
+    innerShaft.rotation.x = shaftAngle;
+    motorBody.rotation.x = shaftAngle * 0.3; // subtle motor body cue
+
+    // Pulse LEDs
+    const pulse = 0.6 + 0.4 * Math.sin(now * 0.005);
+    sensorMeshes.forEach(sd => {
+      sd.halo.scale.setScalar(0.8 + pulse * 0.6);
+      sd.halo.material.opacity = 0.25 + pulse * 0.35;
+    });
+
+    // Cable particles
+    cableParticles.forEach(p => {
+      p.t += p.speed;
+      if (p.t > 1) p.t = 0;
+      const pt = p.curve.getPoint(p.t);
+      p.mesh.position.copy(pt);
+      p.mesh.material.opacity = Math.sin(p.t * Math.PI) * 0.95;
+    });
+
+    // Tach rotation visualization
+    document.querySelector('.tach').style.background =
+      `conic-gradient(from -90deg, var(--cyan) 0deg, var(--cyan) ${(LiveData.rpm/600)*360}deg, rgba(255,255,255,0.08) ${(LiveData.rpm/600)*360}deg)`;
+
+    renderer.render(scene, camera);
+    labelRenderer.render(scene, camera);
+
+    frames++;
+    if (now - fpsTime > 1000) {
+      fps = Math.round(frames * 1000 / (now - fpsTime));
+      const el = document.getElementById('fpsCounter');
+      if (el) el.textContent = fps;
+      frames = 0; fpsTime = now;
+    }
+  }
+
+  function resize() {
+    const w = container.clientWidth, h = container.clientHeight;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+    labelRenderer.setSize(w, h);
+  }
+
+  return { scene, camera, controls, resize, animate, flyToSensor, resetView,
+           setWireframe, setLabels, setAlarmFocus, updateSensorVisuals, state, sensorMeshes };
+})();
+
+/* ============================================================
+   SECTION 3: WATERFALL 3D
+   ============================================================ */
+const Waterfall = (() => {
+  const container = document.getElementById('waterfallScene');
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(0x060912, 12, 40);
+  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 200);
+  camera.position.set(18, 14, 22);
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  container.appendChild(renderer.domElement);
+
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true; controls.dampingFactor = 0.08;
+  controls.target.set(0, 1, 0);
+
+  scene.add(new THREE.AmbientLight(0x6a7a99, 0.7));
+  const dl = new THREE.DirectionalLight(0xffffff, 0.6);
+  dl.position.set(8, 15, 8); scene.add(dl);
+
+  // Build surface geometry
+  const W = NUM_BINS, D = NUM_TIMES;
+  const sizeX = 24, sizeZ = 14;
+  const geo = new THREE.PlaneGeometry(sizeX, sizeZ, W - 1, D - 1);
+  geo.rotateX(-Math.PI / 2);
+  const colors = new Float32Array(W * D * 3);
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  const mat = new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide, metalness: 0.1, roughness: 0.7, flatShading: false });
+  const surface = new THREE.Mesh(geo, mat);
+  surface.position.set(0, 0, 0);
+  scene.add(surface);
+
+  // Wireframe overlay
+  const wireGeo = new THREE.WireframeGeometry(geo);
+  const wireMat = new THREE.LineBasicMaterial({ color: 0x06b6d4, transparent: true, opacity: 0.08 });
+  const wire = new THREE.LineSegments(wireGeo, wireMat);
+  surface.add(wire);
+
+  function colorRamp(v) {
+    // v in [0,1] -> blue->cyan->green->amber->red
+    v = Math.max(0, Math.min(1, v));
+    const stops = [
+      [0.00, [0.16, 0.31, 0.78]],
+      [0.25, [0.02, 0.71, 0.83]],
+      [0.50, [0.06, 0.73, 0.51]],
+      [0.75, [0.96, 0.62, 0.04]],
+      [1.00, [0.94, 0.27, 0.27]],
+    ];
+    for (let i = 0; i < stops.length - 1; i++) {
+      const [a, ca] = stops[i], [b, cb] = stops[i+1];
+      if (v >= a && v <= b) {
+        const t = (v - a) / (b - a);
+        return [ca[0] + (cb[0]-ca[0])*t, ca[1] + (cb[1]-ca[1])*t, ca[2] + (cb[2]-ca[2])*t];
+      }
+    }
+    return stops[stops.length - 1][1];
+  }
+
+  function updateSurface(spectraSensor) {
+    const pos = geo.attributes.position;
+    const col = geo.attributes.color;
+    const maxAmp = 2.5;
+    for (let z = 0; z < D; z++) {
+      for (let x = 0; x < W; x++) {
+        const idx = z * W + x;
+        const amp = spectraSensor[z][x];
+        const h = Math.min(amp / maxAmp, 1) * 4.0;
+        pos.setY(idx, h);
+        const c = colorRamp(amp / maxAmp);
+        col.setXYZ(idx, c[0], c[1], c[2]);
+      }
+    }
+    pos.needsUpdate = true;
+    col.needsUpdate = true;
+    geo.computeVertexNormals();
+  }
+  updateSurface(SPECTRA.S1);
+
+  // Axis tubes
+  function addAxis(from, to, color) {
+    const path = new THREE.LineCurve3(new THREE.Vector3(...from), new THREE.Vector3(...to));
+    const tube = new THREE.Mesh(
+      new THREE.TubeGeometry(path, 1, 0.05, 8, false),
+      new THREE.MeshBasicMaterial({ color })
+    );
+    scene.add(tube);
+  }
+  addAxis([-12, -0.05, 7.2], [12, -0.05, 7.2], 0xef4444);  // X freq
+  addAxis([-12.1, -0.05, 7.2], [-12.1, -0.05, -7.2], 0x10b981); // Z time
+  addAxis([-12.1, -0.05, 7.3], [-12.1, 4.5, 7.3], 0xf59e0b);    // Y amp
+
+  function makeTextSprite(text, color = '#fff', size = 64) {
+    const cv = document.createElement('canvas');
+    cv.width = 256; cv.height = 64;
+    const ctx = cv.getContext('2d');
+    ctx.fillStyle = 'rgba(10,14,26,0.85)';
+    ctx.fillRect(0, 0, cv.width, cv.height);
+    ctx.strokeStyle = color; ctx.lineWidth = 2;
+    ctx.strokeRect(1, 1, cv.width - 2, cv.height - 2);
+    ctx.fillStyle = color;
+    ctx.font = 'bold 28px Inter, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(text, cv.width / 2, cv.height / 2);
+    const tex = new THREE.CanvasTexture(cv);
+    const mat = new THREE.SpriteMaterial({ map: tex, transparent: true });
+    const spr = new THREE.Sprite(mat);
+    spr.scale.set(2.6, 0.65, 1);
+    return spr;
+  }
+
+  const lblF = makeTextSprite('Frequency (Hz)', '#ef4444');
+  lblF.position.set(13, 0.4, 7.2); scene.add(lblF);
+  const lblT = makeTextSprite('Time (24h)', '#10b981');
+  lblT.position.set(-12.1, 0.4, -8.2); scene.add(lblT);
+  const lblA = makeTextSprite('Amplitude', '#f59e0b');
+  lblA.position.set(-12.1, 5.2, 7.3); scene.add(lblA);
+
+  // Vertical marker lines for key frequencies
+  const markers = [
+    { f: 5,    label: '1×',   color: 0x06b6d4 },
+    { f: 10,   label: '2×',   color: 0x06b6d4 },
+    { f: 15,   label: '3×',   color: 0x06b6d4 },
+    { f: 50,   label: '50Hz', color: 0xf59e0b },
+    { f: 89.4, label: 'BPFO', color: 0xef4444 },
+    { f: 130.6,label: 'BPFI', color: 0xef4444 },
+  ];
+  markers.forEach(m => {
+    const x = (m.f / FMAX) * sizeX - sizeX / 2;
+    const lineGeo = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(x, 0, -sizeZ/2 - 0.1),
+      new THREE.Vector3(x, 5, -sizeZ/2 - 0.1)
+    ]);
+    const lineMat = new THREE.LineDashedMaterial({ color: m.color, dashSize: 0.2, gapSize: 0.15, transparent: true, opacity: 0.6 });
+    const line = new THREE.Line(lineGeo, lineMat);
+    line.computeLineDistances();
+    scene.add(line);
+    const spr = makeTextSprite(m.label, '#' + m.color.toString(16).padStart(6, '0'));
+    spr.scale.set(1.4, 0.4, 1);
+    spr.position.set(x, 5.4, -sizeZ/2 - 0.1);
+    scene.add(spr);
+  });
+
+  // Highlight row for selected timestamp
+  const highlightGeo = new THREE.BoxGeometry(sizeX, 0.05, 0.25);
+  const highlightMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });
+  const highlight = new THREE.Mesh(highlightGeo, highlightMat);
+  highlight.position.set(0, 0.05, sizeZ / 2);
+  scene.add(highlight);
+
+  function setHighlightTime(idx) {
+    const z = sizeZ / 2 - (idx / (NUM_TIMES - 1)) * sizeZ;
+    highlight.position.z = z;
+  }
+
+  function setView(preset) {
+    const targets = {
+      iso: { p: [18, 14, 22], t: [0, 1, 0] },
+      top: { p: [0, 28, 0.1], t: [0, 0, 0] },
+      side:{ p: [28, 5, 0],   t: [0, 1, 0] },
+      front:{p: [0, 5, 22],   t: [0, 1, 0] },
+      reset:{p: [18, 14, 22], t: [0, 1, 0] },
+    };
+    const tg = targets[preset] || targets.iso;
+    const startP = camera.position.clone();
+    const startT = controls.target.clone();
+    const endP = new THREE.Vector3(...tg.p);
+    const endT = new THREE.Vector3(...tg.t);
+    const t0 = performance.now();
+    function step(now) {
+      const t = Math.min((now - t0) / 800, 1);
+      const e = t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2;
+      camera.position.lerpVectors(startP, endP, e);
+      controls.target.lerpVectors(startT, endT, e);
+      if (t < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    // gentle shimmer
+    const t = performance.now() * 0.0005;
+    surface.rotation.y = Math.sin(t) * 0.005;
+    renderer.render(scene, camera);
+  }
+
+  function resize() {
+    const w = container.clientWidth, h = container.clientHeight;
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+  }
+
+  return { resize, animate, updateSurface, setHighlightTime, setView };
+})();
+
+/* ============================================================
+   SECTION 4: 2D SPECTROGRAM
+   ============================================================ */
+const Spectrogram = (() => {
+  const wrap = document.getElementById('spectrogramWrap');
+  const canvas = document.getElementById('spectrogramCanvas');
+  const ctx = canvas.getContext('2d');
+  let W = 0, H = 0;
+  let currentSpectra = SPECTRA.S1;
+  let playheadX = 0.95; // 0..1
+
+  const FREQ_LIMIT_BIN = Math.round(NUM_BINS * 500 / FMAX); // show 0-500 Hz
+
+  function resize() {
+    const r = canvas.getBoundingClientRect();
+    canvas.width = r.width * (window.devicePixelRatio || 1);
+    canvas.height = r.height * (window.devicePixelRatio || 1);
+    canvas.style.width = r.width + 'px';
+    canvas.style.height = r.height + 'px';
+    W = canvas.width; H = canvas.height;
+    draw();
+  }
+
+  function colorRamp(v) {
+    v = Math.max(0, Math.min(1, v));
+    const stops = [
+      [0.00, [22, 38, 99]],
+      [0.20, [40, 100, 200]],
+      [0.40, [6, 182, 212]],
+      [0.60, [16, 185, 129]],
+      [0.80, [245, 158, 11]],
+      [1.00, [239, 68, 68]],
+    ];
+    for (let i = 0; i < stops.length - 1; i++) {
+      const [a, ca] = stops[i], [b, cb] = stops[i+1];
+      if (v >= a && v <= b) {
+        const t = (v - a) / (b - a);
+        return `rgb(${Math.round(ca[0]+(cb[0]-ca[0])*t)},${Math.round(ca[1]+(cb[1]-ca[1])*t)},${Math.round(ca[2]+(cb[2]-ca[2])*t)})`;
+      }
+    }
+    return 'rgb(239,68,68)';
+  }
+
+  function draw() {
+    if (!W || !H) return;
+    ctx.fillStyle = '#0a0e1a';
+    ctx.fillRect(0, 0, W, H);
+    const cellW = W / NUM_TIMES;
+    const cellH = H / FREQ_LIMIT_BIN;
+    const maxAmp = 2.5;
+    for (let t = 0; t < NUM_TIMES; t++) {
+      for (let f = 0; f < FREQ_LIMIT_BIN; f++) {
+        const v = currentSpectra[t][f] / maxAmp;
+        ctx.fillStyle = colorRamp(v);
+        ctx.fillRect(t * cellW, H - (f + 1) * cellH, cellW + 1, cellH + 1);
+      }
+    }
+    // Key frequency dashed lines
+    const keys = [
+      { f: 5,    label: '1×',   color: 'rgba(6,182,212,0.8)' },
+      { f: 10,   label: '2×',   color: 'rgba(6,182,212,0.6)' },
+      { f: 89.4, label: 'BPFO', color: 'rgba(239,68,68,0.7)' },
+      { f: 130.6,label: 'BPFI', color: 'rgba(239,68,68,0.7)' },
+    ];
+    ctx.lineWidth = 1;
+    keys.forEach(k => {
+      const fbin = Math.round(k.f / FMAX * NUM_BINS);
+      const y = H - fbin * cellH;
+      ctx.strokeStyle = k.color;
+      ctx.setLineDash([5, 4]);
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    });
+    ctx.setLineDash([]);
+    // Playhead
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(playheadX * W, 0);
+    ctx.lineTo(playheadX * W, H);
+    ctx.stroke();
+
+    updateLabels();
+  }
+
+  function updateLabels() {
+    // Remove old
+    [...wrap.querySelectorAll('.spec-axis-label, .spec-freq-label')].forEach(e => e.remove());
+    // X-axis time
+    const tlabels = ['-24h','-18h','-12h','-6h','now'];
+    tlabels.forEach((t, i) => {
+      const el = document.createElement('div');
+      el.className = 'spec-axis-label';
+      el.style.bottom = '8px';
+      el.style.left = (50 + (i / (tlabels.length - 1)) * (wrap.clientWidth - 100) - 12) + 'px';
+      el.textContent = t;
+      wrap.appendChild(el);
+    });
+    // Y-axis freq labels
+    [0, 100, 200, 300, 400, 500].forEach(f => {
+      const el = document.createElement('div');
+      el.className = 'spec-axis-label';
+      el.style.left = '12px';
+      const yPct = 1 - (f / 500);
+      el.style.top = (16 + yPct * (wrap.clientHeight - 46)) + 'px';
+      el.textContent = f + ' Hz';
+      wrap.appendChild(el);
+    });
+    // Right-edge labeled key frequencies
+    const keys = [
+      { f: 5,    label: '1×',   c: '#06b6d4' },
+      { f: 10,   label: '2×',   c: '#06b6d4' },
+      { f: 89.4, label: 'BPFO', c: '#ef4444' },
+      { f: 130.6,label: 'BPFI', c: '#ef4444' },
+    ];
+    keys.forEach(k => {
+      const el = document.createElement('div');
+      el.className = 'spec-freq-label';
+      el.style.color = k.c;
+      el.style.borderLeft = '2px solid ' + k.c;
+      const yPct = 1 - (k.f / 500);
+      el.style.top = (16 + yPct * (wrap.clientHeight - 46)) + 'px';
+      el.textContent = k.label;
+      wrap.appendChild(el);
+    });
+  }
+
+  canvas.addEventListener('click', (e) => {
+    const r = canvas.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width;
+    playheadX = x;
+    draw();
+    const tIdx = Math.min(NUM_TIMES - 1, Math.round(x * NUM_TIMES));
+    Waterfall.setHighlightTime(tIdx);
+  });
+
+  function setSensor(sid) {
+    currentSpectra = SPECTRA[sid];
+    draw();
+  }
+
+  return { resize, draw, setSensor };
+})();
+
+/* ============================================================
+   SECTION 5: LIVE DATA / INDICATOR RAIL
+   ============================================================ */
+const LiveData = (() => {
+  let rpm = 465;
+  const sensors = {
+    S1: { rms: 2.84, temp: 62.4, prev: 2.40 },
+    S2: { rms: 1.92, temp: 58.1, prev: 1.85 },
+    S3: { rms: 1.45, temp: 54.2, prev: 1.40 },
+    S4: { rms: 0.62, temp: 38.5, prev: 0.60 },
+  };
+  const harmonics = {
+    '1×':     { val: 2.42, threshold: 4.5, history: [], status: 'watch' },
+    '2×':     { val: 1.12, threshold: 3.0, history: [], status: 'normal' },
+    '3×':     { val: 0.65, threshold: 2.0, history: [], status: 'normal' },
+    'SubX':   { val: 0.32, threshold: 1.5, history: [], status: 'normal' },
+    'MultiX': { val: 0.84, threshold: 2.5, history: [], status: 'normal' },
+  };
+  const bearings = {
+    'BPFO':   { val: 0.42, threshold: 1.5, history: [], status: 'normal', sub: '89.4 Hz' },
+    'BPFI':   { val: 0.84, threshold: 1.5, history: [], status: 'normal', sub: '130.6 Hz' },
+    'BSF':    { val: 0.28, threshold: 1.2, history: [], status: 'normal', sub: '58.7 Hz' },
+    'FTF':    { val: 0.18, threshold: 0.8, history: [], status: 'normal', sub: '2.0 Hz' },
+  };
+  const tempElec = {
+    'Bearing Temp': { val: 62.4, threshold: 90, history: [], status: 'watch', unit: '°C' },
+    '2LF':          { val: 0.48, threshold: 1.5, history: [], status: 'normal', unit: 'mm/s' },
+  };
+
+  // Pre-fill 24-pt history
+  Object.values(harmonics).forEach(h => { for (let i = 0; i < 24; i++) h.history.push(h.val * (0.85 + Math.random() * 0.3)); });
+  Object.values(bearings).forEach(h => { for (let i = 0; i < 24; i++) h.history.push(h.val * (0.85 + Math.random() * 0.3)); });
+  Object.values(tempElec).forEach(h => { for (let i = 0; i < 24; i++) h.history.push(h.val * (0.92 + Math.random() * 0.16)); });
+
+  const sparklines = {
+    '1×': [], '2×': [], '3×': [], 'SubX': [], 'MultiX': [], 'ISO': [], 'Temperature': []
+  };
+  Object.keys(sparklines).forEach(k => {
+    let v = 1 + Math.random();
+    for (let i = 0; i < 30; i++) {
+      v += (Math.random() - 0.5) * 0.15;
+      v = Math.max(0.2, v);
+      sparklines[k].push(v);
+    }
+  });
+
+  function tick() {
+    rpm = 460 + Math.random() * 10;
+    Object.entries(sensors).forEach(([k, s]) => {
+      s.prev = s.rms;
+      s.rms = Math.max(0.1, s.rms + (Math.random() - 0.48) * 0.15);
+      s.temp = Math.max(20, s.temp + (Math.random() - 0.5) * 0.4);
+    });
+    [harmonics, bearings, tempElec].forEach(group => {
+      Object.entries(group).forEach(([name, m]) => {
+        const newV = Math.max(0.05, m.val + (Math.random() - 0.5) * (m.val * 0.08));
+        m.val = newV;
+        m.history.shift();
+        m.history.push(newV);
+        // status thresholds
+        const ratio = m.val / m.threshold;
+        m.status = ratio > 0.7 ? 'watch' : (ratio > 0.95 ? 'alarm' : 'normal');
+        if (name === 'Bearing Temp') m.status = m.val > 75 ? 'alarm' : (m.val > 60 ? 'watch' : 'normal');
+      });
+    });
+    Object.keys(sparklines).forEach(k => {
+      const arr = sparklines[k];
+      arr.shift();
+      arr.push(Math.max(0.2, arr[arr.length - 1] + (Math.random() - 0.5) * 0.18));
+    });
+  }
+
+  return {
+    get rpm() { return rpm; },
+    sensors, harmonics, bearings, tempElec, sparklines,
+    getSensor(id) { return sensors[id]; },
+    tick
+  };
+})();
+
+/* ============================================================
+   SECTION 6: INDICATOR RENDERING
+   ============================================================ */
+const Rail = (() => {
+  const harmGrid = document.getElementById('harmonicsGrid');
+  const bearGrid = document.getElementById('bearingGrid');
+  const tempGrid = document.getElementById('tempGrid');
+
+  function buildCard(name, sub) {
+    const el = document.createElement('div');
+    el.className = 'metric-card';
+    el.innerHTML = `
+      <div class="metric-top">
+        <span class="metric-label">${name}${sub ? ' <span style="opacity:0.6">· '+sub+'</span>' : ''}</span>
+        <span class="metric-status"></span>
+      </div>
+      <div class="metric-value-row">
+        <span class="metric-value">0.00</span>
+        <span class="metric-delta">+0%</span>
+      </div>
+      <div class="metric-bar"><div class="metric-bar-fill" style="width:0%"></div></div>
+      <canvas class="metric-spark"></canvas>
+    `;
+    return el;
+  }
+
+  const cards = {};
+
+  function init() {
+    Object.keys(LiveData.harmonics).forEach(name => {
+      const c = buildCard(name);
+      harmGrid.appendChild(c);
+      cards[name] = c;
+    });
+    Object.entries(LiveData.bearings).forEach(([name, m]) => {
+      const c = buildCard(name, m.sub);
+      bearGrid.appendChild(c);
+      cards[name] = c;
+    });
+    Object.entries(LiveData.tempElec).forEach(([name, m]) => {
+      const c = buildCard(name);
+      tempGrid.appendChild(c);
+      cards[name] = c;
+    });
+  }
+
+  function drawSpark(canvas, data, color = '#06b6d4') {
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (canvas.width !== w * dpr) { canvas.width = w * dpr; canvas.height = h * dpr; }
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    const min = Math.min(...data), max = Math.max(...data);
+    const range = (max - min) || 1;
+    ctx.beginPath();
+    data.forEach((v, i) => {
+      const x = (i / (data.length - 1)) * w;
+      const y = h - ((v - min) / range) * (h - 4) - 2;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.strokeStyle = color; ctx.lineWidth = 1.4; ctx.stroke();
+    // fill
+    ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath();
+    ctx.fillStyle = color + '30';
+    ctx.fill();
+  }
+
+  function update() {
+    const all = { ...LiveData.harmonics, ...LiveData.bearings, ...LiveData.tempElec };
+    Object.entries(all).forEach(([name, m]) => {
+      const c = cards[name];
+      if (!c) return;
+      const valEl = c.querySelector('.metric-value');
+      const delta = c.querySelector('.metric-delta');
+      const bar = c.querySelector('.metric-bar-fill');
+      const status = c.querySelector('.metric-status');
+      const spark = c.querySelector('.metric-spark');
+      const unit = m.unit || (name === 'Bearing Temp' ? '°C' : 'mm/s');
+      if (name === 'Bearing Temp') {
+        valEl.innerHTML = m.val.toFixed(1) + ' <span style="font-size:9px;color:#9ca3af">°C</span>';
+      } else {
+        valEl.innerHTML = m.val.toFixed(2) + ' <span style="font-size:9px;color:#9ca3af">mm/s</span>';
+      }
+      const histStart = m.history[0] || m.val;
+      const dlt = ((m.val - histStart) / histStart) * 100;
+      delta.textContent = (dlt >= 0 ? '↑ +' : '↓ ') + dlt.toFixed(0) + '%';
+      delta.className = 'metric-delta ' + (dlt >= 0 ? 'up' : 'down');
+      const pct = Math.min(100, (m.val / m.threshold) * 100);
+      bar.style.width = pct + '%';
+      const statusColor = m.status === 'normal' ? '#10b981' : m.status === 'watch' ? '#f59e0b' : '#ef4444';
+      status.style.background = statusColor;
+      status.style.color = statusColor;
+      const sparkColor = m.status === 'normal' ? '#06b6d4' : m.status === 'watch' ? '#f59e0b' : '#ef4444';
+      drawSpark(spark, m.history, sparkColor);
+    });
+
+    // RMS / gauge / RPM tach
+    document.getElementById('rmsValue').textContent = LiveData.sensors.S1.rms.toFixed(2);
+    const rms = LiveData.sensors.S1.rms;
+    let zone = 'A', zoneColor = '#10b981';
+    if (rms > 4.5) { zone = 'D'; zoneColor = '#ef4444'; }
+    else if (rms > 2.8) { zone = 'C'; zoneColor = '#ef4444'; }
+    else if (rms > 1.8) { zone = 'B'; zoneColor = '#f59e0b'; }
+    const z = document.getElementById('rmsZone');
+    z.textContent = zone;
+    z.style.borderColor = zoneColor;
+    z.style.color = zoneColor;
+    z.style.background = zoneColor + '22';
+
+    // Needle: map 0..7 mm/s to -90..+90 deg
+    const angle = -90 + Math.min(180, (rms / 7) * 180);
+    document.getElementById('gaugeNeedle').setAttribute('transform', `rotate(${angle} 100 90)`);
+
+    document.getElementById('tachVal').textContent = Math.round(LiveData.rpm);
+  }
+
+  return { init, update };
+})();
+
+/* ============================================================
+   SECTION 7: SPARKLINE STRIP (bottom)
+   ============================================================ */
+const SparkStrip = (() => {
+  const wrap = document.getElementById('sparkStrip');
+  const items = [
+    { key: '1×', color: '#3b82f6', unit: 'mm/s' },
+    { key: '2×', color: '#06b6d4', unit: 'mm/s' },
+    { key: '3×', color: '#06b6d4', unit: 'mm/s' },
+    { key: 'SubX', color: '#8b5cf6', unit: 'mm/s' },
+    { key: 'MultiX', color: '#10b981', unit: 'mm/s' },
+    { key: 'ISO', color: '#f59e0b', unit: 'mm/s' },
+    { key: 'Temperature', color: '#ef4444', unit: '°C' },
+  ];
+
+  function init() {
+    items.forEach(it => {
+      const el = document.createElement('div');
+      el.className = 'spark-item';
+      el.innerHTML = `
+        <div class="spark-item-top">
+          <span class="spark-item-label">${it.key}</span>
+          <span class="spark-item-val" data-key="${it.key}">0.00 <span style="font-size:9px;color:#9ca3af">${it.unit}</span></span>
+        </div>
+        <canvas class="spark-canvas" data-key="${it.key}"></canvas>
+      `;
+      wrap.appendChild(el);
+    });
+  }
+
+  function drawSpark(canvas, data, color) {
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (canvas.width !== w * dpr) { canvas.width = w * dpr; canvas.height = h * dpr; }
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    const min = Math.min(...data), max = Math.max(...data);
+    const range = (max - min) || 1;
+    const grad = ctx.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, color + '60');
+    grad.addColorStop(1, color + '00');
+    ctx.beginPath();
+    data.forEach((v, i) => {
+      const x = (i / (data.length - 1)) * w;
+      const y = h - ((v - min) / range) * (h - 3) - 2;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.strokeStyle = color; ctx.lineWidth = 1.6; ctx.stroke();
+    ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath();
+    ctx.fillStyle = grad; ctx.fill();
+    // last point dot
+    const lastX = w, lastY = h - ((data[data.length-1] - min) / range) * (h - 3) - 2;
+    ctx.beginPath(); ctx.arc(lastX - 2, lastY, 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = color; ctx.fill();
+  }
+
+  function update() {
+    items.forEach(it => {
+      const data = LiveData.sparklines[it.key];
+      const canvas = wrap.querySelector(`canvas[data-key="${it.key}"]`);
+      const valEl = wrap.querySelector(`.spark-item-val[data-key="${it.key}"]`);
+      drawSpark(canvas, data, it.color);
+      const v = data[data.length - 1];
+      valEl.innerHTML = (it.key === 'Temperature' ? (v * 25).toFixed(1) : v.toFixed(2)) +
+        ` <span style="font-size:9px;color:#9ca3af">${it.unit}</span>`;
+    });
+  }
+
+  return { init, update };
+})();
+
+/* ============================================================
+   SECTION 8: SIDE PANEL (sensor focus)
+   ============================================================ */
+const SidePanel = (() => {
+  const panel = document.getElementById('sidePanel');
+  const closeBtn = document.getElementById('spClose');
+  const titleEl = document.getElementById('spTitle');
+  const subEl = document.getElementById('spSub');
+  let fftChart, waveChart, currentSensor = 'S1';
+
+  function ensureCharts() {
+    if (fftChart) return;
+    const fftCtx = document.getElementById('spFFT').getContext('2d');
+    fftChart = new Chart(fftCtx, {
+      type: 'line',
+      data: { labels: [], datasets: [{ data: [], borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,0.15)', fill: true, borderWidth: 1.2, pointRadius: 0, tension: 0.2 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        animation: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#6b7280', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+          y: { ticks: { color: '#6b7280', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,0.04)' } }
+        }
+      }
+    });
+    const waveCtx = document.getElementById('spWave').getContext('2d');
+    waveChart = new Chart(waveCtx, {
+      type: 'line',
+      data: { labels: [], datasets: [{ data: [], borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, borderWidth: 1, pointRadius: 0 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#6b7280', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+          y: { ticks: { color: '#6b7280', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,0.04)' } }
+        }
+      }
+    });
+  }
+
+  function refreshCharts() {
+    const spec = SPECTRA[currentSensor][NUM_TIMES - 1];
+    const labels = []; const data = [];
+    for (let i = 0; i < spec.length / 2; i++) { // up to 500Hz
+      labels.push(((i / NUM_BINS) * FMAX).toFixed(0));
+      data.push(spec[i]);
+    }
+    fftChart.data.labels = labels;
+    fftChart.data.datasets[0].data = data;
+    fftChart.update('none');
+    const wave = SpectrumGen.timeWaveform(512, 5, LiveData.sensors[currentSensor].rms);
+    waveChart.data.labels = Array.from({ length: 512 }, (_, i) => (i / 512).toFixed(2));
+    waveChart.data.datasets[0].data = wave;
+    waveChart.update('none');
+  }
+
+  function open(sid) {
+    currentSensor = sid;
+    const sd = PumpScene.sensorMeshes.find(s => s.id === sid);
+    titleEl.innerHTML = `Sensor ${sd.id}<small>${sd.name} · ${sd.desc.split('·')[0].trim()}</small>`;
+    document.getElementById('spModel').textContent = sd.desc.split('·').slice(-1)[0].trim();
+    panel.classList.add('open');
+    Spectrogram.setSensor(sid);
+    Waterfall.updateSurface(SPECTRA[sid]);
+    ensureCharts();
+    refreshCharts();
+    update();
+  }
+
+  function close() {
+    panel.classList.remove('open');
+    PumpScene.resetView();
+    Spectrogram.setSensor('S1');
+    Waterfall.updateSurface(SPECTRA.S1);
+  }
+
+  function update() {
+    if (!panel.classList.contains('open')) return;
+    const s = LiveData.sensors[currentSensor];
+    document.getElementById('spRMS').innerHTML = s.rms.toFixed(2) + ' <span style="font-size:11px;color:#9ca3af">mm/s</span>';
+    document.getElementById('spPeak').innerHTML = (s.rms * 2.9).toFixed(2) + ' <span style="font-size:11px;color:#9ca3af">mm/s</span>';
+    document.getElementById('spCrest').textContent = (2.7 + Math.random() * 0.3).toFixed(2);
+    document.getElementById('spTemp').innerHTML = s.temp.toFixed(1) + ' <span style="font-size:11px;color:#9ca3af">&deg;C</span>';
+  }
+
+  closeBtn.addEventListener('click', close);
+  return { open, close, update };
+})();
+
+/* ============================================================
+   SECTION 9: WIRING / CHIP HANDLERS
+   ============================================================ */
+function bindUI() {
+  document.getElementById('btnRotate').addEventListener('click', (e) => {
+    PumpScene.state.autoRotate = !PumpScene.state.autoRotate;
+    PumpScene.controls.autoRotate = PumpScene.state.autoRotate;
+    e.currentTarget.classList.toggle('active', PumpScene.state.autoRotate);
+  });
+  document.getElementById('btnLabels').addEventListener('click', (e) => {
+    PumpScene.state.labels = !PumpScene.state.labels;
+    PumpScene.setLabels(PumpScene.state.labels);
+    e.currentTarget.classList.toggle('active', PumpScene.state.labels);
+  });
+  document.getElementById('btnWire').addEventListener('click', (e) => {
+    PumpScene.state.wireframe = !PumpScene.state.wireframe;
+    PumpScene.setWireframe(PumpScene.state.wireframe);
+    e.currentTarget.classList.toggle('active', PumpScene.state.wireframe);
+  });
+  document.getElementById('btnAlarm').addEventListener('click', (e) => {
+    PumpScene.state.alarm = !PumpScene.state.alarm;
+    PumpScene.setAlarmFocus(PumpScene.state.alarm);
+    e.currentTarget.classList.toggle('active', PumpScene.state.alarm);
+  });
+  document.querySelectorAll('[data-view]').forEach(b => {
+    b.addEventListener('click', (e) => {
+      document.querySelectorAll('[data-view]').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      Waterfall.setView(b.dataset.view);
+    });
+  });
+
+  // initial active
+  document.getElementById('btnRotate').classList.add('active');
+  document.getElementById('btnLabels').classList.add('active');
+}
+
+/* ============================================================
+   SECTION 10: BOOT
+   ============================================================ */
+function clockTick() {
+  const d = new Date();
+  document.getElementById('clockTxt').textContent =
+    d.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+function tickAll() {
+  LiveData.tick();
+  Rail.update();
+  SparkStrip.update();
+  SidePanel.update();
+  document.getElementById('aiTimestamp').textContent = new Date().toLocaleTimeString();
+}
+
+let resizeTO;
+function onResize() {
+  clearTimeout(resizeTO);
+  resizeTO = setTimeout(() => {
+    PumpScene.resize();
+    Waterfall.resize();
+    Spectrogram.resize();
+  }, 120);
+}
+
+function init() {
+  bindUI();
+  Rail.init();
+  SparkStrip.init();
+  PumpScene.resize();
+  Waterfall.resize();
+  Spectrogram.resize();
+  Rail.update();
+  SparkStrip.update();
+  PumpScene.animate();
+  Waterfall.animate();
+  clockTick();
+  setInterval(clockTick, 1000);
+  setInterval(tickAll, 2000);
+
+  window.addEventListener('resize', onResize);
+  // Trigger lucide once after DOM ready
+  if (window.lucide) lucide.createIcons();
+
+  setTimeout(() => {
+    document.getElementById('loader').classList.add('hide');
+  }, 700);
+}
+
+init();
+</script>
+</body>
+</html>

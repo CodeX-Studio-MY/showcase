@@ -699,6 +699,69 @@
 <!-- =================== MAIN =================== -->
 <div class="main">
 
+  <!-- =================== AI DIAGNOSTIC =================== -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">
+        <i data-lucide="brain-circuit"></i>
+        <span>AI Diagnostic Summary</span>
+      </div>
+      <div class="panel-tools">
+        <div class="chip active"><i data-lucide="sparkles" style="width:11px;height:11px"></i>SmartEdge ML v3.4</div>
+        <div class="chip"><i data-lucide="file-text" style="width:11px;height:11px"></i>Full Report</div>
+        <div class="chip"><i data-lucide="calendar-plus" style="width:11px;height:11px"></i>Schedule</div>
+      </div>
+    </div>
+    <div class="ai-card">
+      <div class="confidence-ring">
+        <div class="confidence-ring-inner">
+          <div class="v">87<small style="font-size:14px">%</small></div>
+          <div class="l">Confidence</div>
+        </div>
+      </div>
+      <div class="ai-content">
+        <h3>Primary Concern</h3>
+        <div class="primary">
+          <span class="severity-pill">WATCH</span>
+          Developing imbalance &mdash; 1× amplitude trending upward (+18% over 24h).
+        </div>
+        <h3>Recommended Action</h3>
+        <div class="ai-action">
+          <b>Schedule dynamic balancing</b> within next maintenance window. Verify suction recirculation and inspect rotor/stator clearance. Re-baseline after correction.
+        </div>
+        <div class="ai-meta">
+          <span><span class="pulse-dot"></span>Last analysis: <b style="color:var(--text)" id="aiTimestamp">just now</b></span>
+          <span>Model: PCP-Imbalance-v3.4</span>
+          <span>Training: 41,200 samples</span>
+        </div>
+      </div>
+      <div class="secondary-watch">
+        <h3 style="font-size:10px;text-transform:uppercase;color:var(--text-dim);letter-spacing:1px;margin-bottom:4px;font-weight:600">Secondary Watch</h3>
+        <div class="sw-row">
+          <span class="sw-label">2× Harmonic</span>
+          <span class="sw-val">1.12 mm/s</span>
+          <div class="sw-mini-bar"><div class="sw-mini-bar-fill" style="width:42%;background:var(--green)"></div></div>
+        </div>
+        <div class="sw-row">
+          <span class="sw-label">BPFI</span>
+          <span class="sw-val">0.84 mm/s</span>
+          <div class="sw-mini-bar"><div class="sw-mini-bar-fill" style="width:38%;background:var(--green)"></div></div>
+        </div>
+        <div class="sw-row">
+          <span class="sw-label">Bearing Temp</span>
+          <span class="sw-val">62.4 &deg;C</span>
+          <div class="sw-mini-bar"><div class="sw-mini-bar-fill" style="width:54%;background:var(--amber)"></div></div>
+        </div>
+        <div class="sw-row">
+          <span class="sw-label">2LF Electrical</span>
+          <span class="sw-val">0.48 mm/s</span>
+          <div class="sw-mini-bar"><div class="sw-mini-bar-fill" style="width:28%;background:var(--green)"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="sparkline-strip" id="sparkStrip"></div>
+  </div>
+  
   <!-- =================== HERO =================== -->
   <div class="hero">
 
@@ -850,68 +913,6 @@
     </div>
   </div>
 
-  <!-- =================== AI DIAGNOSTIC =================== -->
-  <div class="panel">
-    <div class="panel-head">
-      <div class="panel-title">
-        <i data-lucide="brain-circuit"></i>
-        <span>AI Diagnostic Summary</span>
-      </div>
-      <div class="panel-tools">
-        <div class="chip active"><i data-lucide="sparkles" style="width:11px;height:11px"></i>SmartEdge ML v3.4</div>
-        <div class="chip"><i data-lucide="file-text" style="width:11px;height:11px"></i>Full Report</div>
-        <div class="chip"><i data-lucide="calendar-plus" style="width:11px;height:11px"></i>Schedule</div>
-      </div>
-    </div>
-    <div class="ai-card">
-      <div class="confidence-ring">
-        <div class="confidence-ring-inner">
-          <div class="v">87<small style="font-size:14px">%</small></div>
-          <div class="l">Confidence</div>
-        </div>
-      </div>
-      <div class="ai-content">
-        <h3>Primary Concern</h3>
-        <div class="primary">
-          <span class="severity-pill">WATCH</span>
-          Developing imbalance &mdash; 1× amplitude trending upward (+18% over 24h).
-        </div>
-        <h3>Recommended Action</h3>
-        <div class="ai-action">
-          <b>Schedule dynamic balancing</b> within next maintenance window. Verify suction recirculation and inspect rotor/stator clearance. Re-baseline after correction.
-        </div>
-        <div class="ai-meta">
-          <span><span class="pulse-dot"></span>Last analysis: <b style="color:var(--text)" id="aiTimestamp">just now</b></span>
-          <span>Model: PCP-Imbalance-v3.4</span>
-          <span>Training: 41,200 samples</span>
-        </div>
-      </div>
-      <div class="secondary-watch">
-        <h3 style="font-size:10px;text-transform:uppercase;color:var(--text-dim);letter-spacing:1px;margin-bottom:4px;font-weight:600">Secondary Watch</h3>
-        <div class="sw-row">
-          <span class="sw-label">2× Harmonic</span>
-          <span class="sw-val">1.12 mm/s</span>
-          <div class="sw-mini-bar"><div class="sw-mini-bar-fill" style="width:42%;background:var(--green)"></div></div>
-        </div>
-        <div class="sw-row">
-          <span class="sw-label">BPFI</span>
-          <span class="sw-val">0.84 mm/s</span>
-          <div class="sw-mini-bar"><div class="sw-mini-bar-fill" style="width:38%;background:var(--green)"></div></div>
-        </div>
-        <div class="sw-row">
-          <span class="sw-label">Bearing Temp</span>
-          <span class="sw-val">62.4 &deg;C</span>
-          <div class="sw-mini-bar"><div class="sw-mini-bar-fill" style="width:54%;background:var(--amber)"></div></div>
-        </div>
-        <div class="sw-row">
-          <span class="sw-label">2LF Electrical</span>
-          <span class="sw-val">0.48 mm/s</span>
-          <div class="sw-mini-bar"><div class="sw-mini-bar-fill" style="width:28%;background:var(--green)"></div></div>
-        </div>
-      </div>
-    </div>
-    <div class="sparkline-strip" id="sparkStrip"></div>
-  </div>
 
 </div>
 

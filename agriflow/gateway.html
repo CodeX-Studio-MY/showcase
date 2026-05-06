@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Agriflow — Gateway Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="assets/logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50">
+    <script src="js/auth.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/data-simulator.js"></script>
+
+    <main class="main-with-sidebar p-6">
+        <header class="mb-6">
+            <h1 class="text-2xl font-bold text-slate-900">Gateway Management</h1>
+            <p class="text-sm text-slate-500 mt-0.5">Monitor and configure your LoRaWAN gateway and connected sensors</p>
+        </header>
+
+        <!-- Gateway card -->
+        <div class="section-card bagua-corner p-6 mb-6">
+            <div class="flex items-start justify-between flex-wrap gap-4">
+                <div class="flex items-start gap-4">
+                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-green-500 to-teal-600 flex items-center justify-center text-white text-2xl">📡</div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg font-bold text-slate-900" id="gwId">LRWN-GW-AGF-001</span>
+                            <span class="pulse-dot"></span>
+                            <span class="text-xs font-semibold text-green-700 uppercase tracking-wide">Online</span>
+                        </div>
+                        <div class="text-xs text-slate-500 mt-1">LoRaWAN Gateway · Field deployment</div>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="showToast('Reboot command sent to gateway','warn')"
+                        class="px-4 py-2 text-sm border border-slate-300 rounded-lg hover:bg-slate-50">Reboot</button>
+                    <button onclick="showToast('Firmware check initiated…')" class="px-4 py-2 text-sm border border-slate-300 rounded-lg hover:bg-slate-50">Update Firmware</button>
+                    <button onclick="showToast('Configuration panel coming soon')"
+                        class="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700">Configure</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mt-6">
+                <div>
+                    <div class="text-[11px] uppercase tracking-wide text-slate-500 font-semibold">Signal</div>
+                    <div class="text-lg font-bold text-slate-900 mt-1"><span id="gwSig">92</span>%</div>
+                    <div class="w-full h-1.5 bg-slate-100 rounded mt-1.5">
+                        <div id="gwSigBar" class="h-1.5 bg-green-500 rounded" style="width:92%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="text-[11px] uppercase tracking-wide text-slate-500 font-semibold">Uptime</div>
+                    <div class="text-lg font-bold text-slate-900 mt-1" id="gwUptime">47d 12h</div>
+                </div>
+                <div>
+                    <div class="text-[11px] uppercase tracking-wide text-slate-500 font-semibold">Sensors</div>
+                    <div class="text-lg font-bold text-slate-900 mt-1">8 / 8</div>
+                </div>
+                <div>
+                    <div class="text-[11px] uppercase tracking-wide text-slate-500 font-semibold">Last Heartbeat</div>
+                    <div class="text-lg font-bold text-slate-900 mt-1" id="gwHb">just now</div>
+                </div>
+                <div>
+                    <div class="text-[11px] uppercase tracking-wide text-slate-500 font-semibold">Firmware</div>
+                    <div class="text-lg font-bold text-slate-900 mt-1">v2.4.1</div>
+                </div>
+                <div>
+                    <div class="text-[11px] uppercase tracking-wide text-slate-500 font-semibold">Frequency</div>
+                    <div class="text-lg font-bold text-slate-900 mt-1">AS923</div>
+                </div>
+                <div>
+                    <div class="text-[11px] uppercase tracking-wide text-slate-500 font-semibold">Region</div>
+                    <div class="text-lg font-bold text-slate-900 mt-1">Asia</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sensor table -->
+        <div class="section-card overflow-hidden">
+            <div class="px-5 py-3 border-b border-slate-200 flex items-center justify-between">
+                <div class="font-semibold text-slate-800">Connected Sensor Nodes</div>
+                <span class="text-xs text-slate-500">8 sensors · auto-refresh every 2.5s</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                        <tr>
+                            <th class="px-4 py-3 text-left">Node ID</th>
+                            <th class="px-4 py-3 text-left">Zone</th>
+                            <th class="px-4 py-3 text-left">Sensor Type</th>
+                            <th class="px-4 py-3 text-left">Battery</th>
+                            <th class="px-4 py-3 text-left">RSSI</th>
+                            <th class="px-4 py-3 text-left">Last Seen</th>
+                            <th class="px-4 py-3 text-left">Firmware</th>
+                            <th class="px-4 py-3 text-left">Status</th>
+                            <th class="px-4 py-3 text-left">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sensorRows" class="divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>AgriflowSidebar.mount('gateway');</script>
+    <script>
+        function batteryColor(b) {
+            if (b < 30) return 'bg-red-500';
+            if (b < 60) return 'bg-amber-500';
+            return 'bg-green-500';
+        }
+        function statusBadge(s) {
+            if (s === 'warning') return '<span class="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">⚠ Warning</span>';
+            return '<span class="inline-flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-100 px-2 py-0.5 rounded-full"><span class="pulse-dot"></span> Online</span>';
+        }
+        function fmtUptime(startMs) {
+            const ms = Date.now() - startMs;
+            const d = Math.floor(ms / 86400000);
+            const h = Math.floor((ms % 86400000) / 3600000);
+            return `${d}d ${h}h`;
+        }
+        function fmtAgo(ms) {
+            const s = Math.floor((Date.now() - ms) / 1000);
+            if (s < 5) return 'just now';
+            if (s < 60) return s + 's ago';
+            return Math.floor(s / 60) + 'm ago';
+        }
+
+        AgriflowData.subscribe((s) => {
+            document.getElementById('gwSig').textContent = Math.round(s.gateway.signal);
+            document.getElementById('gwSigBar').style.width = s.gateway.signal + '%';
+            document.getElementById('gwUptime').textContent = fmtUptime(s.gateway.uptimeStart);
+            document.getElementById('gwHb').textContent = fmtAgo(s.gateway.lastHeartbeat);
+
+            const rows = s.sensors.map(sn => `
+    <tr class="hover:bg-slate-50">
+      <td class="px-4 py-3 font-mono text-xs text-slate-700">${sn.id}</td>
+      <td class="px-4 py-3">${sn.zone}</td>
+      <td class="px-4 py-3 font-medium text-slate-900">${sn.type}</td>
+      <td class="px-4 py-3">
+        <div class="flex items-center gap-2">
+          <div class="w-16 h-1.5 bg-slate-100 rounded"><div class="h-1.5 rounded ${batteryColor(sn.battery)}" style="width:${sn.battery}%"></div></div>
+          <span class="text-xs">${sn.battery}%</span>
+        </div>
+      </td>
+      <td class="px-4 py-3 text-xs">${Math.round(sn.rssi)} dBm</td>
+      <td class="px-4 py-3 text-xs text-slate-500">${Math.floor(Math.random() * 8) + 2}s ago</td>
+      <td class="px-4 py-3 text-xs font-mono">${sn.fw}</td>
+      <td class="px-4 py-3">${statusBadge(sn.status)}</td>
+      <td class="px-4 py-3">
+        <div class="flex gap-1 text-xs">
+          <button onclick="showToast('Viewing ${sn.id}')" class="px-2 py-1 border border-slate-200 rounded hover:bg-slate-50">View</button>
+          <button onclick="showToast('Configure ${sn.id}')" class="px-2 py-1 border border-slate-200 rounded hover:bg-slate-50">Configure</button>
+          <button onclick="showToast('Replace ${sn.id} requested','warn')" class="px-2 py-1 border border-slate-200 rounded hover:bg-slate-50 text-red-600">Replace</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+            document.getElementById('sensorRows').innerHTML = rows;
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Agriflow — SCADA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="assets/logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        .gauge-track {
+            fill: none;
+            stroke: #e2e8f0;
+            stroke-width: 10;
+        }
+
+        .gauge-fill {
+            fill: none;
+            stroke: #16a34a;
+            stroke-width: 10;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.4s ease;
+        }
+
+        .impeller {
+            transform-origin: center;
+        }
+
+        .impeller.on {
+            animation: spinFast 0.6s linear infinite;
+        }
+
+        @keyframes spinFast {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .valve-handle {
+            transform-origin: center;
+            transition: transform 0.4s ease;
+        }
+
+        .valve-handle.closed {
+            transform: rotate(90deg);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50">
+    <script src="js/auth.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/data-simulator.js"></script>
+
+    <main class="main-with-sidebar p-6">
+        <header class="flex items-center justify-between mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900">SCADA</h1>
+                <p class="text-sm text-slate-500 mt-0.5">Live operational view of irrigation & fertigation flow</p>
+            </div>
+            <button id="emergencyStop" class="bg-red-600 hover:bg-red-700 text-white font-bold px-5 py-2.5 rounded-lg shadow-md shadow-red-600/20 flex items-center gap-2">
+                ⛔ Emergency Stop
+            </button>
+        </header>
+
+        <div class="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
+            <!-- Flow Diagram -->
+            <div class="section-card overflow-hidden">
+                <div class="px-5 py-3 border-b border-slate-200 font-semibold text-slate-800 flex items-center gap-2">
+                    <span class="text-green-600">⬡</span> System Flow
+                </div>
+                <div class="p-4">
+                    <svg id="scadaSvg" viewBox="0 0 900 460" class="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Tank -->
+                        <g>
+                            <rect x="30" y="120" width="100" height="180" rx="10" fill="#fff" stroke="#475569" stroke-width="3" />
+                            <clipPath id="tankClip">
+                                <rect x="33" y="123" width="94" height="174" rx="8" />
+                            </clipPath>
+                            <g clip-path="url(#tankClip)">
+                                <rect id="tankWater" x="33" y="160" width="94" height="137" fill="#3b82f6" opacity="0.7" />
+                                <path id="tankWave" d="M30 160 Q60 155 90 160 T150 160 V300 H30 Z" fill="#60a5fa" opacity="0.5">
+                                    <animate attributeName="d" dur="2.5s" repeatCount="indefinite" values="M30 160 Q60 155 90 160 T150 160 V300 H30 Z;
+                          M30 160 Q60 165 90 160 T150 160 V300 H30 Z;
+                          M30 160 Q60 155 90 160 T150 160 V300 H30 Z" />
+                                </path>
+                            </g>
+                            <text x="80" y="105" text-anchor="middle" class="text-xs" font-size="13" font-weight="600" fill="#0f172a">Water Tank</text>
+                            <text x="80" y="220" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" id="tankPct">78%</text>
+                        </g>
+
+                        <!-- Pipe Tank → Pump -->
+                        <line x1="130" y1="210" x2="200" y2="210" stroke="#94a3b8" stroke-width="14" />
+                        <line id="flowTankPump" x1="130" y1="210" x2="200" y2="210" stroke="#3b82f6" stroke-width="6" class="flow-line off" />
+
+                        <!-- Pump -->
+                        <g transform="translate(240,210)">
+                            <circle r="40" fill="#fff" stroke="#475569" stroke-width="3" />
+                            <g class="impeller" id="impeller">
+                                <path d="M0 -28 L8 -8 L28 0 L8 8 L0 28 L-8 8 L-28 0 L-8 -8 Z" fill="#16a34a" />
+                                <circle r="6" fill="#0f172a" />
+                            </g>
+                            <text y="-50" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Pump</text>
+                            <text y="60" text-anchor="middle" font-size="11" fill="#64748b" id="pumpStatusText">OFF</text>
+                        </g>
+
+                        <!-- Pipe Pump → Split -->
+                        <line x1="280" y1="210" x2="380" y2="210" stroke="#94a3b8" stroke-width="14" />
+                        <line id="flowPumpSplit" x1="280" y1="210" x2="380" y2="210" stroke="#3b82f6" stroke-width="6" class="flow-line off" />
+
+                        <!-- Split node -->
+                        <circle cx="380" cy="210" r="8" fill="#0f172a" />
+
+                        <!-- Irrigation pipe (top) -->
+                        <path d="M380 210 L380 150 L520 150" stroke="#94a3b8" stroke-width="14" fill="none" />
+                        <path id="flowIrrig" d="M380 210 L380 150 L520 150" stroke="#3b82f6" stroke-width="6" fill="none" class="flow-line off" />
+                        <text x="450" y="138" font-size="11" fill="#1d4ed8" font-weight="600">Irrigation</text>
+
+                        <!-- Fertigation pipe (bottom) -->
+                        <path d="M380 210 L380 270 L520 270" stroke="#94a3b8" stroke-width="14" fill="none" />
+                        <path id="flowFert" d="M380 210 L380 270 L520 270" stroke="#f59e0b" stroke-width="6" fill="none" class="flow-line off" />
+                        <text x="450" y="290" font-size="11" fill="#b45309" font-weight="600">Fertigation</text>
+
+                        <!-- Recombine into trunk at 520, then split to zones -->
+                        <line x1="520" y1="150" x2="520" y2="270" stroke="#94a3b8" stroke-width="14" />
+                        <line id="flowJoin" x1="520" y1="150" x2="520" y2="270" stroke="#3b82f6" stroke-width="6" class="flow-line off" />
+
+                        <!-- Trunk to valves -->
+                        <line x1="520" y1="210" x2="600" y2="210" stroke="#94a3b8" stroke-width="14" />
+                        <line id="flowTrunk" x1="520" y1="210" x2="600" y2="210" stroke="#3b82f6" stroke-width="6" class="flow-line off" />
+
+                        <!-- Branch up to High Valve -->
+                        <path d="M600 210 L600 100 L660 100" stroke="#94a3b8" stroke-width="14" fill="none" />
+                        <path id="flowToHigh" d="M600 210 L600 100 L660 100" stroke="#3b82f6" stroke-width="6" fill="none" class="flow-line off" />
+
+                        <!-- Branch down to Low Valve -->
+                        <path d="M600 210 L600 320 L660 320" stroke="#94a3b8" stroke-width="14" fill="none" />
+                        <path id="flowToLow" d="M600 210 L600 320 L660 320" stroke="#3b82f6" stroke-width="6" fill="none" class="flow-line off" />
+
+                        <!-- High zone valve -->
+                        <g transform="translate(680,100)">
+                            <circle r="22" fill="#fff" stroke="#475569" stroke-width="3" />
+                            <g class="valve-handle closed" id="valveHigh">
+                                <rect x="-2" y="-18" width="4" height="36" fill="#16a34a" />
+                                <circle cy="-18" r="4" fill="#16a34a" />
+                            </g>
+                            <text y="-32" text-anchor="middle" font-size="11" font-weight="600" fill="#0f172a">High Valve</text>
+                        </g>
+
+                        <!-- Pipe to High zone -->
+                        <line x1="702" y1="100" x2="780" y2="100" stroke="#94a3b8" stroke-width="14" />
+                        <line id="flowHighOut" x1="702" y1="100" x2="780" y2="100" stroke="#3b82f6" stroke-width="6" class="flow-line off" />
+
+                        <!-- High zone box -->
+                        <g>
+                            <rect x="780" y="55" width="100" height="90" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="2" />
+                            <text x="830" y="80" text-anchor="middle" font-size="12" font-weight="700" fill="#15803d">High Zone</text>
+                            <text x="830" y="98" text-anchor="middle" font-size="10" fill="#15803d">Musang King</text>
+                            <text x="830" y="125" text-anchor="middle" font-size="18" font-weight="700" fill="#15803d" id="highMoist">62%</text>
+                            <text x="830" y="138" text-anchor="middle" font-size="9" fill="#15803d">moisture</text>
+                        </g>
+
+                        <!-- Low zone valve -->
+                        <g transform="translate(680,320)">
+                            <circle r="22" fill="#fff" stroke="#475569" stroke-width="3" />
+                            <g class="valve-handle closed" id="valveLow">
+                                <rect x="-2" y="-18" width="4" height="36" fill="#0f766e" />
+                                <circle cy="-18" r="4" fill="#0f766e" />
+                            </g>
+                            <text y="-32" text-anchor="middle" font-size="11" font-weight="600" fill="#0f172a">Low Valve</text>
+                        </g>
+
+                        <!-- Pipe to Low zone -->
+                        <line x1="702" y1="320" x2="780" y2="320" stroke="#94a3b8" stroke-width="14" />
+                        <line id="flowLowOut" x1="702" y1="320" x2="780" y2="320" stroke="#3b82f6" stroke-width="6" class="flow-line off" />
+
+                        <!-- Low zone box -->
+                        <g>
+                            <rect x="780" y="275" width="100" height="90" rx="10" fill="#ccfbf1" stroke="#0f766e" stroke-width="2" />
+                            <text x="830" y="300" text-anchor="middle" font-size="12" font-weight="700" fill="#115e59">Low Zone</text>
+                            <text x="830" y="318" text-anchor="middle" font-size="10" fill="#115e59">Black Thorn</text>
+                            <text x="830" y="345" text-anchor="middle" font-size="18" font-weight="700" fill="#115e59" id="lowMoist">55%</text>
+                            <text x="830" y="358" text-anchor="middle" font-size="9" fill="#115e59">moisture</text>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Status Panel -->
+            <div class="space-y-4">
+                <div class="section-card p-5 bagua-corner">
+                    <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-3">Pump</div>
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <div class="text-2xl font-bold" id="pumpLabel">OFF</div>
+                            <div class="text-xs text-slate-500">Centrifugal · 5 HP</div>
+                        </div>
+                        <label class="toggle"><input type="checkbox" id="pumpToggle"><span class="slider"></span></label>
+                    </div>
+
+                    <!-- Pressure gauge -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="text-center">
+                            <svg viewBox="0 0 100 60" class="w-full">
+                                <path class="gauge-track" d="M 10 55 A 40 40 0 0 1 90 55" />
+                                <path id="pressureFill" class="gauge-fill" d="M 10 55 A 40 40 0 0 1 90 55" stroke-dasharray="125.6" stroke-dashoffset="125.6" />
+                            </svg>
+                            <div class="text-lg font-bold text-slate-900 -mt-3"><span id="pressureVal">0.0</span><span class="text-xs text-slate-500"> bar</span></div>
+                            <div class="text-[10px] uppercase text-slate-400">Pressure</div>
+                        </div>
+                        <div class="text-center">
+                            <svg viewBox="0 0 100 60" class="w-full">
+                                <path class="gauge-track" d="M 10 55 A 40 40 0 0 1 90 55" />
+                                <path id="flowFill" class="gauge-fill" stroke="#0f766e" d="M 10 55 A 40 40 0 0 1 90 55" stroke-dasharray="125.6" stroke-dashoffset="125.6" />
+                            </svg>
+                            <div class="text-lg font-bold text-slate-900 -mt-3"><span id="flowVal">0</span><span class="text-xs text-slate-500"> L/min</span></div>
+                            <div class="text-[10px] uppercase text-slate-400">Flow</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-card p-5">
+                    <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-3">Tank Level</div>
+                    <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                        <div id="tankBar" class="bg-blue-500 h-3 transition-all" style="width:78%"></div>
+                    </div>
+                    <div class="flex items-center justify-between mt-2">
+                        <span class="text-sm text-slate-600"><span id="tankLevelTxt">78</span>%</span>
+                        <button onclick="AgriflowData.refillTank(); showToast('Tank refilled to 100%')"
+                            class="text-xs text-green-700 hover:text-green-800 font-semibold">Refill</button>
+                    </div>
+                </div>
+
+                <div class="section-card p-5">
+                    <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold mb-3">Valves</div>
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <div class="font-medium text-sm">High Zone Valve</div>
+                            <div class="text-xs text-slate-500" id="valveHighLabel">Closed</div>
+                        </div>
+                        <label class="toggle"><input type="checkbox" id="valveHighToggle"><span class="slider"></span></label>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="font-medium text-sm">Low Zone Valve</div>
+                            <div class="text-xs text-slate-500" id="valveLowLabel">Closed</div>
+                        </div>
+                        <label class="toggle"><input type="checkbox" id="valveLowToggle"><span class="slider"></span></label>
+                    </div>
+                </div>
+
+                <div class="section-card p-5">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-xs uppercase tracking-wide text-slate-500 font-semibold">Fertigation Mode</div>
+                            <div class="text-xs text-slate-500 mt-1">Switches active line to NPK feed</div>
+                        </div>
+                        <label class="toggle"><input type="checkbox" id="fertToggle"><span class="slider"></span></label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>AgriflowSidebar.mount('scada');</script>
+    <script src="js/scada.js"></script>
+</body>
+
+</html>

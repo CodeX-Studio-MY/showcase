@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Agriflow — Irrigation Schedule</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="assets/logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        .cal-grid {
+            display: grid;
+            grid-template-columns: 70px repeat(7, 1fr);
+            gap: 1px;
+            background: #e2e8f0;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .cal-cell {
+            background: #fff;
+            min-height: 36px;
+            position: relative;
+        }
+
+        .cal-head {
+            background: #f8fafc;
+            padding: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #475569;
+            text-align: center;
+        }
+
+        .cal-time {
+            background: #f8fafc;
+            padding: 8px 6px;
+            font-size: 11px;
+            color: #64748b;
+            text-align: right;
+        }
+
+        .event-block {
+            position: absolute;
+            left: 4px;
+            right: 4px;
+            border-radius: 6px;
+            padding: 4px 6px;
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s;
+            overflow: hidden;
+            line-height: 1.2;
+        }
+
+        .event-block:hover {
+            transform: scale(1.03);
+            z-index: 5;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .event-high {
+            background: #dcfce7;
+            color: #15803d;
+            border-left: 3px solid #16a34a;
+        }
+
+        .event-low {
+            background: #ccfbf1;
+            color: #115e59;
+            border-left: 3px solid #0f766e;
+        }
+
+        .ai-badge {
+            display: inline-block;
+            font-size: 8px;
+            background: #fef3c7;
+            color: #92400e;
+            padding: 1px 4px;
+            border-radius: 3px;
+            margin-left: 3px;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50">
+    <script src="js/auth.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/data-simulator.js"></script>
+
+    <main class="main-with-sidebar p-6">
+        <header class="flex items-center justify-between mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900">Irrigation Schedule</h1>
+                <p class="text-sm text-slate-500 mt-0.5">AI-optimized weekly plan based on the 8 Bagua factors</p>
+            </div>
+            <button onclick="openModal()" class="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg shadow-sm shadow-green-600/20">+ Add
+                Schedule</button>
+        </header>
+
+        <!-- Comparison banner -->
+        <div class="section-card bagua-corner p-6 mb-6 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-8 flex-wrap">
+                <div>
+                    <div class="text-xs uppercase text-slate-500 tracking-wide font-semibold">AI-Optimized Schedule</div>
+                    <div class="text-3xl font-bold text-green-600 mt-1">1,847 <span class="text-base text-slate-500 font-medium">L/week</span></div>
+                </div>
+                <div class="text-2xl text-slate-300 font-light">vs</div>
+                <div>
+                    <div class="text-xs uppercase text-slate-500 tracking-wide font-semibold">Fixed Schedule</div>
+                    <div class="text-3xl font-bold text-slate-400 line-through mt-1">2,720 <span class="text-base font-medium">L/week</span></div>
+                </div>
+            </div>
+            <div class="bg-green-100 border border-green-300 text-green-800 font-bold px-5 py-3 rounded-xl text-lg">
+                💧 32% Water Saved
+            </div>
+        </div>
+
+        <!-- Calendar -->
+        <div class="section-card p-5 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="font-semibold text-slate-800">This Week</div>
+                <div class="flex items-center gap-3 text-xs">
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-green-500"></span>High Zone</span>
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-teal-500"></span>Low Zone</span>
+                    <span class="flex items-center gap-1.5"><span class="ai-badge">✨ AI</span>AI-recommended</span>
+                </div>
+            </div>
+            <div id="calendar" class="cal-grid"></div>
+        </div>
+
+        <!-- Schedule list -->
+        <div class="section-card overflow-hidden">
+            <div class="px-5 py-3 border-b border-slate-200 font-semibold text-slate-800">Upcoming Events</div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                        <tr>
+                            <th class="px-4 py-3 text-left">Zone</th>
+                            <th class="px-4 py-3 text-left">Date</th>
+                            <th class="px-4 py-3 text-left">Time</th>
+                            <th class="px-4 py-3 text-left">Duration</th>
+                            <th class="px-4 py-3 text-left">Volume</th>
+                            <th class="px-4 py-3 text-left">Type</th>
+                            <th class="px-4 py-3 text-left">Source</th>
+                            <th class="px-4 py-3 text-left">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="eventTable" class="divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add modal -->
+    <div id="modal" class="modal-backdrop hidden">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <div class="font-bold text-lg">Add Schedule</div>
+                <button onclick="closeModal()" class="text-slate-400 text-xl">&times;</button>
+            </div>
+            <div class="space-y-3">
+                <div><label class="text-xs font-semibold text-slate-600">Zone</label>
+                    <select class="w-full border border-slate-300 rounded-lg px-3 py-2 mt-1">
+                        <option>High Zone</option>
+                        <option>Low Zone</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="text-xs font-semibold text-slate-600">Date</label>
+                        <input type="date" class="w-full border border-slate-300 rounded-lg px-3 py-2 mt-1" />
+                    </div>
+                    <div><label class="text-xs font-semibold text-slate-600">Time</label>
+                        <input type="time" class="w-full border border-slate-300 rounded-lg px-3 py-2 mt-1" value="06:30" />
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="text-xs font-semibold text-slate-600">Duration (min)</label>
+                        <input type="number" class="w-full border border-slate-300 rounded-lg px-3 py-2 mt-1" value="30" />
+                    </div>
+                    <div><label class="text-xs font-semibold text-slate-600">Type</label>
+                        <select class="w-full border border-slate-300 rounded-lg px-3 py-2 mt-1">
+                            <option>Irrigation</option>
+                            <option>Fertigation</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-5">
+                <button onclick="closeModal()" class="px-4 py-2 text-sm border border-slate-300 rounded-lg">Cancel</button>
+                <button onclick="closeModal(); showToast('Schedule added')" class="px-4 py-2 text-sm bg-green-600 text-white rounded-lg">Add</button>
+            </div>
+        </div>
+    </div>
+
+    <script>AgriflowSidebar.mount('schedule');</script>
+    <script src="js/schedule.js"></script>
+</body>
+
+</html>

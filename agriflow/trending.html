@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Agriflow — Trending</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" href="assets/logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        .mini-stat {
+            font-size: 11px;
+            color: #64748b;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50">
+    <script src="js/auth.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/data-simulator.js"></script>
+
+    <main class="main-with-sidebar p-6">
+        <header class="mb-6">
+            <h1 class="text-2xl font-bold text-slate-900">IoT Trending</h1>
+            <p class="text-sm text-slate-500 mt-0.5">Historical sensor data with AI-curated annotations</p>
+        </header>
+
+        <!-- Filter bar -->
+        <div class="section-card p-4 mb-6 flex flex-wrap items-center gap-3">
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-slate-500 uppercase">Zone</span>
+                <select id="zoneFilter" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm">
+                    <option value="both">All Zones</option>
+                    <option value="high">High Zone</option>
+                    <option value="low">Low Zone</option>
+                </select>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs font-semibold text-slate-500 uppercase">Sensors</span>
+                <label class="text-sm flex items-center gap-1"><input type="checkbox" data-metric="temp" checked> Temperature</label>
+                <label class="text-sm flex items-center gap-1"><input type="checkbox" data-metric="moisture" checked> Moisture</label>
+                <label class="text-sm flex items-center gap-1"><input type="checkbox" data-metric="ec" checked> EC</label>
+                <label class="text-sm flex items-center gap-1"><input type="checkbox" data-metric="ph"> pH</label>
+                <label class="text-sm flex items-center gap-1"><input type="checkbox" data-metric="tension"> Soil Tension</label>
+            </div>
+            <div class="ml-auto flex gap-2">
+                <button data-range="24" class="rangeBtn px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg">Last 24h</button>
+                <button data-range="7" class="rangeBtn px-3 py-1.5 text-sm border border-slate-300 rounded-lg">Last 7d</button>
+                <button data-range="30" class="rangeBtn px-3 py-1.5 text-sm border border-slate-300 rounded-lg">Last 30d</button>
+                <button onclick="showToast('CSV exported (mock)')" class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg">Export CSV</button>
+            </div>
+        </div>
+
+        <!-- Main chart -->
+        <div class="section-card p-5 mb-6">
+            <div class="font-semibold text-slate-800 mb-3 flex items-center gap-2">
+                <span class="text-green-600">⬡</span> Multi-sensor Time Series
+            </div>
+            <div style="height: 380px;"><canvas id="mainChart"></canvas></div>
+        </div>
+
+        <!-- Mini charts -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="section-card p-4">
+                <div class="font-semibold text-slate-800 mb-2">Temperature · High vs Low</div>
+                <div style="height: 160px;"><canvas id="miniTemp"></canvas></div>
+                <div class="mini-stat mt-2 flex justify-between"><span>Min: <b id="tempMin">—</b></span><span>Avg: <b id="tempAvg">—</b></span><span>Max: <b
+                            id="tempMax">—</b></span></div>
+            </div>
+            <div class="section-card p-4">
+                <div class="font-semibold text-slate-800 mb-2">Moisture · High vs Low</div>
+                <div style="height: 160px;"><canvas id="miniMoist"></canvas></div>
+                <div class="mini-stat mt-2 flex justify-between"><span>Min: <b id="moistMin">—</b></span><span>Avg: <b id="moistAvg">—</b></span><span>Max: <b
+                            id="moistMax">—</b></span></div>
+            </div>
+            <div class="section-card p-4">
+                <div class="font-semibold text-slate-800 mb-2">EC · High vs Low</div>
+                <div style="height: 160px;"><canvas id="miniEc"></canvas></div>
+                <div class="mini-stat mt-2 flex justify-between"><span>Min: <b id="ecMin">—</b></span><span>Avg: <b id="ecAvg">—</b></span><span>Max: <b id="ecMax">—</b></span>
+                </div>
+            </div>
+            <div class="section-card p-4">
+                <div class="font-semibold text-slate-800 mb-2">Soil Tension · High vs Low</div>
+                <div style="height: 160px;"><canvas id="miniTension"></canvas></div>
+                <div class="mini-stat mt-2 flex justify-between"><span>Min: <b id="tenMin">—</b></span><span>Avg: <b id="tenAvg">—</b></span><span>Max: <b id="tenMax">—</b></span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>AgriflowSidebar.mount('trending');</script>
+    <script src="js/trending.js"></script>
+</body>
+
+</html>

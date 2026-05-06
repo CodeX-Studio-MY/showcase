@@ -12,11 +12,7 @@
     return `
     <aside class="fixed left-0 top-0 bottom-0 w-60 bg-slate-900 text-white flex flex-col z-40 shadow-xl">
       <div class="px-5 py-5 border-b border-slate-800 flex items-center gap-2.5">
-        <img src="assets/logo.svg" alt="" class="w-9 h-9" />
-        <div>
-          <div class="font-bold text-lg leading-none tracking-tight">Agriflow</div>
-          <div class="text-[10px] text-teal-300 mt-0.5 uppercase tracking-wider">AI Smart Irrigation</div>
-        </div>
+        <img src="assets/agriflow_logo.png" alt=""  />
       </div>
       <nav class="flex-1 py-4 flex flex-col">
         ${ITEMS.map(i => `

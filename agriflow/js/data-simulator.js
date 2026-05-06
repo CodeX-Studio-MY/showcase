@@ -39,19 +39,20 @@
   // ---------- Live values (initial) ----------
   const live = {
     high: { temp: 28.5, moisture: 62, ec: 1.4, ph: 6.4, tension: 22 },
-    low:  { temp: 29.7, moisture: 55, ec: 1.6, ph: 6.7, tension: 30 }
-  };
+        low: { temp: 29.7, moisture: 55, ec: 1.6, ph: 6.7, tension: 30 }
+    };
 
-  // ---------- SCADA state (persisted) ----------
-  const defaultState = {
-    pumpOn: false,
-    fertigationMode: false,
-    valves: { high: false, low: false },
-    pressure: 0,        // bar
-    flowRate: 0,        // L/min
-    tankLevel: 78,      // %
-    waterUsedToday: 1247
-  };
+    // ---------- SCADA state (persisted) ----------
+    const defaultState = {
+        pumpOn: false,
+        fertigationMode: false,
+        irrigationLine: false,            // NEW: separate irrigation line valve
+        valves: { high: false, low: false },
+        pressure: 0,
+        flowRate: 0,
+        tankLevel: 78,
+        waterUsedToday: 1247
+    };
   let scada = (() => {
     try {
       const raw = localStorage.getItem(STATE_KEY);
@@ -213,19 +214,20 @@
       s.rssi = clamp(s.rssi + (Math.random() - 0.5) * 1.2, -95, -60);
     });
 
-    // SCADA dynamics
-    if (scada.pumpOn) {
-      scada.pressure = clamp(scada.pressure + (Math.random() - 0.3) * 0.15, 2.2, 4.5);
-      scada.flowRate = clamp(scada.flowRate + (Math.random() - 0.3) * 1.5, 18, 36);
-      scada.tankLevel = clamp(scada.tankLevel - 0.08, 0, 100);
-      scada.waterUsedToday += scada.flowRate * (2.5 / 60); // L per tick
-      // Valve open → moisture rises in zone
-      if (scada.valves.high) live.high.moisture = clamp(live.high.moisture + 0.4, 35, 92);
-      if (scada.valves.low)  live.low.moisture  = clamp(live.low.moisture  + 0.35, 35, 92);
-    } else {
-      scada.pressure = clamp(scada.pressure - 0.4, 0, 5);
-      scada.flowRate = clamp(scada.flowRate - 4, 0, 60);
-    }
+      // SCADA dynamics
+      if (scada.pumpOn) {
+          scada.pressure = clamp(scada.pressure + (Math.random() - 0.3) * 0.15, 2.2, 4.5);
+          scada.flowRate = clamp(scada.flowRate + (Math.random() - 0.3) * 1.5, 18, 36);
+          scada.tankLevel = clamp(scada.tankLevel - 0.08, 0, 100);
+          scada.waterUsedToday += scada.flowRate * (2.5 / 60);
+          // Water reaches a zone only if pump is on AND a line is open AND that zone valve is open
+          const lineOpen = scada.irrigationLine || scada.fertigationMode;
+          if (lineOpen && scada.valves.high) live.high.moisture = clamp(live.high.moisture + 0.4, 35, 92);
+          if (lineOpen && scada.valves.low) live.low.moisture = clamp(live.low.moisture + 0.35, 35, 92);
+      } else {
+          scada.pressure = clamp(scada.pressure - 0.4, 0, 5);
+          scada.flowRate = clamp(scada.flowRate - 4, 0, 60);
+      }
     persistState();
 
     notify();

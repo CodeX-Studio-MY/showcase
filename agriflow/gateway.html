@@ -5,11 +5,181 @@
     <meta charset="UTF-8" />
     <title>Agriflow — Gateway Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="icon" href="assets/logo.svg" type="image/svg+xml" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" href="assets/agriflow_logo.png" type="image/svg+xml" />
     <link rel="stylesheet" href="css/style.css" />
     <style>
         body {
             font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        /* Trending dialog */
+        .trend-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(3px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            z-index: 200;
+        }
+
+        .trend-backdrop.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .trend-dialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 95vw;
+            max-width: 1280px;
+            height: 86vh;
+            max-height: 820px;
+            transform: translate(-50%, -48%) scale(0.96);
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.22s ease, transform 0.22s ease;
+            z-index: 201;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .trend-dialog.open {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: auto;
+        }
+
+        .trend-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(180deg, #ffffff, #f8fafc);
+            flex-shrink: 0;
+        }
+
+        .trend-body {
+            flex: 1;
+            min-height: 0;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+        }
+
+        @media (max-width: 900px) {
+            .trend-body {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .trend-sidebar {
+            border-right: 1px solid #e2e8f0;
+            padding: 16px;
+            overflow-y: auto;
+            background: #f8fafc;
+        }
+
+        .trend-main {
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .tag-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+            border: 1px solid transparent;
+        }
+
+        .tag-item:hover {
+            background: rgba(22, 163, 74, 0.06);
+            border-color: #d1fae5;
+        }
+
+        .tag-item.checked {
+            background: #fff;
+            border-color: #cbd5e1;
+        }
+
+        .tag-checkbox {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #cbd5e1;
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .tag-checkbox:checked {
+            background: #16a34a;
+            border-color: #16a34a;
+        }
+
+        .tag-checkbox:checked::after {
+            content: '✓';
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -55%);
+        }
+
+        .tag-color-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .range-pill {
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 999px;
+            border: 1px solid #cbd5e1;
+            background: white;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .range-pill:hover {
+            border-color: #16a34a;
+            color: #16a34a;
+        }
+
+        .range-pill.active {
+            background: #16a34a;
+            color: white;
+            border-color: #16a34a;
+            box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);
+        }
+
+        .stat-mini {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px 12px;
+            flex: 1;
         }
     </style>
 </head>
@@ -110,6 +280,73 @@
         </div>
     </main>
 
+    <!-- ============== Trending Dialog ============== -->
+    <div id="trendBackdrop" class="trend-backdrop"></div>
+    <div id="trendDialog" class="trend-dialog" role="dialog" aria-hidden="true">
+        <div class="trend-header">
+            <div>
+                <div class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 17l6-6 4 4 8-8M14 7h7v7" />
+                    </svg>
+                    Sensor Trending
+                </div>
+                <div class="text-xs text-slate-500 mt-0.5" id="trendSubtitle">—</div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="trendExportBtn" class="px-3 py-1.5 text-xs border border-slate-300 rounded-lg hover:bg-slate-50">Export CSV</button>
+                <button id="trendCloseBtn" class="text-slate-400 hover:text-slate-700 text-2xl leading-none p-1">&times;</button>
+            </div>
+        </div>
+
+        <div class="trend-body">
+            <!-- Left: tag selector -->
+            <aside class="trend-sidebar">
+                <div class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Available Tags</div>
+                <div id="tagList" class="space-y-1"></div>
+
+                <div class="mt-5 pt-5 border-t border-slate-200">
+                    <div class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Quick Actions</div>
+                    <button onclick="selectAllTags(true)" class="text-xs text-green-700 hover:text-green-800 font-semibold block py-1">+ Select all</button>
+                    <button onclick="selectAllTags(false)" class="text-xs text-slate-500 hover:text-slate-700 font-semibold block py-1">− Clear all</button>
+                    <button onclick="selectByZone('high')" class="text-xs text-green-700 hover:text-green-800 font-semibold block py-1">⬡ High Zone only</button>
+                    <button onclick="selectByZone('low')" class="text-xs text-teal-700 hover:text-teal-800 font-semibold block py-1">⬡ Low Zone only</button>
+                </div>
+            </aside>
+
+            <!-- Right: chart + controls -->
+            <section class="trend-main">
+                <!-- Range pills + custom -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <div class="flex items-center gap-1.5">
+                        <button class="range-pill active" data-range="24h">24H</button>
+                        <button class="range-pill" data-range="3d">3 Days</button>
+                        <button class="range-pill" data-range="7d">7 Days</button>
+                        <button class="range-pill" data-range="30d">30 Days</button>
+                        <button class="range-pill" data-range="custom">Custom</button>
+                    </div>
+
+                    <div id="customRangeBox" class="hidden flex items-center gap-2 ml-2">
+                        <input type="datetime-local" id="customFrom" class="text-xs border border-slate-300 rounded-md px-2 py-1.5" />
+                        <span class="text-xs text-slate-400">→</span>
+                        <input type="datetime-local" id="customTo" class="text-xs border border-slate-300 rounded-md px-2 py-1.5" />
+                        <button id="applyCustomBtn" class="text-xs bg-green-600 text-white px-3 py-1.5 rounded-md hover:bg-green-700">Apply</button>
+                    </div>
+
+                    <div class="ml-auto text-xs text-slate-500" id="rangeLabel">Last 24 hours</div>
+                </div>
+
+                <!-- Chart -->
+                <div class="flex-1 min-h-0 bg-white rounded-lg border border-slate-200 p-4">
+                    <canvas id="trendChart"></canvas>
+                </div>
+
+                <!-- Stats footer -->
+                <div id="trendStats" class="flex flex-wrap gap-2"></div>
+            </section>
+        </div>
+    </div>
+
     <script>AgriflowSidebar.mount('gateway');</script>
     <script>
         function batteryColor(b) {
@@ -157,7 +394,7 @@
       <td class="px-4 py-3">${statusBadge(sn.status)}</td>
       <td class="px-4 py-3">
         <div class="flex gap-1 text-xs">
-          <button onclick="showToast('Viewing ${sn.id}')" class="px-2 py-1 border border-slate-200 rounded hover:bg-slate-50">View</button>
+          <button onclick="openTrendDialog('${sn.id}')" class="px-2 py-1 border border-green-300 text-green-700 rounded hover:bg-green-50 font-semibold">View</button>
           <button onclick="showToast('Configure ${sn.id}')" class="px-2 py-1 border border-slate-200 rounded hover:bg-slate-50">Configure</button>
           <button onclick="showToast('Replace ${sn.id} requested','warn')" class="px-2 py-1 border border-slate-200 rounded hover:bg-slate-50 text-red-600">Replace</button>
         </div>
@@ -165,6 +402,360 @@
     </tr>
   `).join('');
             document.getElementById('sensorRows').innerHTML = rows;
+        });
+
+        // ============== Trending Dialog Logic ==============
+
+        // Tag definitions: each sensor metric is a "tag" the user can toggle
+        // Maps to data in AgriflowData history
+        const TAG_DEFS = [
+            // High Zone
+            { id: 'high.temp', zoneKey: 'high', metric: 'temp', label: 'Temperature', unit: '°C', color: '#dc2626', nodeId: 'AGF-S-101' },
+            { id: 'high.moisture', zoneKey: 'high', metric: 'moisture', label: 'Moisture', unit: '%', color: '#16a34a', nodeId: 'AGF-S-102' },
+            { id: 'high.ec', zoneKey: 'high', metric: 'ec', label: 'EC', unit: 'mS/cm', color: '#9333ea', nodeId: 'AGF-S-103' },
+            { id: 'high.ph', zoneKey: 'high', metric: 'ph', label: 'pH', unit: '', color: '#db2777', nodeId: 'AGF-S-103' },
+            { id: 'high.tension', zoneKey: 'high', metric: 'tension', label: 'Soil Tension', unit: 'kPa', color: '#ea580c', nodeId: 'AGF-S-104' },
+            // Low Zone
+            { id: 'low.temp', zoneKey: 'low', metric: 'temp', label: 'Temperature', unit: '°C', color: '#f97316', nodeId: 'AGF-S-201' },
+            { id: 'low.moisture', zoneKey: 'low', metric: 'moisture', label: 'Moisture', unit: '%', color: '#0f766e', nodeId: 'AGF-S-202' },
+            { id: 'low.ec', zoneKey: 'low', metric: 'ec', label: 'EC', unit: 'mS/cm', color: '#7c3aed', nodeId: 'AGF-S-203' },
+            { id: 'low.ph', zoneKey: 'low', metric: 'ph', label: 'pH', unit: '', color: '#e11d48', nodeId: 'AGF-S-203' },
+            { id: 'low.tension', zoneKey: 'low', metric: 'tension', label: 'Soil Tension', unit: 'kPa', color: '#b45309', nodeId: 'AGF-S-204' }
+        ];
+
+        let trendChart = null;
+        let activeTags = new Set();
+        let activeRange = '24h';
+        let customRange = null; // { from, to } in ms
+
+        function getTagsForNode(nodeId) {
+            return TAG_DEFS.filter(t => t.nodeId === nodeId);
+        }
+
+        function openTrendDialog(nodeId) {
+            // Pre-select this node's tags
+            activeTags = new Set(getTagsForNode(nodeId).map(t => t.id));
+            activeRange = '24h';
+            customRange = null;
+
+            // Update subtitle
+            const node = AgriflowData.snapshot().sensors.find(s => s.id === nodeId);
+            const tagsHere = getTagsForNode(nodeId).map(t => t.label).join(', ');
+            document.getElementById('trendSubtitle').textContent =
+                node ? `${node.id} · ${node.zone} · ${node.type} (${tagsHere})` : nodeId;
+
+            // Render tag list
+            renderTagList();
+            // Reset range pills
+            document.querySelectorAll('.range-pill').forEach(b => {
+                b.classList.toggle('active', b.dataset.range === '24h');
+            });
+            document.getElementById('customRangeBox').classList.add('hidden');
+            document.getElementById('rangeLabel').textContent = 'Last 24 hours';
+
+            // Open
+            document.getElementById('trendBackdrop').classList.add('open');
+            document.getElementById('trendDialog').classList.add('open');
+            document.getElementById('trendDialog').setAttribute('aria-hidden', 'false');
+
+            // Render chart (defer one frame so layout settles)
+            requestAnimationFrame(renderTrendChart);
+        }
+        window.openTrendDialog = openTrendDialog;
+
+        function closeTrendDialog() {
+            document.getElementById('trendBackdrop').classList.remove('open');
+            document.getElementById('trendDialog').classList.remove('open');
+            document.getElementById('trendDialog').setAttribute('aria-hidden', 'true');
+        }
+        document.getElementById('trendCloseBtn').addEventListener('click', closeTrendDialog);
+        document.getElementById('trendBackdrop').addEventListener('click', closeTrendDialog);
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && document.getElementById('trendDialog').classList.contains('open')) closeTrendDialog();
+        });
+
+        function renderTagList() {
+            const groups = { high: [], low: [] };
+            TAG_DEFS.forEach(t => groups[t.zoneKey].push(t));
+
+            const groupLabel = { high: 'High Zone — Musang King', low: 'Low Zone — Black Thorn' };
+            const groupColor = { high: '#16a34a', low: '#0f766e' };
+
+            let html = '';
+            ['high', 'low'].forEach(zk => {
+                html += `
+      <div class="text-[11px] font-bold uppercase tracking-wider mt-3 mb-1.5" style="color:${groupColor[zk]}">
+        ${groupLabel[zk]}
+      </div>
+    `;
+                groups[zk].forEach(tag => {
+                    const checked = activeTags.has(tag.id);
+                    html += `
+        <label class="tag-item ${checked ? 'checked' : ''}">
+          <input type="checkbox" class="tag-checkbox" data-tag-id="${tag.id}" ${checked ? 'checked' : ''}/>
+          <span class="tag-color-dot" style="background:${tag.color}"></span>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium text-slate-800 truncate">${tag.label}</div>
+            <div class="text-[10px] text-slate-500 font-mono">${tag.nodeId} · ${tag.unit || '—'}</div>
+          </div>
+        </label>
+      `;
+                });
+            });
+            document.getElementById('tagList').innerHTML = html;
+
+            // Wire checkboxes
+            document.querySelectorAll('.tag-checkbox').forEach(cb => {
+                cb.addEventListener('change', (e) => {
+                    const id = e.target.dataset.tagId;
+                    if (e.target.checked) activeTags.add(id); else activeTags.delete(id);
+                    e.target.closest('.tag-item').classList.toggle('checked', e.target.checked);
+                    renderTrendChart();
+                });
+            });
+        }
+
+        function selectAllTags(on) {
+            activeTags = new Set(on ? TAG_DEFS.map(t => t.id) : []);
+            renderTagList();
+            renderTrendChart();
+        }
+        function selectByZone(zk) {
+            activeTags = new Set(TAG_DEFS.filter(t => t.zoneKey === zk).map(t => t.id));
+            renderTagList();
+            renderTrendChart();
+        }
+        window.selectAllTags = selectAllTags;
+        window.selectByZone = selectByZone;
+
+        // Range pills
+        document.querySelectorAll('.range-pill').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.range-pill').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                activeRange = btn.dataset.range;
+
+                const customBox = document.getElementById('customRangeBox');
+                if (activeRange === 'custom') {
+                    customBox.classList.remove('hidden');
+                    // Default custom = last 24h
+                    const now = new Date();
+                    const yest = new Date(now.getTime() - 24 * 3600 * 1000);
+                    document.getElementById('customFrom').value = toLocalInput(yest);
+                    document.getElementById('customTo').value = toLocalInput(now);
+                } else {
+                    customBox.classList.add('hidden');
+                    customRange = null;
+                    updateRangeLabel();
+                    renderTrendChart();
+                }
+            });
+        });
+
+        document.getElementById('applyCustomBtn').addEventListener('click', () => {
+            const from = document.getElementById('customFrom').value;
+            const to = document.getElementById('customTo').value;
+            if (!from || !to) { showToast('Please select both dates', 'warn'); return; }
+            const fromMs = new Date(from).getTime();
+            const toMs = new Date(to).getTime();
+            if (toMs <= fromMs) { showToast('End time must be after start time', 'error'); return; }
+            customRange = { from: fromMs, to: toMs };
+            updateRangeLabel();
+            renderTrendChart();
+        });
+
+        function toLocalInput(d) {
+            const pad = n => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        }
+
+        function updateRangeLabel() {
+            const map = { '24h': 'Last 24 hours', '3d': 'Last 3 days', '7d': 'Last 7 days', '30d': 'Last 30 days' };
+            let txt = map[activeRange] || '';
+            if (activeRange === 'custom' && customRange) {
+                const f = new Date(customRange.from), t = new Date(customRange.to);
+                txt = `${f.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })} → ${t.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
+            }
+            document.getElementById('rangeLabel').textContent = txt;
+        }
+
+        // Build historical points for the active range
+        // AgriflowData.snapshot().history gives us 24h of base data — for longer ranges
+        // we synthesize by tiling+seasonal variation (similar approach to trending.js)
+        function buildHistoryForRange() {
+            const base = AgriflowData.snapshot().history;
+            let durationMs;
+            if (activeRange === 'custom' && customRange) {
+                durationMs = customRange.to - customRange.from;
+            } else {
+                durationMs = ({ '24h': 24, '3d': 72, '7d': 168, '30d': 720 }[activeRange] || 24) * 3600 * 1000;
+            }
+
+            const endMs = (activeRange === 'custom' && customRange) ? customRange.to : Date.now();
+            const startMs = endMs - durationMs;
+
+            // Sample density: cap to ~600 points for chart smoothness
+            const targetPoints = Math.min(600, Math.max(60, Math.floor(durationMs / (5 * 60 * 1000))));
+            const stepMs = durationMs / targetPoints;
+
+            const points = [];
+            for (let i = 0; i <= targetPoints; i++) {
+                const ts = startMs + i * stepMs;
+                // Pick base point by mod
+                const baseIdx = i % base.length;
+                const bp = base[baseIdx];
+                // Diurnal + seasonal modulation for longer ranges
+                const hourOfDay = new Date(ts).getHours() + new Date(ts).getMinutes() / 60;
+                const diurnal = Math.sin((hourOfDay - 6) / 24 * Math.PI * 2);
+                const seasonal = Math.sin(i / targetPoints * Math.PI * (durationMs > 86400000 * 3 ? 4 : 1)) * 1.5;
+
+                points.push({
+                    ts,
+                    high: {
+                        temp: clamp(bp.high.temp + seasonal, 24, 34),
+                        moisture: clamp(bp.high.moisture + seasonal * 0.5, 35, 80),
+                        ec: clamp(bp.high.ec + seasonal * 0.05, 0.8, 2.5),
+                        ph: clamp(bp.high.ph + seasonal * 0.02, 5.5, 7.2),
+                        tension: clamp(bp.high.tension + seasonal * 1.5, 10, 60)
+                    },
+                    low: {
+                        temp: clamp(bp.low.temp + seasonal, 24, 34),
+                        moisture: clamp(bp.low.moisture + seasonal * 0.4, 35, 80),
+                        ec: clamp(bp.low.ec + seasonal * 0.05, 0.8, 2.5),
+                        ph: clamp(bp.low.ph + seasonal * 0.02, 5.5, 7.2),
+                        tension: clamp(bp.low.tension + seasonal * 1.3, 10, 60)
+                    }
+                });
+            }
+            return points;
+        }
+        function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+        function renderTrendChart() {
+            const history = buildHistoryForRange();
+
+            // Build datasets per active tag
+            const datasets = [];
+            TAG_DEFS.forEach(tag => {
+                if (!activeTags.has(tag.id)) return;
+                datasets.push({
+                    label: `${tag.zoneKey === 'high' ? 'High' : 'Low'} · ${tag.label}${tag.unit ? ' (' + tag.unit + ')' : ''}`,
+                    data: history.map(p => ({ x: p.ts, y: p[tag.zoneKey][tag.metric] })),
+                    borderColor: tag.color,
+                    backgroundColor: tag.color + '15',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    tension: 0.3,
+                    yAxisID: ['ec', 'ph'].includes(tag.metric) ? 'y2' : 'y1'
+                });
+            });
+
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            if (trendChart) trendChart.destroy();
+
+            trendChart = new Chart(ctx, {
+                type: 'line',
+                data: { datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+                        tooltip: {
+                            callbacks: {
+                                title: (items) => {
+                                    const d = new Date(items[0].parsed.x);
+                                    return d.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            ticks: {
+                                callback: (v) => {
+                                    const d = new Date(v);
+                                    return activeRange === '24h'
+                                        ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                        : d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+                                },
+                                maxTicksLimit: 10, font: { size: 10 }
+                            },
+                            grid: { color: '#f1f5f9' }
+                        },
+                        y1: {
+                            position: 'left',
+                            grid: { color: '#f1f5f9' },
+                            title: { display: true, text: 'Temp °C / Moisture % / Tension kPa', font: { size: 10 } }
+                        },
+                        y2: {
+                            position: 'right',
+                            grid: { drawOnChartArea: false },
+                            title: { display: true, text: 'EC (mS/cm) / pH', font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+
+            // Render stat cards
+            renderStats(history);
+        }
+
+        function renderStats(history) {
+            const container = document.getElementById('trendStats');
+            if (!activeTags.size) {
+                container.innerHTML = '<div class="text-xs text-slate-400 italic">Select at least one tag to see stats</div>';
+                return;
+            }
+            let html = '';
+            TAG_DEFS.forEach(tag => {
+                if (!activeTags.has(tag.id)) return;
+                const vals = history.map(p => p[tag.zoneKey][tag.metric]);
+                const min = Math.min(...vals), max = Math.max(...vals);
+                const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+                const last = vals[vals.length - 1];
+                html += `
+      <div class="stat-mini">
+        <div class="flex items-center gap-2 mb-1">
+          <span class="tag-color-dot" style="background:${tag.color}"></span>
+          <span class="text-xs font-semibold text-slate-700">${tag.zoneKey === 'high' ? 'High' : 'Low'} · ${tag.label}</span>
+        </div>
+        <div class="text-lg font-bold text-slate-900">${last.toFixed(2)}<span class="text-[11px] text-slate-500 font-normal ml-1">${tag.unit}</span></div>
+        <div class="text-[10px] text-slate-500 mt-0.5">
+          min ${min.toFixed(1)} · avg ${avg.toFixed(1)} · max ${max.toFixed(1)}
+        </div>
+      </div>
+    `;
+            });
+            container.innerHTML = html;
+        }
+
+        // Export CSV (mock)
+        document.getElementById('trendExportBtn').addEventListener('click', () => {
+            if (!activeTags.size) { showToast('Select at least one tag first', 'warn'); return; }
+            const history = buildHistoryForRange();
+            const headers = ['timestamp', ...[...activeTags].map(id => {
+                const t = TAG_DEFS.find(x => x.id === id);
+                return `${t.zoneKey}_${t.metric}`;
+            })];
+            const lines = [headers.join(',')];
+            history.forEach(p => {
+                const row = [new Date(p.ts).toISOString()];
+                activeTags.forEach(id => {
+                    const t = TAG_DEFS.find(x => x.id === id);
+                    row.push(p[t.zoneKey][t.metric].toFixed(3));
+                });
+                lines.push(row.join(','));
+            });
+            const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `agriflow-trend-${Date.now()}.csv`;
+            document.body.appendChild(a); a.click(); a.remove();
+            URL.revokeObjectURL(url);
+            showToast('CSV exported');
         });
     </script>
 </body>

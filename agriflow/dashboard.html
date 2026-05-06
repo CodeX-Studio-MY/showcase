@@ -6,22 +6,11 @@
     <title>Agriflow — Digital Twin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="icon" href="assets/logo.svg" type="image/svg+xml" />
+    <link rel="icon" href="assets/agriflow_logo.png" type="image/svg+xml" />
     <link rel="stylesheet" href="css/style.css" />
     <style>
         body {
             font-family: 'Inter', system-ui, sans-serif;
-        }
-
-        #threeCanvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-            cursor: grab;
-        }
-
-        #threeCanvas:active {
-            cursor: grabbing;
         }
 
         .twin-wrap {
@@ -30,6 +19,19 @@
             border-radius: 12px;
             overflow: hidden;
             background: linear-gradient(180deg, #87ceeb 0%, #c7e7f7 60%, #b6e0a8 100%);
+        }
+
+        #threeCanvas {
+            position: absolute;
+            inset: 0;
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
+            cursor: grab;
+        }
+
+        #threeCanvas:active {
+            cursor: grabbing;
         }
 
         .twin-overlay {
@@ -43,6 +45,24 @@
             font-size: 12px;
             color: #334155;
             pointer-events: none;
+            z-index: 2;
+        }
+
+        .twin-loading {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #475569;
+            font-size: 13px;
+            gap: 8px;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        .twin-loading.hidden {
+            opacity: 0;
         }
 
         .zone-panel {
@@ -64,6 +84,7 @@
             transform: translateX(0);
         }
     </style>
+
 </head>
 
 <body class="bg-slate-50">
@@ -117,6 +138,9 @@
             </div>
             <div class="twin-wrap">
                 <canvas id="threeCanvas"></canvas>
+                <div id="twinLoading" class="twin-loading">
+                    <span class="spinner"></span> Loading Digital Twin…
+                </div>
                 <div class="twin-overlay">
                     <div><strong>LRWN-GW-AGF-001</strong> · 8/8 sensors</div>
                     <div class="text-slate-500">AS923 · Signal <span id="sigOverlay">92</span>%</div>
@@ -137,38 +161,39 @@
                         </div>
                         <div class="grid grid-cols-2 gap-2 mt-4 text-xs">
                             <div class="bg-slate-50 p-2 rounded">
-                                <div class="text-slate-500">Temperature</div>
+                                <div class="text-slate-500">🌡 Temperature</div>
                                 <div class="font-bold text-slate-900" id="zfTemp">—</div>
                             </div>
                             <div class="bg-slate-50 p-2 rounded">
-                                <div class="text-slate-500">Moisture</div>
+                                <div class="text-slate-500">💧 Moisture</div>
                                 <div class="font-bold text-slate-900" id="zfMoist">—</div>
                             </div>
                             <div class="bg-slate-50 p-2 rounded">
-                                <div class="text-slate-500">EC / pH</div>
+                                <div class="text-slate-500">⚡ EC / pH</div>
                                 <div class="font-bold text-slate-900" id="zfEcPh">—</div>
                             </div>
                             <div class="bg-slate-50 p-2 rounded">
-                                <div class="text-slate-500">Soil Tension</div>
+                                <div class="text-slate-500">🌱 Soil Tension</div>
                                 <div class="font-bold text-slate-900" id="zfTension">—</div>
                             </div>
                             <div class="bg-slate-50 p-2 rounded">
-                                <div class="text-slate-500">Tree Age</div>
+                                <div class="text-slate-500">🌳 Tree Age</div>
                                 <div class="font-bold text-slate-900" id="zfAge">—</div>
                             </div>
                             <div class="bg-slate-50 p-2 rounded">
-                                <div class="text-slate-500">Tree Species</div>
+                                <div class="text-slate-500">🍈 Species</div>
                                 <div class="font-bold text-slate-900" id="zfSpecies">—</div>
                             </div>
                             <div class="bg-slate-50 p-2 rounded">
-                                <div class="text-slate-500">Soil Type</div>
+                                <div class="text-slate-500">🪨 Soil Type</div>
                                 <div class="font-bold text-slate-900" id="zfSoil">—</div>
                             </div>
                             <div class="bg-slate-50 p-2 rounded">
-                                <div class="text-slate-500">Slope</div>
+                                <div class="text-slate-500">📐 Slope</div>
                                 <div class="font-bold text-slate-900" id="zfSlope">—</div>
                             </div>
                         </div>
+
                         <div id="zoneAiRec" class="mt-4 bg-green-50 border border-green-200 rounded-lg p-3 text-sm">
                             <div class="font-semibold text-green-800">💧 AI Recommendation</div>
                             <div class="text-green-900 mt-1" id="zoneAiText">Irrigate in 2 hours (45 min duration)</div>
@@ -177,6 +202,7 @@
                 </div>
             </div>
         </div>
+
 
         <!-- AI Recommendations Feed -->
         <div class="section-card">
@@ -191,76 +217,74 @@
             </div>
         </div>
     </main>
-
     <script>AgriflowSidebar.mount('dashboard');</script>
-    <script type="importmap">
-{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-               "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
-</script>
-    <script type="module" src="js/digital-twin.js"></script>
+    <!-- Three.js UMD build (works over file:// — no module loader needed) -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="js/digital-twin.js"></script>
     <script>
-        // Top-level reactive bindings
-        let radarChart;
+        // ---------- Readable mappings ----------
+        const SOIL_TYPES = { 1: 'Sandy', 2: 'Loamy', 3: 'Clayey' };
+        const SPECIES = {
+            1: 'Musang King', 2: 'D24', 3: 'Kampung', 4: 'Black Thorn',
+            5: 'D101', 6: 'XO', 7: 'Red Prawn', 8: 'Tekka'
+        };
+        const speciesName = (v) => (typeof v === 'number' ? SPECIES[v] : v) || '—';
+        const soilName = (v) => (typeof v === 'number' ? SOIL_TYPES[v] : v) || '—';
+
+        let radarChart = null;
         let activeZoneKey = null;
 
-        AgriflowData.subscribe((s) => {
-            document.getElementById('waterUsed').textContent = Math.round(s.scada.waterUsedToday).toLocaleString();
-            document.getElementById('sigOverlay').textContent = Math.round(s.gateway.signal);
-
-            // Recommendations feed
-            const list = document.getElementById('recList');
-            const icons = { skip: '⛔', irrigate: '💧', fertigate: '🌱', info: '📊' };
-            const colors = { skip: 'amber', irrigate: 'green', fertigate: 'teal', info: 'slate' };
-            list.innerHTML = s.recommendations.map(r => {
-                const c = colors[r.kind] || 'slate';
-                return `
-      <div class="border border-${c}-200 bg-${c}-50/40 rounded-lg p-4">
-        <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
-          <span class="font-medium">${r.zone}</span><span>${r.time}</span>
-        </div>
-        <div class="font-semibold text-slate-900">${icons[r.kind] || ''} ${r.action}</div>
-        <div class="text-sm text-slate-600 mt-1">${r.reasoning}</div>
-      </div>`;
-            }).join('');
-
-            if (activeZoneKey) updateZonePanel(s, activeZoneKey);
-        });
-
-        function openZonePanel(zoneKey) {
-            activeZoneKey = zoneKey;
+        // ---------- Open / Close zone panel ----------
+        window.openZonePanel = function (zoneId) {
+            activeZoneKey = zoneId;
             document.getElementById('zonePanel').classList.add('open');
-            updateZonePanel(AgriflowData.snapshot(), zoneKey);
-        }
-        function closeZonePanel() {
+            // Pull current snapshot and render immediately
+            const snap = AgriflowData.getState ? AgriflowData.getState() : AgriflowData;
+            updateZonePanel(snap, zoneId);
+        };
+
+        window.closeZonePanel = function () {
             activeZoneKey = null;
             document.getElementById('zonePanel').classList.remove('open');
-        }
-        window.openZonePanel = openZonePanel;
-        window.closeZonePanel = closeZonePanel;
+        };
 
+        // ---------- Render zone panel from a snapshot ----------
         function updateZonePanel(s, key) {
-            const m = s.meta[key]; const v = s.live[key];
-            document.getElementById('zonePanelName').textContent = m.name;
-            document.getElementById('zonePanelSpecies').textContent = `${m.species} · ${m.treeAge} yr · ${m.soilType}`;
-            document.getElementById('zfTemp').textContent = v.temp.toFixed(1) + ' °C';
-            document.getElementById('zfMoist').textContent = v.moisture.toFixed(0) + ' %';
-            document.getElementById('zfEcPh').textContent = v.ec.toFixed(2) + ' mS · pH ' + v.ph.toFixed(2);
-            document.getElementById('zfTension').textContent = v.tension.toFixed(0) + ' kPa';
-            document.getElementById('zfAge').textContent = m.treeAge + ' years';
-            document.getElementById('zfSpecies').textContent = m.species;
-            document.getElementById('zfSoil').textContent = m.soilType;
-            document.getElementById('zfSlope').textContent = m.slope + '°';
+            // Support both data shapes: s.meta[key]/s.live[key] OR s.zones[key].meta/.live
+            const m = (s.meta && s.meta[key]) || (s.zones && s.zones[key] && s.zones[key].meta) || {};
+            const v = (s.live && s.live[key]) || (s.zones && s.zones[key] && s.zones[key].live) || {};
 
-            // Normalize for radar (0–100)
+            const sp = speciesName(m.species);
+            const so = soilName(m.soilType ?? m.soil);
+            const age = m.treeAge ?? m.age ?? 0;
+            const slope = m.slope ?? 0;
+
+            document.getElementById('zonePanelName').textContent =
+                m.name || (key === 'high' ? 'High Zone' : 'Low Zone');
+            document.getElementById('zonePanelSpecies').textContent =
+                `${sp} · ${age} yr · ${so}`;
+
+            document.getElementById('zfTemp').textContent = v.temp != null ? v.temp.toFixed(1) + ' °C' : '—';
+            document.getElementById('zfMoist').textContent = v.moisture != null ? v.moisture.toFixed(0) + ' %' : '—';
+            document.getElementById('zfEcPh').textContent = (v.ec != null && v.ph != null)
+                ? `${v.ec.toFixed(2)} mS · pH ${v.ph.toFixed(2)}` : '—';
+            document.getElementById('zfTension').textContent = v.tension != null ? v.tension.toFixed(0) + ' kPa' : '—';
+            document.getElementById('zfAge').textContent = `${age} years`;
+            document.getElementById('zfSpecies').textContent = sp;
+            document.getElementById('zfSoil').textContent = so;
+            document.getElementById('zfSlope').textContent = `${slope}°`;
+
+            // Radar normalization (0–100)
             const data = [
-                ((v.temp - 24) / 10) * 100,
-                v.moisture,
-                ((v.ec - 0.8) / 1.7) * 100,
-                ((v.tension - 10) / 50) * 100,
-                (m.treeAge / 10) * 100,
-                m.species === 'Musang King' ? 90 : 75,
-                m.soilType === 'Loamy' ? 80 : 60,
-                (m.slope / 30) * 100
+                v.temp != null ? Math.max(0, Math.min(100, ((v.temp - 24) / 10) * 100)) : 0,
+                v.moisture ?? 0,
+                v.ec != null ? Math.max(0, Math.min(100, ((v.ec - 0.8) / 1.7) * 100)) : 0,
+                v.tension != null ? Math.max(0, Math.min(100, ((v.tension - 10) / 50) * 100)) : 0,
+                (age / 10) * 100,
+                sp === 'Musang King' ? 90 : sp === 'Black Thorn' ? 85 : 75,
+                so === 'Loamy' ? 80 : so === 'Clayey' ? 65 : 55,
+                (slope / 30) * 100
             ];
 
             const ctx = document.getElementById('baguaRadar').getContext('2d');
@@ -270,7 +294,7 @@
                     data: {
                         labels: ['Temp', 'Moisture', 'EC/pH', 'Tension', 'Age', 'Species', 'Soil', 'Slope'],
                         datasets: [{
-                            label: m.name,
+                            label: m.name || key,
                             data,
                             fill: true,
                             backgroundColor: 'rgba(22,163,74,0.18)',
@@ -282,20 +306,57 @@
                     options: {
                         responsive: true, maintainAspectRatio: false,
                         plugins: { legend: { display: false } },
-                        scales: { r: { beginAtZero: true, max: 100, ticks: { display: false }, grid: { color: '#e2e8f0' }, pointLabels: { font: { size: 11 } } } }
+                        scales: {
+                            r: {
+                                beginAtZero: true, max: 100,
+                                ticks: { display: false },
+                                grid: { color: '#e2e8f0' },
+                                pointLabels: { font: { size: 11 } }
+                            }
+                        }
                     }
                 });
             } else {
                 radarChart.data.datasets[0].data = data;
-                radarChart.data.datasets[0].label = m.name;
+                radarChart.data.datasets[0].label = m.name || key;
                 radarChart.update('none');
             }
 
-            // AI rec
-            const rec = s.recommendations.find(r => r.zone.toLowerCase().includes(key));
-            if (rec) document.getElementById('zoneAiText').textContent = rec.action + ' — ' + rec.reasoning;
+            // AI recommendation
+            const rec = (s.recommendations || []).find(r =>
+                (r.zone || '').toLowerCase().includes(key)
+            );
+            document.getElementById('zoneAiText').textContent = rec
+                ? `${rec.action} — ${rec.reasoning}`
+                : (s.zones?.[key]?.aiRec || 'Optimal conditions');
         }
+
+        // ---------- Live subscription ----------
+        AgriflowData.subscribe((s) => {
+            document.getElementById('waterUsed').textContent =
+                Math.round(s.scada.waterUsedToday).toLocaleString();
+            document.getElementById('sigOverlay').textContent = Math.round(s.gateway.signal);
+
+            // AI feed
+            const list = document.getElementById('recList');
+            const icons = { skip: '⛔', irrigate: '💧', fertigate: '🌱', info: '📊' };
+            const colors = { skip: 'amber', irrigate: 'green', fertigate: 'teal', info: 'slate' };
+            list.innerHTML = (s.recommendations || []).map(r => {
+                const c = colors[r.kind] || 'slate';
+                return `
+        <div class="border border-${c}-200 bg-${c}-50/40 rounded-lg p-4">
+          <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
+            <span class="font-medium">${r.zone}</span><span>${r.time}</span>
+          </div>
+          <div class="font-semibold text-slate-900">${icons[r.kind] || ''} ${r.action}</div>
+          <div class="text-sm text-slate-600 mt-1">${r.reasoning}</div>
+        </div>`;
+            }).join('');
+
+            if (activeZoneKey) updateZonePanel(s, activeZoneKey);
+        });
     </script>
+
 </body>
 
 </html>

@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Project Schedule — IoT Asset Monitoring Platform (POC)</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Calibri, Arial, sans-serif;
+            color: #2c3e50;
+            line-height: 1.5;
+            margin: 0;
+            padding: 30px 40px;
+            background: #f4f6f8;
+        }
+
+        .page {
+            background: #fff;
+            max-width: 1400px;
+            margin: 0 auto 30px auto;
+            padding: 30px 40px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border-radius: 6px;
+        }
+
+        .header {
+            border-bottom: 4px solid #c9a227;
+            padding-bottom: 18px;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #1a3d5c;
+            font-size: 24px;
+        }
+
+        .header .subtitle {
+            color: #5a6c7d;
+            font-size: 13px;
+            margin-top: 6px;
+        }
+
+        .meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin: 16px 0 0 0;
+            font-size: 12px;
+            color: #5a6c7d;
+        }
+
+        .meta-row span strong {
+            color: #1a3d5c;
+        }
+
+        h2 {
+            color: #1a3d5c;
+            font-size: 18px;
+            border-bottom: 2px solid #c9a227;
+            padding-bottom: 6px;
+            margin-top: 30px;
+            margin-bottom: 16px;
+        }
+
+        h3 {
+            color: #2c5777;
+            font-size: 14px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        /* ───── SUMMARY: WEEK STRIP ───── */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 4px;
+            margin: 20px 0;
+        }
+
+        .summary-week {
+            background: #f7f9fb;
+            border: 1px solid #e1e6eb;
+            border-radius: 4px;
+            padding: 10px 8px;
+            text-align: center;
+            font-size: 11px;
+        }
+
+        .summary-week .wk-label {
+            color: #1a3d5c;
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        .summary-week .wk-date {
+            color: #7a8a99;
+            font-size: 10px;
+            margin-top: 2px;
+        }
+
+        /* ───── SUMMARY: PHASE BARS ───── */
+        .phase-bar-container {
+            margin: 14px 0 8px 0;
+        }
+
+        .phase-bar {
+            display: grid;
+            grid-template-columns: 140px repeat(8, 1fr);
+            gap: 3px;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .phase-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1a3d5c;
+            padding-right: 8px;
+            text-align: right;
+        }
+
+        .phase-cell {
+            height: 28px;
+            border-radius: 3px;
+            background: transparent;
+        }
+
+        .phase-cell.active {
+            color: #fff;
+            font-size: 10.5px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 6px;
+        }
+
+        .phase-cell.p1 {
+            background: #2e8b57;
+        }
+
+        .phase-cell.p2 {
+            background: #1a3d5c;
+        }
+
+        .phase-cell.p3 {
+            background: #c9a227;
+        }
+
+        .phase-cell.p4 {
+            background: #8e44ad;
+        }
+
+        /* ───── MILESTONES TABLE ───── */
+        .milestones-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 12.5px;
+        }
+
+        .milestones-table th {
+            background: #1a3d5c;
+            color: #fff;
+            padding: 8px 10px;
+            text-align: left;
+        }
+
+        .milestones-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #e1e6eb;
+            vertical-align: top;
+        }
+
+        .milestones-table tr:nth-child(even) td {
+            background: #f7f9fb;
+        }
+
+        .milestones-table .mid-poc td {
+            background: #fff8e1 !important;
+            font-weight: 600;
+        }
+
+        .milestones-table .go-live td {
+            background: #e8f5e9 !important;
+            font-weight: 600;
+        }
+
+        .ms-icon {
+            color: #c9a227;
+            font-size: 14px;
+        }
+
+        /* ───── MID-POC CALLOUT ───── */
+        .demo-callout {
+            background: linear-gradient(135deg, #fff8e1 0%, #fff3c4 100%);
+            border: 2px solid #c9a227;
+            border-radius: 8px;
+            padding: 18px 22px;
+            margin: 22px 0;
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            gap: 18px;
+            align-items: center;
+        }
+
+        .demo-callout .demo-date {
+            text-align: center;
+            border-right: 2px solid #c9a227;
+            padding-right: 18px;
+        }
+
+        .demo-callout .demo-date .day {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a3d5c;
+            line-height: 1;
+        }
+
+        .demo-callout .demo-date .month {
+            font-size: 12px;
+            color: #5a6c7d;
+            margin-top: 4px;
+            letter-spacing: 1px;
+        }
+
+        .demo-callout .demo-text h4 {
+            margin: 0 0 6px 0;
+            color: #1a3d5c;
+            font-size: 16px;
+        }
+
+        .demo-callout .demo-text p {
+            margin: 0;
+            font-size: 12.5px;
+            color: #5a6c7d;
+        }
+
+        .demo-callout .demo-text em {
+            color: #c9a227;
+            font-style: normal;
+            font-weight: 600;
+        }
+
+        /* ───── GANTT TABLE ───── */
+        .gantt {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 18px;
+            font-size: 11.5px;
+            table-layout: fixed;
+        }
+
+        .gantt th {
+            background: #1a3d5c;
+            color: #fff;
+            padding: 8px 6px;
+            text-align: center;
+            font-size: 11px;
+            border: 1px solid #1a3d5c;
+        }
+
+        .gantt th.lane-header {
+            text-align: left;
+            padding-left: 12px;
+            width: 240px;
+        }
+
+        .gantt th.code-header {
+            width: 80px;
+        }
+
+        .gantt th.hours-header {
+            width: 55px;
+        }
+
+        .gantt th.week-header {
+            background: #2c5777;
+            width: auto;
+        }
+
+        .gantt th.week-header .wk-num {
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .gantt th.week-header .wk-dt {
+            font-size: 9.5px;
+            font-weight: 400;
+            color: #d4dde5;
+            margin-top: 2px;
+        }
+
+        .gantt td {
+            padding: 4px 6px;
+            border: 1px solid #e1e6eb;
+            vertical-align: middle;
+            height: 28px;
+            background: #fff;
+        }
+
+        .gantt td.lane-cell {
+            background: #f7f9fb;
+            font-weight: 600;
+            color: #1a3d5c;
+            border-left: 4px solid #1a3d5c;
+            font-size: 11.5px;
+        }
+
+        .gantt td.lane-cell.lane-foundation {
+            border-left-color: #2e8b57;
+        }
+
+        .gantt td.lane-cell.lane-backend {
+            border-left-color: #1a3d5c;
+        }
+
+        .gantt td.lane-cell.lane-frontend {
+            border-left-color: #c9a227;
+        }
+
+        .gantt td.lane-cell.lane-auth {
+            border-left-color: #8e44ad;
+        }
+
+        .gantt td.lane-cell.lane-testing {
+            border-left-color: #d35400;
+        }
+
+        .gantt td.lane-cell.lane-deploy {
+            border-left-color: #16a085;
+        }
+
+        .gantt td.code-cell {
+            font-family: 'Consolas', monospace;
+            font-size: 10.5px;
+            color: #5a6c7d;
+            text-align: center;
+        }
+
+        .gantt td.hours-cell {
+            text-align: center;
+            color: #5a6c7d;
+            font-size: 11px;
+        }
+
+        .gantt td.week-cell {
+            padding: 0;
+            position: relative;
+        }
+
+        .gantt td.week-cell.bar {
+            color: #fff;
+            font-size: 9.5px;
+            font-weight: 600;
+            text-align: center;
+            padding: 0 4px;
+        }
+
+        /* Bar colors */
+        .bar-foundation {
+            background: #2e8b57 !important;
+        }
+
+        .bar-backend {
+            background: #1a3d5c !important;
+        }
+
+        .bar-frontend {
+            background: #c9a227 !important;
+        }
+
+        .bar-auth {
+            background: #8e44ad !important;
+        }
+
+        .bar-testing {
+            background: #d35400 !important;
+        }
+
+        .bar-deploy {
+            background: #16a085 !important;
+        }
+
+        .bar-ops {
+            background: #7f8c8d !important;
+        }
+
+        /* Lane separator rows */
+        .lane-row td.lane-cell {
+            color: #fff;
+            font-size: 12px;
+            border-left-width: 4px;
+        }
+
+        .lane-row.lane-foundation td.lane-cell {
+            background: #2e8b57;
+        }
+
+        .lane-row.lane-backend td.lane-cell {
+            background: #1a3d5c;
+        }
+
+        .lane-row.lane-frontend td.lane-cell {
+            background: #c9a227;
+        }
+
+        .lane-row.lane-auth td.lane-cell {
+            background: #8e44ad;
+        }
+
+        .lane-row.lane-testing td.lane-cell {
+            background: #d35400;
+        }
+
+        .lane-row.lane-deploy td.lane-cell {
+            background: #16a085;
+        }
+
+        .lane-row.lane-ops td.lane-cell {
+            background: #7f8c8d;
+        }
+
+        .lane-row td {
+            background: #fafbfc;
+        }
+
+        /* Demo marker cells */
+        .demo-marker {
+            background: repeating-linear-gradient(45deg,
+                    #fff8e1,
+                    #fff8e1 4px,
+                    #ffe082 4px,
+                    #ffe082 8px) !important;
+            border: 2px dashed #c9a227 !important;
+            text-align: center;
+            font-weight: 700;
+            color: #1a3d5c;
+            font-size: 11px;
+        }
+
+        /* ───── LEGEND ───── */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin: 14px 0 8px 0;
+            font-size: 11px;
+            color: #5a6c7d;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-swatch {
+            display: inline-block;
+            width: 16px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        /* ───── NOTES & FOOTER ───── */
+        .notes {
+            background: #f7f9fb;
+            border-left: 3px solid #1a3d5c;
+            padding: 12px 16px;
+            margin: 18px 0;
+            font-size: 12px;
+            color: #5a6c7d;
+        }
+
+        .notes strong {
+            color: #1a3d5c;
+        }
+
+        .footer {
+            margin-top: 24px;
+            padding-top: 12px;
+            border-top: 1px solid #e1e6eb;
+            font-size: 10.5px;
+            color: #7a8a99;
+            text-align: center;
+        }
+
+        /* ───── PAGE-BREAK CONTROL (screen + print) ───── */
+        .page-break-after {
+            page-break-after: always;
+            break-after: page;
+        }
+
+        .keep-together {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        /* ═══════════════════════════════════════════════════════════ */
+        /*  PRINT HARDENING — preserves colors + controls page breaks   */
+        /* ═══════════════════════════════════════════════════════════ */
+        @media print {
+
+            /* Force ALL elements to preserve their colors when printing */
+            *,
+            *::before,
+            *::after {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+
+            @page {
+                size: A3 landscape;
+                margin: 10mm;
+            }
+
+            body {
+                background: #fff;
+                padding: 0;
+                margin: 0;
+            }
+
+            .page {
+                box-shadow: none;
+                padding: 8mm 10mm;
+                max-width: none;
+                margin: 0;
+                border-radius: 0;
+            }
+
+            /* Force a page break after each .page-break-after element */
+            .page-break-after {
+                page-break-after: always !important;
+                break-after: page !important;
+            }
+
+            /* Keep these blocks together — never split across pages */
+            .keep-together,
+            .demo-callout,
+            .phase-bar-container,
+            .milestones-table,
+            .legend,
+            .notes,
+            .header {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            /* Gantt: keep logical groups together */
+            .lane-group {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            /* Prevent table headers from being orphaned */
+            .gantt thead {
+                display: table-header-group;
+            }
+
+            .gantt tr {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            /* Prevent headings from being orphaned at the bottom of a page */
+            h1,
+            h2,
+            h3 {
+                page-break-after: avoid !important;
+                break-after: avoid !important;
+            }
+
+            /* Ensure Gantt bars remain solid */
+            .bar-foundation,
+            .bar-backend,
+            .bar-frontend,
+            .bar-auth,
+            .bar-testing,
+            .bar-deploy,
+            .bar-ops,
+            .phase-cell.p1,
+            .phase-cell.p2,
+            .phase-cell.p3,
+            .phase-cell.p4,
+            .demo-marker,
+            .gantt th,
+            .lane-row td.lane-cell,
+            .milestones-table th,
+            .milestones-table .mid-poc td,
+            .milestones-table .go-live td {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- PAGE 1 — SUMMARY (Phases + Mid-POC Demo + Milestones)        -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="page page-break-after">
+
+        <div class="header keep-together">
+            <h1>Project Schedule — Summary</h1>
+            <div class="subtitle">IoT Asset Monitoring Platform (POC) &nbsp;|&nbsp; CodeX Studio × Sanggul Emas Sdn Bhd</div>
+            <div class="meta-row">
+                <span><strong>Project Code:</strong>PROP-SESB-2026-0401</span>
+                <span><strong>Reference:</strong> Quotation #000017 / PO #SEPO/17826/2605</span>
+                <span><strong>Duration:</strong> 8 weeks (18 May 2026 – 13 July 2026)</span>
+                <span><strong>Effort:</strong> 232 man-hours</span>
+            </div>
+        </div>
+
+        <div class="keep-together">
+            <h2>Engagement Timeline at a Glance</h2>
+
+            <div class="summary-grid">
+                <div class="summary-week">
+                    <div class="wk-label">WEEK 1</div>
+                    <div class="wk-date">18 – 24 May</div>
+                </div>
+                <div class="summary-week">
+                    <div class="wk-label">WEEK 2</div>
+                    <div class="wk-date">25 – 31 May</div>
+                </div>
+                <div class="summary-week">
+                    <div class="wk-label">WEEK 3</div>
+                    <div class="wk-date">1 – 7 Jun</div>
+                </div>
+                <div class="summary-week">
+                    <div class="wk-label">WEEK 4</div>
+                    <div class="wk-date">8 – 14 Jun</div>
+                </div>
+                <div class="summary-week">
+                    <div class="wk-label">WEEK 5</div>
+                    <div class="wk-date">15 – 21 Jun</div>
+                </div>
+                <div class="summary-week">
+                    <div class="wk-label">WEEK 6</div>
+                    <div class="wk-date">22 – 28 Jun</div>
+                </div>
+                <div class="summary-week">
+                    <div class="wk-label">WEEK 7</div>
+                    <div class="wk-date">29 Jun – 5 Jul</div>
+                </div>
+                <div class="summary-week">
+                    <div class="wk-label">WEEK 8</div>
+                    <div class="wk-date">6 – 13 Jul</div>
+                </div>
+            </div>
+
+            <h3>Project Phases</h3>
+            <div class="phase-bar-container">
+
+                <div class="phase-bar">
+                    <div class="phase-label">Phase 1<br><small style="font-weight:400;color:#7a8a99">Foundation</small></div>
+                    <div class="phase-cell active p1">Cloud, Network, Security Setup</div>
+                    <div class="phase-cell active p1"></div>
+                    <div class="phase-cell"></div>
+                    <div class="phase-cell"></div>
+                    <div class="phase-cell"></div>
+                    <div class="phase-cell"></div>
+                    <div class="phase-cell"></div>
+                    <div class="phase-cell"></div>
+                </div>
+
+                <div class="phase-bar">
+                    <div class="phase-label">Phase 2<br><small style="font-weight:400;color:#7a8a99">Tank Module</small></div>
+                    <div class="phase-cell"></div>
+                    <div class="phase-cell active p2">Backend &amp; Auth</div>
+                    <div class="phase-cell active p2"></div>
+                    <div class="phase-cell active p2">Tank Dashboard &amp; Demo</div>
+                    <div class="phase-cell"></div>
+                    <div class="phase-cell"></div>
+                    <div class="phase-cell"></div>
+                    <div class="phase-cell"></div>
+                </div>
+
+                <div class="phase-bar">
+                    <div class="phase-label">Phase 3<br><small style="font-weight:400;color:#7a8a99">Vibration Module</small></div>
+                    <div class="phase-cell"></div>
+                    <div class="phase-cell"></div>
+                    <div class="phase-cell"></div>
+                    <div class="phase-cell"></div>
+                    <div class="phase-cell active p3">Vibration Build</div>
+                    <div class="phase-cell active p3"></div>
+                    <div class="phase-cell"></div>
+                    <div class="phase-cell"></div>
+                </div>
+
+                <div class="phase-bar">
+                    <div class="phase-label">Phase 4<br><small style="font-weight:400;color:#7a8a99">UAT &amp; Go-Live</small></div>
+                    <div class="phase-cell"></div>
+                    <div class="phase-cell"></div>
+                    <div class="phase-cell"></div>
+                    <div class="phase-cell"></div>
+                    <div class="phase-cell"></div>
+                    <div class="phase-cell"></div>
+                    <div class="phase-cell active p4">Integration</div>
+                    <div class="phase-cell active p4">UAT &amp; Sign-off</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ★ MID-POC DEMO CALLOUT ★ -->
+        <div class="demo-callout keep-together">
+            <div class="demo-date">
+                <div class="day">15</div>
+                <div class="month">JUN 2026</div>
+            </div>
+            <div class="demo-text">
+                <h4>⭐ Mid-POC Demo Milestone — Tank Monitoring Demo-Ready</h4>
+                <p>Tank Level Monitoring module fully functional, branded, and demo-ready for prospect engagements. <em>Date to be confirmed jointly with Sanggul Emas during
+                        kickoff meeting on 18 May 2026.</em></p>
+            </div>
+        </div>
+
+        <div class="keep-together">
+            <h2>Key Milestones</h2>
+
+            <table class="milestones-table">
+                <tr>
+                    <th style="width:60px;">ID</th>
+                    <th style="width:140px;">Date</th>
+                    <th>Milestone</th>
+                    <th style="width:280px;">Outcome</th>
+                </tr>
+                <tr>
+                    <td><span class="ms-icon">●</span> M0</td>
+                    <td>18 May 2026 (Mon)</td>
+                    <td>Project Kickoff</td>
+                    <td>Charter agreed in principle, open items resolved, 8-week clock starts</td>
+                </tr>
+                <tr>
+                    <td><span class="ms-icon">●</span> M1</td>
+                    <td>31 May 2026 (Sun)</td>
+                    <td>Foundation Complete</td>
+                    <td>Azure provisioned, LORIOT integrated, ingestion pipeline operational</td>
+                </tr>
+                <tr>
+                    <td><span class="ms-icon">●</span> M2</td>
+                    <td>7 Jun 2026 (Sun)</td>
+                    <td>Core Backend &amp; Auth Ready</td>
+                    <td>REST API live, Microsoft Entra SSO functional, tank decoder complete</td>
+                </tr>
+                <tr class="mid-poc">
+                    <td><span class="ms-icon">⭐</span> M3</td>
+                    <td>15 Jun 2026 (Mon)</td>
+                    <td>Mid-POC Demo — Tank Monitoring</td>
+                    <td>Tank dashboard demo-ready &amp; branded; available for prospect pitches</td>
+                </tr>
+                <tr>
+                    <td><span class="ms-icon">●</span> M4</td>
+                    <td>28 Jun 2026 (Sun)</td>
+                    <td>Vibration Module Complete</td>
+                    <td>Vibration dashboard with ISO 10816 zones operational</td>
+                </tr>
+                <tr>
+                    <td><span class="ms-icon">●</span> M5</td>
+                    <td>5 Jul 2026 (Sun)</td>
+                    <td>Production Deployment</td>
+                    <td>End-to-end integration tested; deployed; UAT pack issued</td>
+                </tr>
+                <tr class="go-live">
+                    <td><span class="ms-icon">⭐</span> M6</td>
+                    <td>13 Jul 2026 (Mon)</td>
+                    <td>UAT Sign-off &amp; Go-Live</td>
+                    <td>Final acceptance; triggers final 50% invoice (RM 23,883)</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="notes keep-together">
+            <strong>Demo cadence:</strong> Sprint reviews at end of Weeks 2, 4, and 6 (15–30 min each). &nbsp;|&nbsp;
+            <strong>Status reporting:</strong> Weekly Monday status meeting + Friday written report. &nbsp;|&nbsp;
+            <strong>UAT window:</strong> Week 8, with consolidated feedback returned within 3 working days.
+        </div>
+
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- PAGE 2 — DETAILED GANTT (Part 1: Foundation → Frontend)      -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="page page-break-after">
+
+        <div class="header keep-together">
+            <h1>Detailed Project Schedule</h1>
+            <div class="subtitle">Workstream Gantt — IoT Asset Monitoring Platform (POC)</div>
+            <div class="meta-row">
+                <span><strong>Total Build Effort:</strong> 232 man-hours</span>
+                <span><strong>Workstreams:</strong> 6 (Foundation, Backend, Frontend, Auth, Testing, Deployment)</span>
+                <span><strong>Items:</strong> 22 deliverables</span>
+            </div>
+        </div>
+
+        <div class="legend keep-together">
+            <div class="legend-item"><span class="legend-swatch" style="background:#2e8b57"></span>Foundation / Infrastructure</div>
+            <div class="legend-item"><span class="legend-swatch" style="background:#1a3d5c"></span>Backend / API</div>
+            <div class="legend-item"><span class="legend-swatch" style="background:#c9a227"></span>Frontend / Dashboard</div>
+            <div class="legend-item"><span class="legend-swatch" style="background:#8e44ad"></span>Authentication</div>
+            <div class="legend-item"><span class="legend-swatch" style="background:#d35400"></span>Testing</div>
+            <div class="legend-item"><span class="legend-swatch" style="background:#16a085"></span>Deployment</div>
+            <div class="legend-item"><span class="legend-swatch" style="background:#7f8c8d"></span>Operations (Ongoing)</div>
+            <div class="legend-item"><span class="legend-swatch" style="background:#fff8e1;border:1px dashed #c9a227"></span>Demo Milestone</div>
+        </div>
+
+        <table class="gantt">
+            <thead>
+                <tr>
+                    <th class="lane-header">Workstream / Deliverable</th>
+                    <th class="code-header">Code</th>
+                    <th class="hours-header">Hrs</th>
+                    <th class="week-header">
+                        <div class="wk-num">W1</div>
+                        <div class="wk-dt">18 May</div>
+                    </th>
+                    <th class="week-header">
+                        <div class="wk-num">W2</div>
+                        <div class="wk-dt">25 May</div>
+                    </th>
+                    <th class="week-header">
+                        <div class="wk-num">W3</div>
+                        <div class="wk-dt">1 Jun</div>
+                    </th>
+                    <th class="week-header">
+                        <div class="wk-num">W4</div>
+                        <div class="wk-dt">8 Jun</div>
+                    </th>
+                    <th class="week-header">
+                        <div class="wk-num">W5</div>
+                        <div class="wk-dt">15 Jun</div>
+                    </th>
+                    <th class="week-header">
+                        <div class="wk-num">W6</div>
+                        <div class="wk-dt">22 Jun</div>
+                    </th>
+                    <th class="week-header">
+                        <div class="wk-num">W7</div>
+                        <div class="wk-dt">29 Jun</div>
+                    </th>
+                    <th class="week-header">
+                        <div class="wk-num">W8</div>
+                        <div class="wk-dt">6 Jul</div>
+                    </th>
+                </tr>
+            </thead>
+
+            <!-- LANE GROUP: FOUNDATION -->
+            <tbody class="lane-group">
+                <tr class="lane-row lane-foundation">
+                    <td class="lane-cell" colspan="11">▎ FOUNDATION &amp; INFRASTRUCTURE</td>
+                </tr>
+                <tr>
+                    <td class="lane-cell lane-foundation">Azure Cloud Provisioning</td>
+                    <td class="code-cell">INF-01</td>
+                    <td class="hours-cell">16</td>
+                    <td class="week-cell bar bar-foundation">16h</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="lane-cell lane-foundation">LoRaWAN Network Server (LORIOT)</td>
+                    <td class="code-cell">INF-02</td>
+                    <td class="hours-cell">4</td>
+                    <td class="week-cell bar bar-foundation">4h</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="lane-cell lane-foundation">Database — Azure Table Storage</td>
+                    <td class="code-cell">INF-04</td>
+                    <td class="hours-cell">4</td>
+                    <td class="week-cell bar bar-foundation">4h</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="lane-cell lane-foundation">HTTPS Enforcement (TLS 1.2+)</td>
+                    <td class="code-cell">SEC-01</td>
+                    <td class="hours-cell">2</td>
+                    <td class="week-cell bar bar-foundation">2h</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="lane-cell lane-foundation">Input Validation &amp; Sanitisation</td>
+                    <td class="code-cell">SEC-02</td>
+                    <td class="hours-cell">4</td>
+                    <td class="week-cell bar bar-foundation">4h</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+
+            <!-- LANE GROUP: BACKEND -->
+            <tbody class="lane-group">
+                <tr class="lane-row lane-backend">
+                    <td class="lane-cell" colspan="11">▎ BACKEND / API</td>
+                </tr>
+                <tr>
+                    <td class="lane-cell lane-backend">Data Ingestion Worker (LORIOT → Azure Function)</td>
+                    <td class="code-cell">API-01</td>
+                    <td class="hours-cell">20</td>
+                    <td></td>
+                    <td class="week-cell bar bar-backend">20h</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="lane-cell lane-backend">REST API — Telemetry (latest, history, aggregations)</td>
+                    <td class="code-cell">API-02</td>
+                    <td class="hours-cell">24</td>
+                    <td></td>
+                    <td></td>
+                    <td class="week-cell bar bar-backend">24h</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="lane-cell lane-backend">Tank Level Decoder (Aircom Classic)</td>
+                    <td class="code-cell">DCL-01</td>
+                    <td class="hours-cell">10</td>
+                    <td></td>
+                    <td></td>
+                    <td class="week-cell bar bar-backend">10h</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="lane-cell lane-backend">Vibration RMS Decoder (Aircom Classic)</td>
+                    <td class="code-cell">DCL-02</td>
+                    <td class="hours-cell">10</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="week-cell bar bar-backend">10h</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+
+            <!-- LANE GROUP: AUTH -->
+            <tbody class="lane-group">
+                <tr class="lane-row lane-auth">
+                    <td class="lane-cell" colspan="11">▎ AUTHENTICATION &amp; USER MANAGEMENT</td>
+                </tr>
+                <tr>
+                    <td class="lane-cell lane-auth">Login Page (white-label branded)</td>
+                    <td class="code-cell">USR-01</td>
+                    <td class="hours-cell">6</td>
+                    <td></td>
+                    <td class="week-cell bar bar-auth">6h</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="lane-cell lane-auth">Microsoft SSO (Entra ID, OAuth 2.0 / OIDC)</td>
+                    <td class="code-cell">USR-02</td>
+                    <td class="hours-cell">16</td>
+                    <td></td>
+                    <td></td>
+                    <td class="week-cell bar bar-auth">16h</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+
+            <!-- LANE GROUP: FRONTEND -->
+            <tbody class="lane-group">
+                <tr class="lane-row lane-frontend">
+                    <td class="lane-cell" colspan="11">▎ FRONTEND / DASHBOARD</td>
+                </tr>
+                <tr>
+                    <td class="lane-cell lane-frontend">Reusable Trend Chart Components</td>
+                    <td class="code-cell">DSH-15</td>
+                    <td class="hours-cell">16</td>
+                    <td></td>
+                    <td class="week-cell bar bar-frontend">8h</td>
+                    <td class="week-cell bar bar-frontend">8h</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="lane-cell lane-frontend">Tank Level Dashboard (gauge, trend, alerts)</td>
+                    <td class="code-cell">DSH-01</td>
+                    <td class="hours-cell">14</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="week-cell bar bar-frontend">14h</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="lane-cell lane-frontend">White-Label Branding (logo, colours, domain)</td>
+                    <td class="code-cell">DSH-13</td>
+                    <td class="hours-cell">8</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="week-cell bar bar-frontend">8h</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="lane-cell lane-frontend">Asset Overview / Landing Page</td>
+                    <td class="code-cell">DSH-03</td>
+                    <td class="hours-cell">16</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="week-cell bar bar-frontend">16h</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="lane-cell lane-frontend">Vibration Dashboard — 2 Pumps (ISO 10816 zones)</td>
+                    <td class="code-cell">DSH-02</td>
+                    <td class="hours-cell">20</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="week-cell bar bar-frontend">20h</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- PAGE 3 — DETAILED GANTT (Part 2: Testing → Deploy → Ops)     -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="page">
+
+        <div class="header keep-together">
+            <h1>Detailed Project Schedule (continued)</h1>
+            <div class="subtitle">Testing, Deployment, Operations &amp; Milestones</div>
+        </div>
+
+        <table class="gantt">
+            <thead>
+                <tr>
+                    <th class="lane-header">Workstream / Deliverable</th>
+                    <th class="code-header">Code</th>
+                    <th class="hours-header">Hrs</th>
+                    <th class="week-header">
+                        <div class="wk-num">W1</div>
+                        <div class="wk-dt">18 May</div>
+                    </th>
+                    <th class="week-header">
+                        <div class="wk-num">W2</div>
+                        <div class="wk-dt">25 May</div>
+                    </th>
+                    <th class="week-header">
+                        <div class="wk-num">W3</div>
+                        <div class="wk-dt">1 Jun</div>
+                    </th>
+                    <th class="week-header">
+                        <div class="wk-num">W4</div>
+                        <div class="wk-dt">8 Jun</div>
+                    </th>
+                    <th class="week-header">
+                        <div class="wk-num">W5</div>
+                        <div class="wk-dt">15 Jun</div>
+                    </th>
+                    <th class="week-header">
+                        <div class="wk-num">W6</div>
+                        <div class="wk-dt">22 Jun</div>
+                    </th>
+                    <th class="week-header">
+                        <div class="wk-num">W7</div>
+                        <div class="wk-dt">29 Jun</div>
+                    </th>
+                    <th class="week-header">
+                        <div class="wk-num">W8</div>
+                        <div class="wk-dt">6 Jul</div>
+                    </th>
+                </tr>
+            </thead>
+
+            <!-- LANE GROUP: TESTING -->
+            <tbody class="lane-group">
+                <tr class="lane-row lane-testing">
+                    <td class="lane-cell" colspan="11">▎ TESTING</td>
+                </tr>
+                <tr>
+                    <td class="lane-cell lane-testing">Tank Level Integration Testing</td>
+                    <td class="code-cell">DEL-01A</td>
+                    <td class="hours-cell">6</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="week-cell bar bar-testing">6h</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="lane-cell lane-testing">Vibration Integration Testing</td>
+                    <td class="code-cell">DEL-01B</td>
+                    <td class="hours-cell">8</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="week-cell bar bar-testing">8h</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="lane-cell lane-testing">End-to-End Integration Testing</td>
+                    <td class="code-cell">DEL-01</td>
+                    <td class="hours-cell">16</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="week-cell bar bar-testing">8h</td>
+                    <td></td>
+                    <td></td>
+                    <td class="week-cell bar bar-testing">8h</td>
+                    <td></td>
+                </tr>
+            </tbody>
+
+            <!-- LANE GROUP: DEPLOY -->
+            <tbody class="lane-group">
+                <tr class="lane-row lane-deploy">
+                    <td class="lane-cell" colspan="11">▎ DEPLOYMENT &amp; UAT</td>
+                </tr>
+                <tr>
+                    <td class="lane-cell lane-deploy">Deployment to Production (DNS, SSL, smoke test)</td>
+                    <td class="code-cell">DEL-02</td>
+                    <td class="hours-cell">12</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="week-cell bar bar-deploy">12h</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="lane-cell lane-deploy">UAT Execution &amp; Sign-off</td>
+                    <td class="code-cell">UAT</td>
+                    <td class="hours-cell">—</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="week-cell bar bar-deploy">UAT</td>
+                </tr>
+            </tbody>
+
+            <!-- LANE GROUP: OPS -->
+            <tbody class="lane-group">
+                <tr class="lane-row lane-ops">
+                    <td class="lane-cell" colspan="11">▎ OPERATIONS (Ongoing — Cloud &amp; Care Plan)</td>
+                </tr>
+                <tr>
+                    <td class="lane-cell" style="border-left:4px solid #7f8c8d">Azure Cloud Hosting (RM 265/mo)</td>
+                    <td class="code-cell">SUB-01</td>
+                    <td class="hours-cell">—</td>
+                    <td class="week-cell bar bar-ops" colspan="8" style="text-align:center;">Continuous from Week 1 — billed monthly</td>
+                </tr>
+                <tr>
+                    <td class="lane-cell" style="border-left:4px solid #7f8c8d">Platform Maintenance (RM 350/mo, 3-mo free post go-live)</td>
+                    <td class="code-cell">SUB-03</td>
+                    <td class="hours-cell">—</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="week-cell bar bar-ops">From go-live</td>
+                </tr>
+            </tbody>
+
+            <!-- MILESTONES ROW -->
+            <tbody class="lane-group">
+                <tr>
+                    <td class="lane-cell" style="background:#fff8e1;border-left:4px solid #c9a227;color:#1a3d5c;">⭐ KEY MILESTONES</td>
+                    <td class="code-cell" style="background:#fff8e1;">—</td>
+                    <td class="hours-cell" style="background:#fff8e1;">—</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="week-cell demo-marker">⭐ MID-POC<br>15 JUN</td>
+                    <td></td>
+                    <td></td>
+                    <td class="week-cell demo-marker">⭐ GO-LIVE<br>13 JUL</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="notes keep-together" style="margin-top:18px;">
+            <strong>Effort summary:</strong> 232 man-hours allocated across 22 deliverables in 6 workstreams. Effort ceiling per Quotation #000017: 250 man-hours (any overrun
+            beyond 250h to be discussed via formal Change Request).<br>
+            <strong>Schedule logic:</strong> Foundation completes in Week 1. Core backend, auth, and reusable frontend components run in parallel through Weeks 2–3 to enable the
+            Mid-POC Tank Monitoring Demo on 15 June. Vibration module is built in Weeks 5–6 once tank module is stable. Final two weeks reserved for integration, deployment, and
+            UAT.<br>
+            <strong>Dependencies on Sanggul Emas:</strong> Hardware delivery before Week 5; branding assets by end of Week 1; Azure tenant and SIM/connectivity decisions confirmed
+            at kickoff; UAT lead appointed before Week 7.
+        </div>
+
+        <div class="footer">
+            Project Schedule v1.0 (Draft) &nbsp;|&nbsp;PROP-SESB-2026-0401 &nbsp;|&nbsp; CodeX Studio × Sanggul Emas Sdn Bhd &nbsp;|&nbsp; Issued 8 May 2026
+        </div>
+
+    </div>
+
+</body>
+
+</html>

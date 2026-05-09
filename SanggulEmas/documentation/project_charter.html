@@ -20,10 +20,101 @@
             background: #fff;
         }
 
+        /* ---------- PAGE-BREAK CONTROL ---------- */
+
+        /* Headings should never be left stranded at the bottom of a page */
+        h1,
+        h2,
+        h3,
+        h4 {
+            page-break-after: avoid;
+            break-after: avoid-page;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        /* Keep a heading glued to the paragraph/table that follows it */
+        h2+p,
+        h2+table,
+        h2+ol,
+        h2+ul,
+        h2+.scope-grid,
+        h2+.ms-list,
+        h3+p,
+        h3+ol,
+        h3+ul,
+        h3+table {
+            page-break-before: avoid;
+            break-before: avoid-page;
+        }
+
+        /* Tables: avoid breaking inside small tables; for long ones, at least
+           keep header + first row together and never split a row */
+        table.data {
+            page-break-inside: auto;
+            break-inside: auto;
+        }
+
+        table.data thead {
+            display: table-header-group;
+            /* repeat header on each printed page */
+        }
+
+        table.data tfoot {
+            display: table-footer-group;
+        }
+
+        table.data tr {
+            page-break-inside: avoid;
+            break-inside: avoid;
+            page-break-after: auto;
+        }
+
+        /* Meta box, callouts, scope boxes, milestone items, signature — keep whole */
+        .meta-box,
+        .callout,
+        .scope-box,
+        .ms-list li,
+        .sig-block {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        /* Force the signature section onto a clean page so it never splits */
+        .signature {
+            page-break-inside: avoid;
+            break-inside: avoid;
+            page-break-before: auto;
+            break-before: auto;
+        }
+
+        /* Avoid orphans/widows in body text */
+        p,
+        li {
+            orphans: 3;
+            widows: 3;
+        }
+
+        /* Lists: try not to split short lists across pages */
+        ol,
+        ul {
+            page-break-inside: auto;
+            break-inside: auto;
+        }
+
+        li {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        /* ---------- ORIGINAL STYLES (lightly adjusted) ---------- */
+
         .header {
             border-bottom: 4px solid #c9a227;
             padding-bottom: 20px;
             margin-bottom: 30px;
+            page-break-after: avoid;
+            break-after: avoid-page;
         }
 
         .header h1 {
@@ -122,6 +213,8 @@
             grid-template-columns: 1fr 1fr;
             gap: 16px;
             margin: 12px 0;
+            page-break-inside: avoid;
+            break-inside: avoid;
         }
 
         .scope-box {
@@ -172,8 +265,14 @@
             font-size: 12.5px;
         }
 
+        /* Signature gets a clean page so it's never split */
+        .signature-section {
+            page-break-before: always;
+            break-before: page;
+        }
+
         .signature {
-            margin-top: 50px;
+            margin-top: 30px;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 60px;
@@ -225,6 +324,18 @@
         .ms-list li strong {
             color: #1a3d5c;
         }
+
+        /* Utility class you can sprinkle anywhere to force a page break */
+        .page-break {
+            page-break-before: always;
+            break-before: page;
+        }
+
+        /* Utility class to keep an arbitrary block together */
+        .keep-together {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
     </style>
 </head>
 
@@ -264,395 +375,446 @@
         </table>
     </div>
 
-    <h2>1. Project Identification</h2>
-    <table class="data">
-        <tr>
-            <th style="width:35%">Attribute</th>
-            <th>Value</th>
-        </tr>
-        <tr>
-            <td>Project Name</td>
-            <td>IIOT Development on Smart Monitoring (POC)</td>
-        </tr>
-        <tr>
-            <td>Client</td>
-            <td>Sanggul Emas Sdn Bhd</td>
-        </tr>
-        <tr>
-            <td>Vendor</td>
-            <td>CodeX Studio</td>
-        </tr>
-        <tr>
-            <td>Contract Value</td>
-            <td>RM 47,766.00 (after 5% discount)</td>
-        </tr>
-        <tr>
-            <td>Effort Budget</td>
-            <td>232 man-hours (250-hour ceiling clause applies)</td>
-        </tr>
-        <tr>
-            <td>Duration</td>
-            <td>8 weeks (18 May 2026 – 13 July 2026, indicative)</td>
-        </tr>
-        <tr>
-            <td>Mid-POC Demo</td>
-            <td>15 June 2026 — Tank Monitoring demo-ready</td>
-        </tr>
-        <tr>
-            <td>Target Go-Live (UAT)</td>
-            <td>13 July 2026</td>
-        </tr>
-    </table>
+    <section class="keep-together">
+        <h2>1. Project Identification</h2>
+        <table class="data">
+            <thead>
+                <tr>
+                    <th style="width:35%">Attribute</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Project Name</td>
+                    <td>IIOT Development on Smart Monitoring (POC)</td>
+                </tr>
+                <tr>
+                    <td>Client</td>
+                    <td>Sanggul Emas Sdn Bhd</td>
+                </tr>
+                <tr>
+                    <td>Vendor</td>
+                    <td>CodeX Studio</td>
+                </tr>
+                <tr>
+                    <td>Contract Value</td>
+                    <td>RM 47,766.00 (after 5% discount)</td>
+                </tr>
+                <tr>
+                    <td>Effort Budget</td>
+                    <td>232 man-hours (250-hour ceiling clause applies)</td>
+                </tr>
+                <tr>
+                    <td>Duration</td>
+                    <td>8 weeks (18 May 2026 – 13 July 2026, indicative)</td>
+                </tr>
+                <tr>
+                    <td>Mid-POC Demo</td>
+                    <td>15 June 2026 — Tank Monitoring demo-ready</td>
+                </tr>
+                <tr>
+                    <td>Target Go-Live (UAT)</td>
+                    <td>13 July 2026</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
 
-    <h2>2. Business Context</h2>
-    <p>Sanggul Emas Sdn Bhd is an established Oil &amp; Gas technical solutions provider in Malaysia, expanding its portfolio into digital monitoring solutions. To support this
-        market entry, Sanggul Emas requires a demonstrable, white-label IoT Asset Monitoring Platform suitable for upsale of existing maintenance solutions to O&amp;G end-customers.</p>
-    <p>CodeX Studio is engaged as the technical delivery partner, providing cloud platform, software development, and lifecycle support. Hardware is procured and installed by
-        Sanggul Emas separately.</p>
-    <div class="callout">
-        <strong>Strategic note:</strong> This POC functions both as a working platform and a sales-enablement asset. Success is measured not only by technical delivery, but also by
-        Sanggul Emas's ability to use the platform credibly in front of prospective clients within the demo window.
-    </div>
-
-    <h2>3. Project Objectives</h2>
-    <h3>Primary</h3>
-    <ol>
-        <li>Deliver an end-to-end IoT monitoring platform covering tank-level and pump-vibration use cases.</li>
-        <li>Validate the technical architecture (LoRaWAN → LORIOT → Azure → Web App) under realistic conditions.</li>
-        <li>Equip Sanggul Emas with a demo-ready Tank Monitoring module within 1 month of kickoff for early prospect engagement.</li>
-        <li>Establish a reusable, white-labellable foundation that can scale into production engagements.</li>
-    </ol>
-    <h3>Secondary</h3>
-    <ol start="5">
-        <li>Document a clear migration path to production-grade compliance (self-hosted ChirpStack, IEC 62443, SOC 2 readiness).</li>
-        <li>Produce sales-enablement collateral (architecture diagrams, security statement, compliance roadmap) for use in Sanggul Emas's prospect pitches.</li>
-    </ol>
-
-    <h2>4. Scope</h2>
-    <div class="scope-grid">
-        <div class="scope-box in">
-            <h4>✓ In Scope</h4>
-            <ul>
-                <li>Core Platform: Azure Function ingestion, Table Storage, .NET REST API, React dashboard</li>
-                <li>Microsoft Entra ID SSO/MFA</li>
-                <li>Tank Level Monitoring module — ingestion, visualization, threshold alerts</li>
-                <li>Pump Vibration Monitoring module — v-RMS per ISO 10816, alerts</li>
-                <li>LORIOT (community LNS) webhook integration</li>
-                <li>Single-tenant deployment with Sanggul Emas branding</li>
-                <li>Dev + staging environments</li>
-                <li>UAT and 1-Year Cloud &amp; Care Plan</li>
-                <li>Sensor data simulator for demo and testing</li>
-            </ul>
+    <section>
+        <h2>2. Business Context</h2>
+        <p>Sanggul Emas Sdn Bhd is an established Oil &amp; Gas technical solutions provider in Malaysia, expanding its portfolio into digital monitoring solutions. To support this
+            market entry, Sanggul Emas requires a demonstrable, white-label IoT Asset Monitoring Platform suitable for upsale of existing maintenance solutions to O&amp;G
+            end-customers.</p>
+        <p>CodeX Studio is engaged as the technical delivery partner, providing cloud platform, software development, and lifecycle support. Hardware is procured and installed by
+            Sanggul Emas separately.</p>
+        <div class="callout">
+            <strong>Strategic note:</strong> This POC functions both as a working platform and a sales-enablement asset. Success is measured not only by technical delivery, but
+            also by
+            Sanggul Emas's ability to use the platform credibly in front of prospective clients within the demo window.
         </div>
-        <div class="scope-box out">
-            <h4>✗ Out of Scope (POC)</h4>
-            <ul>
-                <li>Hardware procurement, installation, commissioning</li>
-                <li>FFT vibration analysis (separate quotation if revived)</li>
-                <li>Modbus M-mode integration (future phase)</li>
-                <li>Self-hosted ChirpStack migration (roadmap only)</li>
-                <li>Multi-tenant architecture</li>
-                <li>Mobile native applications</li>
-                <li>Optional add-ons not in PO: multi-language, audit log, PDF export, email digest, downlink commands, data export, alert history</li>
-                <li>End-customer site connectivity, SIM provisioning</li>
-            </ul>
+    </section>
+
+    <section>
+        <h2>3. Project Objectives</h2>
+        <div class="keep-together">
+            <h3>Primary</h3>
+            <ol>
+                <li>Deliver an end-to-end IoT monitoring platform covering tank-level and pump-vibration use cases.</li>
+                <li>Validate the technical architecture (LoRaWAN → LORIOT → Azure → Web App) under realistic conditions.</li>
+                <li>Equip Sanggul Emas with a demo-ready Tank Monitoring module within 1 month of kickoff for early prospect engagement.</li>
+                <li>Establish a reusable, white-labellable foundation that can scale into production engagements.</li>
+            </ol>
         </div>
-    </div>
-
-    <h2>5. Deliverables</h2>
-    <table class="data">
-        <tr>
-            <th style="width:8%">ID</th>
-            <th>Deliverable</th>
-            <th style="width:18%">Target</th>
-        </tr>
-        <tr>
-            <td>D1</td>
-            <td>Provisioned Azure environment (dev + staging)</td>
-            <td>Week 1</td>
-        </tr>
-        <tr>
-            <td>D2</td>
-            <td>LORIOT integration with verified webhook ingestion</td>
-            <td>Week 2</td>
-        </tr>
-        <tr>
-            <td>D3</td>
-            <td>Sensor data simulator</td>
-            <td>Week 2</td>
-        </tr>
-        <tr>
-            <td>D4</td>
-            <td>.NET REST API with Entra ID authentication</td>
-            <td>Week 3</td>
-        </tr>
-        <tr>
-            <td>D5</td>
-            <td>Tank Monitoring dashboard (demo-ready, branded)</td>
-            <td>Week 4 — Mid-POC Demo</td>
-        </tr>
-        <tr>
-            <td>D6</td>
-            <td>Vibration Monitoring dashboard (v-RMS, ISO 10816)</td>
-            <td>Week 6</td>
-        </tr>
-        <tr>
-            <td>D7</td>
-            <td>UAT test plan and executed UAT report</td>
-            <td>Week 8</td>
-        </tr>
-        <tr>
-            <td>D8</td>
-            <td>Deployment &amp; operations runbook</td>
-            <td>Week 8</td>
-        </tr>
-        <tr>
-            <td>D9</td>
-            <td>Architecture &amp; security documentation pack</td>
-            <td>Week 8</td>
-        </tr>
-        <tr>
-            <td>D10</td>
-            <td>Compliance &amp; migration roadmap (sales-enablement)</td>
-            <td>Week 7</td>
-        </tr>
-        <tr>
-            <td>D11</td>
-            <td>Source code repository handover (per IP clause)</td>
-            <td>Week 8</td>
-        </tr>
-    </table>
-
-    <h2>6. Success Criteria</h2>
-    <h3>Mid-POC Milestone — Tank Monitoring Demo (~15 June 2026)</h3>
-    <ol>
-        <li>Tank-level data flowing end-to-end (sensor or simulator → dashboard) with under 60-second latency.</li>
-        <li>Dashboard branded with Sanggul Emas identity, demo-ready on a desktop browser.</li>
-        <li>At least one threshold-based alert configured and triggering correctly.</li>
-        <li>Microsoft Entra ID SSO/MFA functional for at least 2 test users.</li>
-        <li>Sanggul Emas's sales team can independently log in and walk a prospect through the dashboard without CodeX Studio present.</li>
-    </ol>
-    <h3>Final UAT (~13 July 2026)</h3>
-    <ol start="6">
-        <li>Both modules (tank + vibration) operational with live or simulated data.</li>
-        <li>v-RMS visualization conformant to ISO 10816 zones.</li>
-        <li>Alert engine functional for both modules with configurable thresholds.</li>
-        <li>UAT executed and signed off by Sanggul Emas's appointed reviewer.</li>
-        <li>All deliverables (D1–D11) issued; compliance &amp; migration roadmap accepted as sales-enablement asset.</li>
-    </ol>
-
-    <h2>7. Assumptions</h2>
-    <ol>
-        <li>Hardware (Aircom end nodes, Aircom gateway, Monitran vibration sensors, tank-level sensors) is supplied, installed, configured and commissioned by Sanggul Emas before Sprint 3. (Not necesarily commissioned as long as gateway is online and receiving some data for LORIOT integration in Sprint 2).
-        </li>
-        <li>Sensor count: 4 tank-level + 2 pump-vibration sensors (<strong>pending formal confirmation at kickoff</strong>).</li>
-        <li>Aircom gateway operates in F-mode (cloud) for the POC.</li>
-        <li>Sanggul Emas provides branding assets (logo, colour palette, typography) by end of Week 1.</li>
-        <li>Sanggul Emas appoints a single decision-making point-of-contact for project governance.</li>
-        <li>Azure tenant arrangement (Sanggul Emas, CodeX-managed interim, or end-customer) confirmed at kickoff or end of Week 1.</li>
-        <li>Internet/SIM connectivity for the LoRaWAN gateway is provisioned by Sanggul Emas.</li>
-        <li>UAT will be conducted within Week 8, with consolidated feedback returned within 3 working days.</li>
-    </ol>
-
-    <h2>8. Constraints</h2>
-    <ol>
-        <li>Effort capped at 250 man-hours; overruns trigger a written Change Request at RM 175–200/hour per Quotation #000017.</li>
-        <li>Timeline fixed at 8 weeks from kickoff (18 May 2026 → 13 July 2026).</li>
-        <li>LORIOT community LNS used for POC; production-grade key custody requires post-POC migration.</li>
-        <li>LoRaWAN payload size (~51 bytes) constrains telemetry richness; FFT/raw waveform is not feasible over LoRaWAN.</li>
-    </ol>
-
-    <h2>9. Project Organization</h2>
-    <table class="data">
-        <tr>
-            <th style="width:30%">Role</th>
-            <th>Sanggul Emas Sdn Bhd</th>
-            <th>CodeX Studio</th>
-        </tr>
-        <tr>
-            <td>Project Sponsor</td>
-            <td>Zainuddin Mohd Shamsuddin, Managing Director <em>(to be confirmed)</em></td>
-            <td>Tan Ming Hui</td>
-        </tr>
-        <tr>
-            <td>Project Manager</td>
-            <td>Mr Azim, General Manager</td>
-            <td>Tan Ming Hui (concurrent)</td>
-        </tr>
-        <tr>
-            <td>Technical Lead</td>
-            <td> - </td>
-            <td>Tan Ming Hui</td>
-        </tr>
-        <tr>
-            <td>Engineering</td>
-            <td>Mr Rafi</td>
-            <td>Puah Sue Sian, Engineer</td>
-        </tr>
-        <tr>
-            <td>Commercial / PO</td>
-            <td>Ms Nurul Amalina</td>
-            <td>Tan Ming Hui</td>
-        </tr>
-        <tr>
-            <td>UAT Lead</td>
-            <td><em>To be appointed at kickoff</em></td>
-            <td>—</td>
-        </tr>
-    </table>
-
-    <h3>Decision Authority</h3>
-    <table class="data">
-        <tr>
-            <th>Decision Type</th>
-            <th>Authority</th>
-        </tr>
-        <tr>
-            <td>Scope changes ≤ 10 hours effort</td>
-            <td>Project Managers (joint approval)</td>
-        </tr>
-        <tr>
-            <td>Scope changes &gt; 10 hours</td>
-            <td>Project Sponsors (joint approval, formal CR)</td>
-        </tr>
-        <tr>
-            <td>Technical architecture decisions</td>
-            <td>CodeX Tech Lead, advised by Sanggul Emas SME</td>
-        </tr>
-        <tr>
-            <td>UAT acceptance</td>
-            <td>Sanggul Emas Project Sponsor</td>
-        </tr>
-    </table>
-
-    <h2>10. Governance &amp; Communication</h2>
-    <table class="data">
-        <tr>
-            <th style="width:35%">Cadence / Channel</th>
-            <th>Detail</th>
-        </tr>
-        <tr>
-            <td>Weekly Status Meeting</td>
-            <td>30 minutes, every Monday, virtual</td>
-        </tr>
-        <tr>
-            <td>Weekly Status Report</td>
-            <td>Issued every Friday by CodeX PM</td>
-        </tr>
-        <tr>
-            <td>Sprint Demos</td>
-            <td>End of Weeks 2, 4, 6 (15–30 minutes)</td>
-        </tr>
-        <tr>
-            <td>Mid-POC Demo Review</td>
-            <td>Week 4 (15 June 2026) — Tank Monitoring</td>
-        </tr>
-        <tr>
-            <td>UAT Window</td>
-            <td>Week 8</td>
-        </tr>
-        <tr>
-            <td>Escalation Path</td>
-            <td>CodeX PM → CodeX Director ↔ Sanggul Emas PM → Sanggul Emas Sponsor</td>
-        </tr>
-        <tr>
-            <td>Primary Channels</td>
-            <td>Email (formal), Teams / WhatsApp (daily)</td>
-        </tr>
-        <tr>
-            <td>Documentation Repository</td>
-            <td>To be confirmed at kickoff</td>
-        </tr>
-    </table>
-
-    <h2>11. Key Milestones</h2>
-    <ul class="ms-list">
-        <li><strong>M0 — Kickoff &amp; Open Items Closure</strong> &nbsp; | &nbsp; 18 May 2026 (End of Week 1)</li>
-        <li><strong>M1 — Foundation Sprint Complete</strong> &nbsp; | &nbsp; End of Week 2 (Azure, LORIOT, simulator)</li>
-        <li><strong>M2 — Tank Monitoring Demo-Ready</strong> &nbsp; | &nbsp; 15 June 2026 (End of Week 4) ⭐ <em>Mid-POC milestone</em></li>
-        <li><strong>M3 — Vibration Module Complete</strong> &nbsp; | &nbsp; End of Week 6</li>
-        <li><strong>M4 — Demo-Ready Build &amp; Documentation</strong> &nbsp; | &nbsp; End of Week 7</li>
-        <li><strong>M5 — UAT &amp; Go-Live</strong> &nbsp; | &nbsp; 13 July 2026 (End of Week 8) — triggers final 50% invoice (RM 23,883)</li>
-    </ul>
-
-    <h2>12. Top Risks (Live Register)</h2>
-    <table class="data">
-        <tr>
-            <th style="width:6%">ID</th>
-            <th style="width:34%">Risk</th>
-            <th style="width:10%">Likelihood</th>
-            <th style="width:10%">Impact</th>
-            <th>Mitigation</th>
-        </tr>
-        <tr>
-            <td>R1</td>
-            <td>Azure tenant decision delays</td>
-            <td>High</td>
-            <td>High</td>
-            <td>Interim CodeX-managed subscription as fallback</td>
-        </tr>
-        <tr>
-            <td>R2</td>
-            <td>Sensor hardware delivery / installation late</td>
-            <td>High</td>
-            <td>High</td>
-            <td>Sensor simulator built in Sprint 1</td>
-        </tr>
-        <tr>
-            <td>R3</td>
-            <td>Compressed Tank-Monitoring timeline (4 weeks)</td>
-            <td>Medium</td>
-            <td>High</td>
-            <td>Front-load tank scope; defer vibration to Week 5+</td>
-        </tr>
-        <tr>
-            <td>R4</td>
-            <td>Scope creep from sales-driven additions</td>
-            <td>High</td>
-            <td>Medium</td>
-            <td>Formal CR procedure; 250h ceiling clause</td>
-        </tr>
-        <tr>
-            <td>R5</td>
-            <td>LORIOT community-tier reliability</td>
-            <td>Medium</td>
-            <td>High</td>
-            <td>Documented ChirpStack migration path</td>
-        </tr>
-        <tr>
-            <td>R6</td>
-            <td>Branding assets late</td>
-            <td>Medium</td>
-            <td>Medium</td>
-            <td>Hard deadline end of Week 1</td>
-        </tr>
-    </table>
-
-    <h2>13. Change Management</h2>
-    <p>Any change to scope, timeline, or budget must be formally requested via a Change Request (CR). CRs are logged, assessed for effort and impact, and approved jointly per the
-        decision-authority matrix in Section 9. Effort consumed beyond 250 hours triggers a written variation discussion at the rates defined in Quotation #000017.</p>
-
-    <h2>14. Charter Acceptance</h2>
-    <p>By signing below, both parties confirm alignment on the scope, objectives, governance, and success criteria defined in this Charter.</p>
-
-    <div class="signature">
-        <div class="sig-block">
-            <strong>For Sanggul Emas Sdn Bhd</strong><br><br><br>
-            Name: ______________________________<br>
-            Title: ______________________________<br>
-            Date: ______________________________
+        <div class="keep-together">
+            <h3>Secondary</h3>
+            <ol start="5">
+                <li>Document a clear migration path to production-grade compliance (self-hosted ChirpStack, IEC 62443, SOC 2 readiness).</li>
+                <li>Produce sales-enablement collateral (architecture diagrams, security statement, compliance roadmap) for use in Sanggul Emas's prospect pitches.</li>
+            </ol>
         </div>
-        <div class="sig-block">
-            <strong>For CodeX Studio</strong><br><br><br>
-            Name: Tan Ming Hui<br>
-            Title: Director<br>
-            Date: ______________________________
-        </div>
-    </div>
+    </section>
 
-    <div class="footer">
-        Project Charter v1.0 (Draft) &nbsp;|&nbsp;PROP-SESB-2026-0401 &nbsp;|&nbsp; CodeX Studio × Sanggul Emas Sdn Bhd &nbsp;|&nbsp; 8 May 2026
-    </div>
+    <section class="keep-together">
+        <h2>4. Scope</h2>
+        <div class="scope-grid">
+            <div class="scope-box in">
+                <h4>✓ In Scope</h4>
+                <ul>
+                    <li>Core Platform: Azure Function ingestion, Table Storage, .NET REST API, React dashboard</li>
+                    <li>Microsoft Entra ID SSO/MFA</li>
+                    <li>Tank Level Monitoring module — ingestion, visualization, threshold alerts</li>
+                    <li>Pump Vibration Monitoring module — v-RMS per ISO 10816, alerts</li>
+                    <li>LORIOT (community LNS) webhook integration</li>
+                    <li>Single-tenant deployment with Sanggul Emas branding</li>
+                    <li>Dev + staging environments</li>
+                    <li>UAT and 1-Year Cloud &amp; Care Plan</li>
+                    <li>Sensor data simulator for demo and testing</li>
+                </ul>
+            </div>
+            <div class="scope-box out">
+                <h4>✗ Out of Scope (POC)</h4>
+                <ul>
+                    <li>Hardware procurement, installation, commissioning</li>
+                    <li>FFT vibration analysis (separate quotation if revived)</li>
+                    <li>Modbus M-mode integration (future phase)</li>
+                    <li>Self-hosted ChirpStack migration (roadmap only)</li>
+                    <li>Multi-tenant architecture</li>
+                    <li>Mobile native applications</li>
+                    <li>Optional add-ons not in PO: multi-language, audit log, PDF export, email digest, downlink commands, data export, alert history</li>
+                    <li>End-customer site connectivity, SIM provisioning</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>5. Deliverables</h2>
+        <table class="data">
+            <thead>
+                <tr>
+                    <th style="width:8%">ID</th>
+                    <th>Deliverable</th>
+                    <th style="width:18%">Target</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>D1</td>
+                    <td>Provisioned Azure environment (dev + staging)</td>
+                    <td>Week 1</td>
+                </tr>
+                <tr>
+                    <td>D2</td>
+                    <td>LORIOT integration with verified webhook ingestion</td>
+                    <td>Week 2</td>
+                </tr>
+                <tr>
+                    <td>D3</td>
+                    <td>Sensor data simulator</td>
+                    <td>Week 2</td>
+                </tr>
+                <tr>
+                    <td>D4</td>
+                    <td>.NET REST API with Entra ID authentication</td>
+                    <td>Week 3</td>
+                </tr>
+                <tr>
+                    <td>D5</td>
+                    <td>Tank Monitoring dashboard (demo-ready, branded)</td>
+                    <td>Week 4 — Mid-POC Demo</td>
+                </tr>
+                <tr>
+                    <td>D6</td>
+                    <td>Vibration Monitoring dashboard (v-RMS, ISO 10816)</td>
+                    <td>Week 6</td>
+                </tr>
+                <tr>
+                    <td>D7</td>
+                    <td>UAT test plan and executed UAT report</td>
+                    <td>Week 8</td>
+                </tr>
+                <tr>
+                    <td>D8</td>
+                    <td>Deployment &amp; operations runbook</td>
+                    <td>Week 8</td>
+                </tr>
+                <tr>
+                    <td>D9</td>
+                    <td>Architecture &amp; security documentation pack</td>
+                    <td>Week 8</td>
+                </tr>
+                <tr>
+                    <td>D10</td>
+                    <td>Compliance &amp; migration roadmap (sales-enablement)</td>
+                    <td>Week 7</td>
+                </tr>
+                <tr>
+                    <td>D11</td>
+                    <td>Source code repository handover (per IP clause)</td>
+                    <td>Week 8</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section>
+        <h2>6. Success Criteria</h2>
+        <div class="keep-together">
+            <h3>Mid-POC Milestone — Tank Monitoring Demo (~15 June 2026)</h3>
+            <ol>
+                <li>Tank-level data flowing end-to-end (sensor or simulator → dashboard) with under 60-second latency.</li>
+                <li>Dashboard branded with Sanggul Emas identity, demo-ready on a desktop browser.</li>
+                <li>At least one threshold-based alert configured and triggering correctly.</li>
+                <li>Microsoft Entra ID SSO/MFA functional for at least 2 test users.</li>
+                <li>Sanggul Emas's sales team can independently log in and walk a prospect through the dashboard without CodeX Studio present.</li>
+            </ol>
+        </div>
+        <div class="keep-together">
+            <h3>Final UAT (~13 July 2026)</h3>
+            <ol start="6">
+                <li>Both modules (tank + vibration) operational with live or simulated data.</li>
+                <li>v-RMS visualization conformant to ISO 10816 zones.</li>
+                <li>Alert engine functional for both modules with configurable thresholds.</li>
+                <li>UAT executed and signed off by Sanggul Emas's appointed reviewer.</li>
+                <li>All deliverables (D1–D11) issued; compliance &amp; migration roadmap accepted as sales-enablement asset.</li>
+            </ol>
+        </div>
+    </section>
+
+    <section>
+        <h2>7. Assumptions</h2>
+        <ol>
+            <li>Hardware (Aircom end nodes, Aircom gateway, Monitran vibration sensors, tank-level sensors) is supplied, installed, configured and commissioned by Sanggul Emas
+                before Sprint 3. (Not necesarily commissioned as long as gateway is online and receiving some data for LORIOT integration in Sprint 2).</li>
+            <li>Sensor count: 4 tank-level + 2 pump-vibration sensors (<strong>pending formal confirmation at kickoff</strong>).</li>
+            <li>Aircom gateway operates in F-mode (cloud) for the POC.</li>
+            <li>Sanggul Emas provides branding assets (logo, colour palette, typography) by end of Week 1.</li>
+            <li>Sanggul Emas appoints a single decision-making point-of-contact for project governance.</li>
+            <li>Azure tenant arrangement (Sanggul Emas, CodeX-managed interim, or end-customer) confirmed at kickoff or end of Week 1.</li>
+            <li>Internet/SIM connectivity for the LoRaWAN gateway is provisioned by Sanggul Emas.</li>
+            <li>UAT will be conducted within Week 8, with consolidated feedback returned within 3 working days.</li>
+        </ol>
+    </section>
+
+    <section class="keep-together">
+        <h2>8. Constraints</h2>
+        <ol>
+            <li>Effort capped at 250 man-hours; overruns trigger a written Change Request at RM 175–200/hour per Quotation #000017.</li>
+            <li>Timeline fixed at 8 weeks from kickoff (18 May 2026 → 13 July 2026).</li>
+            <li>LORIOT community LNS used for POC; production-grade key custody requires post-POC migration.</li>
+            <li>LoRaWAN payload size (~51 bytes) constrains telemetry richness; FFT/raw waveform is not feasible over LoRaWAN.</li>
+        </ol>
+    </section>
+
+    <section>
+        <h2>9. Project Organization</h2>
+        <table class="data">
+            <thead>
+                <tr>
+                    <th style="width:30%">Role</th>
+                    <th>Sanggul Emas Sdn Bhd</th>
+                    <th>CodeX Studio</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Project Sponsor</td>
+                    <td>Zainuddin Mohd Shamsuddin, Managing Director <em>(to be confirmed)</em></td>
+                    <td>Tan Ming Hui</td>
+                </tr>
+                <tr>
+                    <td>Project Manager</td>
+                    <td>Mr Azim, General Manager</td>
+                    <td>Tan Ming Hui (concurrent)</td>
+                </tr>
+                <tr>
+                    <td>Technical Lead</td>
+                    <td> - </td>
+                    <td>Tan Ming Hui</td>
+                </tr>
+                <tr>
+                    <td>Engineering</td>
+                    <td>Mr Rafi</td>
+                    <td>Puah Sue Sian, Engineer</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="keep-together">
+            <h3>Decision Authority</h3>
+            <table class="data">
+                <thead>
+                    <tr>
+                        <th>Decision Type</th>
+                        <th>Authority</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Scope changes ≤ 10 hours effort</td>
+                        <td>Project Managers (joint approval)</td>
+                    </tr>
+                    <tr>
+                        <td>Scope changes &gt; 10 hours</td>
+                        <td>Project Sponsors (joint approval, formal CR)</td>
+                    </tr>
+                    <tr>
+                        <td>Technical architecture decisions</td>
+                        <td>CodeX Tech Lead, advised by Sanggul Emas SME</td>
+                    </tr>
+                    <tr>
+                        <td>UAT acceptance</td>
+                        <td>Sanggul Emas Project Sponsor</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section>
+        <h2>10. Governance &amp; Communication</h2>
+        <table class="data">
+            <thead>
+                <tr>
+                    <th style="width:35%">Cadence / Channel</th>
+                    <th>Detail</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Weekly Status Meeting</td>
+                    <td>30 minutes, every Monday, virtual</td>
+                </tr>
+                <tr>
+                    <td>Weekly Status Report</td>
+                    <td>Issued every Friday by CodeX PM</td>
+                </tr>
+                <tr>
+                    <td>Mid-POC Demo Review</td>
+                    <td>Week 4 (15 June 2026) — Tank Monitoring</td>
+                </tr>
+                <tr>
+                    <td>UAT Window</td>
+                    <td>Week 8</td>
+                </tr>
+                <tr>
+                    <td>Escalation Path</td>
+                    <td>CodeX PM → CodeX Director ↔ Sanggul Emas PM → Sanggul Emas Sponsor</td>
+                </tr>
+                <tr>
+                    <td>Primary Channels</td>
+                    <td>Email (formal), Teams / WhatsApp (daily)</td>
+                </tr>
+                <tr>
+                    <td>Documentation Repository</td>
+                    <td>To be confirmed at kickoff</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="keep-together">
+        <h2>11. Key Milestones</h2>
+        <ul class="ms-list">
+            <li><strong>M0 — Kickoff &amp; Open Items Closure</strong> &nbsp; | &nbsp; 18 May 2026 (End of Week 1)</li>
+            <li><strong>M1 — Foundation Sprint Complete</strong> &nbsp; | &nbsp; End of Week 2 (Azure, LORIOT, simulator)</li>
+            <li><strong>M2 — Tank Monitoring Demo-Ready</strong> &nbsp; | &nbsp; 15 June 2026 (End of Week 4) ⭐ <em>Mid-POC milestone</em></li>
+            <li><strong>M3 — Vibration Module Complete</strong> &nbsp; | &nbsp; End of Week 6</li>
+            <li><strong>M4 — Demo-Ready Build &amp; Documentation</strong> &nbsp; | &nbsp; End of Week 7</li>
+            <li><strong>M5 — UAT &amp; Go-Live</strong> &nbsp; | &nbsp; 13 July 2026 (End of Week 8) — triggers final 50% invoice (RM 23,883)</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>12. Top Risks (Live Register)</h2>
+        <table class="data">
+            <thead>
+                <tr>
+                    <th style="width:6%">ID</th>
+                    <th style="width:34%">Risk</th>
+                    <th style="width:10%">Likelihood</th>
+                    <th style="width:10%">Impact</th>
+                    <th>Mitigation</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>R1</td>
+                    <td>Azure tenant decision delays</td>
+                    <td>High</td>
+                    <td>High</td>
+                    <td>Interim CodeX-managed subscription as fallback</td>
+                </tr>
+                <tr>
+                    <td>R2</td>
+                    <td>Sensor hardware delivery / installation late</td>
+                    <td>High</td>
+                    <td>High</td>
+                    <td>Sensor simulator built in Sprint 1</td>
+                </tr>
+                <tr>
+                    <td>R3</td>
+                    <td>Compressed Tank-Monitoring timeline (4 weeks)</td>
+                    <td>Medium</td>
+                    <td>High</td>
+                    <td>Front-load tank scope; defer vibration to Week 5+</td>
+                </tr>
+                <tr>
+                    <td>R4</td>
+                    <td>Scope creep from sales-driven additions</td>
+                    <td>High</td>
+                    <td>Medium</td>
+                    <td>Formal CR procedure; 250h ceiling clause</td>
+                </tr>
+                <tr>
+                    <td>R5</td>
+                    <td>LORIOT community-tier reliability</td>
+                    <td>Medium</td>
+                    <td>High</td>
+                    <td>Documented ChirpStack migration path</td>
+                </tr>
+                <tr>
+                    <td>R6</td>
+                    <td>Branding assets late</td>
+                    <td>Medium</td>
+                    <td>Medium</td>
+                    <td>Hard deadline end of Week 1</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="keep-together">
+        <h2>13. Change Management</h2>
+        <p>Any change to scope, timeline, or budget must be formally requested via a Change Request (CR). CRs are logged, assessed for effort and impact, and approved jointly per
+            the
+            decision-authority matrix in Section 9. Effort consumed beyond 250 hours triggers a written variation discussion at the rates defined in Quotation #000017.</p>
+    </section>
+
+    <section class="signature-section">
+        <h2>14. Charter Acceptance</h2>
+        <p>By signing below, both parties confirm alignment on the scope, objectives, governance, and success criteria defined in this Charter.</p>
+
+        <div class="signature">
+            <div class="sig-block">
+                <strong>For Sanggul Emas Sdn Bhd</strong><br><br><br>
+                Name: ______________________________<br>
+                Title: ______________________________<br>
+                Date: ______________________________
+            </div>
+            <div class="sig-block">
+                <strong>For CodeX Studio</strong><br><br><br>
+                Name: Tan Ming Hui<br>
+                Title: Director<br>
+                Date: ______________________________
+            </div>
+        </div>
+
+        <div class="footer">
+            Project Charter v1.0 (Draft) &nbsp;|&nbsp;PROP-SESB-2026-0401 &nbsp;|&nbsp; CodeX Studio × Sanggul Emas Sdn Bhd &nbsp;|&nbsp; 8 May 2026
+        </div>
+    </section>
 
 </body>
 
